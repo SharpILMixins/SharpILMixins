@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SharpILMixins.Processor": {
+      "commandName": "Project",
+      "commandLineArgs": "-m \".\\bin\\Debug\\netcoreapp2.0\\SampleProjectMixins.dll\" -t ..\\SampleProject\\bin\\Debug\\netcoreapp2.0\\",
+      "workingDirectory": "C:\\Users\\NickAc\\Source\\Repos\\SharpILMixins\\Samples\\SampleProjectMixins"
+    }
+  }
+}

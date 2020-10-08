@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "properties": {
+    "namespace": {
+      "description": "The default namespace to target the Mixins.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "targets": {
+      "description": "The assembly files to target",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "mixins": {
+      "description": "The mixin classes to apply to the targets",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  }
+}

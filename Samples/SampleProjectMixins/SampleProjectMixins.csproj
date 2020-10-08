@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>SampleProject.Mixins</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="mixins.json" />
+    <None Remove="SampleProject-out.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="mixins.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
+    <ProjectReference Include="..\SampleProject\SampleProject.csproj" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+
+</Project>

@@ -1,0 +1,10 @@
+{
+  "$schema": "..\\..\\SharpILMixins.Processor\\mixin.config.schema.json",
+  "namespace": "SampleProject.Mixins",
+  "targets": [
+    "SampleProject.dll"
+  ],
+  "mixins": [
+    "MixinProgram"
+  ]
+}
