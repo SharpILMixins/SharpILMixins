@@ -2,7 +2,7 @@
 
 namespace SharpILMixins.Annotations
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor)]
     public sealed class MethodTargetAttribute : Attribute
     {
         public string ReturnType { get; }

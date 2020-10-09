@@ -22,6 +22,9 @@ namespace SharpILMixins.Processor
 
             [Option("dump-targets")]
             public bool DumpTargets { get; set; }
+
+            [Option("no-inline")]
+            public bool NoInline { get; set; }
         }
 
         public static Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(Program));
@@ -29,7 +32,6 @@ namespace SharpILMixins.Processor
 
         static void Main(string[] args)
         {
-            LicenseDetailsHelper.InitializeLicense();
             Parser.Default.ParseArguments<ProcessOptions>(args)
                 .WithParsed(o =>
                 {
@@ -42,6 +44,8 @@ namespace SharpILMixins.Processor
                         LogException(e, o);
                     }
                 });
+            Logger.Info("Press any key to continue..");
+            Console.ReadKey();
         }
 
         private static void LogException(Exception e, ProcessOptions processOptions, bool inner = false)
@@ -71,7 +75,7 @@ namespace SharpILMixins.Processor
                 Logger.Info($"Starting to process {mixinAssemblyFile.Name}");
                 try
                 {
-                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir, o.DumpTargets);
+                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir, o.DumpTargets, o.NoInline);
 
                     workspace.Apply();
                 }

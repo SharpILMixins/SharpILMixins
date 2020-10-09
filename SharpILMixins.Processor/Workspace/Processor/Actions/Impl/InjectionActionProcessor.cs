@@ -2,6 +2,7 @@
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using JetBrains.Annotations;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Processor.Utils;
@@ -30,5 +31,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
             }
         }
 
+        public InjectionActionProcessor([NotNull] MixinWorkspace workspace) : base(workspace)
+        {
+        }
     }
 }

@@ -14,11 +14,22 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             MixinAttribute = mixinAttribute;
             TargetMethod = GetTargetMethod(mixinMethod, mixinAttribute, targetType) ??
                            throw new MixinApplyException(
-                               $"Unable to find a target method for description \"{mixinAttribute.Target}\"");
+                               $"Unable to find a target method for description \"{GetTarget(mixinMethod, mixinAttribute)}\"");
             Priority = mixinAttribute.Priority;
         }
 
-        private static MethodDef? GetTargetMethod(MethodDef mixinMethod, BaseMixinAttribute mixinAttribute,
+        private static string GetTarget(MethodDef mixinMethod, BaseMixinAttribute mixinAttribute)
+        {
+            var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
+            if (targetAttribute != null)
+            {
+                return $"{targetAttribute.ReturnType} {targetAttribute.Name}({string.Join(',', targetAttribute.ArgumentTypes)})";
+            }
+
+            return mixinAttribute.Target;
+        }
+
+        public static MethodDef? GetTargetMethod(MethodDef mixinMethod, BaseMixinAttribute mixinAttribute,
             TypeDef targetType)
         {
             var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
@@ -27,7 +38,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
                 return targetType.Methods.FirstOrDefault(m =>
                     targetAttribute.ReturnType == m.ReturnType.FullName && targetAttribute.Name == m.Name && Enumerable
                         .Range(0, m.GetParamCount()).All(i =>
-                            m.Parameters.All(p => p.Type.FullName == targetAttribute.ArgumentTypes[i])));
+                            m.GetParams().ElementAtOrDefault(i)?.FullName == targetAttribute.ArgumentTypes.ElementAtOrDefault(i)));
             }
 
             return targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Target);

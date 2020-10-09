@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -36,7 +37,7 @@ namespace SharpILMixins.Processor.Utils
             {
                 try
                 {
-                    var values = FixValues(attribute.ConstructorArguments, constructor).ToArray();
+                    var values = FixValues(attribute.ConstructorArguments, i => constructor.GetParameters()[i].ParameterType).ToArray();
 
                     return constructor?.Invoke(values) as T;
                 }
@@ -49,8 +50,7 @@ namespace SharpILMixins.Processor.Utils
             return null;
         }
 
-        private static IEnumerable<object?> FixValues(IList<CAArgument> constructorArguments,
-            MethodBase constructor)
+        private static IEnumerable<object?> FixValues(IList<CAArgument> constructorArguments, Func<int, Type> parameterType)
         {
             for (var i = 0; i < constructorArguments.Count; i++)
             {
@@ -61,21 +61,37 @@ namespace SharpILMixins.Processor.Utils
                     yield return type.FullName;
                 else if (obj is CorLibTypeSig corLibType)
                     yield return corLibType.FullName;
+                else if (parameterType(i).IsArray)
+                {
+                    if (obj is IList<CAArgument> iList)
+                    {
+                        var elementType = parameterType(i).GetElementType()!;
+                        var array = Array.CreateInstance(elementType, iList.Count);
+                        var fixedValues = FixValues(iList, _ => elementType).ToArray();
+                        for (var index = 0; index < iList.Count; index++)
+                        {
+                            array.SetValue(fixedValues[index], index);
+                        }
+
+                        yield return array;
+                    }
+                }
                 else
                 {
 
-                    yield return Cast(obj, constructor.GetParameters()[i].ParameterType);
+                    yield return Cast(obj, parameterType(i));
                 }
             }
         }
         public static object? Cast(object data, Type type)
         {
-            var dataParam = Expression.Parameter(typeof(object), "data");
-            var block = Expression.Block(Expression.Convert(Expression.Convert(dataParam, data.GetType()), type));
+                var dataParam = Expression.Parameter(typeof(object), "data");
+                var block = Expression.Block(Expression.Convert(Expression.Convert(dataParam, data.GetType()), type));
 
-            var compile = Expression.Lambda(block, dataParam).Compile();
-            var ret = compile.DynamicInvoke(data);
-            return ret;
+                var compile = Expression.Lambda(block, dataParam).Compile();
+                var ret = compile.DynamicInvoke(data);
+                return ret;
+            
         }
 
     }

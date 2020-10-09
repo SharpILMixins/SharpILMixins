@@ -39,7 +39,7 @@ namespace SharpILMixins.Processor.Workspace
         private string LocateTarget(string name)
         {
             Logger.Debug($"Attempting to locate target named \"{name}\"");
-            var result = Workspace.TargetDir.EnumerateFiles(name).FirstOrDefault()?.FullName ??
+            var result = Workspace.TargetDir.EnumerateFiles(name).FirstOrDefault(c => !Path.GetFileNameWithoutExtension(c.FullName).EndsWith("-out"))?.FullName ??
                          throw new MixinApplyException($"Unable to find target named {name}");
 
             Logger.Debug($"Target named \"{name}\" was found.");

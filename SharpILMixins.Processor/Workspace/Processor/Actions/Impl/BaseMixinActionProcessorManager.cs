@@ -8,17 +8,17 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
 {
     public static class BaseMixinActionProcessorManager
     {
-        private static Dictionary<Type, IBaseMixinActionProcessor> ActionProcessors { get; }= new Dictionary<Type, IBaseMixinActionProcessor>();
+        private static Dictionary<Type, Func<MixinWorkspace, IBaseMixinActionProcessor>> ActionProcessors { get; }= new Dictionary<Type, Func<MixinWorkspace, IBaseMixinActionProcessor>>();
 
         static BaseMixinActionProcessorManager()
         {
-            ActionProcessors.Add(typeof(InjectAttribute), new InjectionActionProcessor());
-            ActionProcessors.Add(typeof(OverwriteAttribute), new OverwriteActionProcessor());
+            ActionProcessors.Add(typeof(InjectAttribute), w => new InjectionActionProcessor(w));
+            ActionProcessors.Add(typeof(OverwriteAttribute), w => new OverwriteActionProcessor(w));
         }
 
-        public static IBaseMixinActionProcessor GetProcessor(Type attributeType)
+        public static IBaseMixinActionProcessor GetProcessor(Type attributeType, MixinWorkspace workspace)
         {
-            return ActionProcessors.GetValueOrDefault(attributeType) ??
+            return ActionProcessors.GetValueOrDefault(attributeType)?.Invoke(workspace) ??
                    throw new MixinApplyException($"Unable to find processor for {attributeType.FullName}");
         }
 

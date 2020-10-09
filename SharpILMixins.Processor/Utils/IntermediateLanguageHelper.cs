@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Parameters;
@@ -12,11 +13,12 @@ namespace SharpILMixins.Processor.Utils
         public delegate void ModifyParameterInstructionHandler(int argumentIndex,
             ref IEnumerable<Instruction> parameterInstructions, List<Instruction> afterCallInstructions);
 
-        public static IEnumerable<Instruction> InvokeMethod(MethodDef method, int argumentsToPass,
-            ModifyParameterInstructionHandler? modifyParameterHandler = null)
+        public static IEnumerable<Instruction> InvokeMethod(MethodDef methodToInvoke, int argumentsToPass,
+            ModifyParameterInstructionHandler? modifyParameterHandler = null, MethodDef? targetMethod = null)
         {
-            var offset = method.IsStatic ? 0 : 1;
-            if (!method.IsStatic)
+            var parametersMethod = targetMethod ?? methodToInvoke;
+            var paramsMethodParams = parametersMethod.Parameters.Where(p => !p.IsHiddenThisParameter).ToArray();
+            if (!methodToInvoke.IsStatic)
             {
                 yield return new Instruction(OpCodes.Ldarg_0); //this instance
             }
@@ -24,9 +26,9 @@ namespace SharpILMixins.Processor.Utils
             var afterCallInstructions = new List<Instruction>();
             for (var i = 0; i < argumentsToPass; i++)
             {
-                var isRef = method.Parameters[i].Type.IsByRef;
+                var isRef = methodToInvoke.GetParams()[i].IsByRef && !methodToInvoke.GetParams()[i].IsByRef;
                 IEnumerable<Instruction> ldArgInst = new[]
-                    {new Instruction(isRef ? OpCodes.Ldarga : OpCodes.Ldarg, method.Parameters[i + offset])};
+                    {new Instruction(isRef ? OpCodes.Ldarga : OpCodes.Ldarg, paramsMethodParams.ElementAtOrDefault(i))};
 
 
                 modifyParameterHandler?.Invoke(i, ref ldArgInst, afterCallInstructions);
@@ -37,7 +39,7 @@ namespace SharpILMixins.Processor.Utils
                 }
             }
 
-            yield return new Instruction(OpCodes.Call, method);
+            yield return new Instruction(OpCodes.Call, methodToInvoke);
 
             foreach (var instruction in afterCallInstructions)
             {
@@ -49,7 +51,7 @@ namespace SharpILMixins.Processor.Utils
         {
             return InvokeMethod(action.MixinMethod, action.MixinMethod.GetParamCount(),
                 (int index, ref IEnumerable<Instruction> instructions, List<Instruction> callInstructions) =>
-                    HandleParameterInstruction(action, index, ref instructions, callInstructions, nextInstruction));
+                    HandleParameterInstruction(action, index, ref instructions, callInstructions, nextInstruction), action.TargetMethod);
         }
 
         public static void HandleParameterInstruction(MixinAction action, int index,

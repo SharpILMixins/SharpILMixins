@@ -4,6 +4,7 @@ using System.Linq;
 using dnlib.DotNet;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
+using SharpILMixins.Processor.Workspace.Processor.Actions;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
@@ -90,13 +91,23 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             foreach (var mixinMethod in mixinMethods)
             {
+                //Overwrite handlers are only copied if NoInline is enabled
+                var isOverwriteMethod = mixinMethod.GetCustomAttribute<OverwriteAttribute>() != null;
+                if (Workspace.ShouldInlineMethods && isOverwriteMethod)
+                {
+                    //Redirect mixin method to target method
+                    var exception = new MixinApplyException("Unable to redirect overwrite mixin method to original");
+                    var mixinAttribute = mixinMethod.GetCustomAttribute<BaseMixinAttribute>() ?? throw exception;
+                    var targetMethod = MixinAction.GetTargetMethod(mixinMethod, mixinAttribute, targetType) ?? throw exception;
+
+                    RedirectManager.RegisterRedirect(mixinMethod, targetMethod);
+                    continue;
+                }
+
                 var newMethod = CreateNewMethodCopy(targetType, mixinMethod);
                 RedirectManager.RegisterRedirect(mixinMethod, newMethod);
-               
-                if (mixinMethod.GetCustomAttribute<OverwriteAttribute>() != null)
-                {
-                    newMethod.Name = Utilities.GenerateRandomName("overwrite");
-                }
+
+                newMethod.Name = Utilities.GenerateRandomName("overwrite");
             }
         }
 

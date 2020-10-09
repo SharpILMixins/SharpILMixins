@@ -1,4 +1,5 @@
-﻿using dnlib.DotNet;
+﻿using System.Diagnostics;
+using dnlib.DotNet;
 
 namespace SharpILMixins.Processor.Utils
 {

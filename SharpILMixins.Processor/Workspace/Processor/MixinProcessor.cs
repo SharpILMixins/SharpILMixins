@@ -41,7 +41,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     Logger.Debug($"Starting to proccess action for \"{action.MixinMethod.FullName}\"");
 
                     
-                    var processor = BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType());
+                    var processor = BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
                     processor.ProcessAction(action, action.MixinAttribute);
                     
                     CopyScaffoldingHandler.RedirectManager.ProcessRedirects(action.TargetMethod.Body);

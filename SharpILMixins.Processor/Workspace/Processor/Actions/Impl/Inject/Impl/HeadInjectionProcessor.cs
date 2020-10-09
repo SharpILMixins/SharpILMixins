@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations;
@@ -18,7 +19,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 
         public override IEnumerable<int> FindInjectionPoints(MixinAction action, InjectAttribute attribute)
         {
-            yield return 0;
+            var ctorCall = action.TargetMethod.Body.Instructions.FirstOrDefault(c => c.Operand is IMethodDefOrRef methodCall && methodCall.Name == ".ctor");
+
+            yield return ctorCall != null ? action.TargetMethod.Body.Instructions.IndexOf(ctorCall) + 1 : 0;
         }
     }
 }
