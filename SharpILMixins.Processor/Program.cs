@@ -83,7 +83,7 @@ namespace SharpILMixins.Processor
                 {
                     throw new MixinApplyException(
                         $"{mixinAssemblyFile.Name} is not a valid Mixin workspace",
-                        e);
+                            e);
                 }
             }
         }

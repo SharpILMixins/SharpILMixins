@@ -26,7 +26,7 @@ namespace SharpILMixins.Processor.Utils
             var afterCallInstructions = new List<Instruction>();
             for (var i = 0; i < argumentsToPass; i++)
             {
-                var isRef = methodToInvoke.GetParams()[i].IsByRef && !methodToInvoke.GetParams()[i].IsByRef;
+                var isRef = methodToInvoke.GetParams()[i].IsByRef;
                 IEnumerable<Instruction> ldArgInst = new[]
                     {new Instruction(isRef ? OpCodes.Ldarga : OpCodes.Ldarg, paramsMethodParams.ElementAtOrDefault(i))};
 

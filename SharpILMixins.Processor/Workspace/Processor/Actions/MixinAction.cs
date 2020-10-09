@@ -23,7 +23,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
             if (targetAttribute != null)
             {
-                return $"{targetAttribute.ReturnType} {targetAttribute.Name}({string.Join(',', targetAttribute.ArgumentTypes)})";
+                return
+                    $"{targetAttribute.ReturnType} {targetAttribute.Name}({string.Join(',', targetAttribute.ArgumentTypes)})";
             }
 
             return mixinAttribute.Target;
@@ -36,9 +37,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             if (targetAttribute != null)
             {
                 return targetType.Methods.FirstOrDefault(m =>
-                    targetAttribute.ReturnType == m.ReturnType.FullName && targetAttribute.Name == m.Name && Enumerable
+                    targetAttribute.ReturnType == m.ReturnType.FullName && targetAttribute.Name == m.Name &&
+                    m.GetParamCount() == targetAttribute.ArgumentTypes.Length && Enumerable
                         .Range(0, m.GetParamCount()).All(i =>
-                            m.GetParams().ElementAtOrDefault(i)?.FullName == targetAttribute.ArgumentTypes.ElementAtOrDefault(i)));
+                            m.GetParams().ElementAtOrDefault(i)?.FullName ==
+                            targetAttribute.ArgumentTypes.ElementAtOrDefault(i)));
             }
 
             return targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Target);
