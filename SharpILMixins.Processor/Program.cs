@@ -23,8 +23,10 @@ namespace SharpILMixins.Processor
             [Option("dump-targets")]
             public bool DumpTargets { get; set; }
 
-            [Option("no-inline")]
-            public bool NoInline { get; set; }
+            [Option("experimental-inline-methods")]
+            public bool ExperimentalInlineMethods { get; set; }
+
+            [Option("mixin-handler-name")] public string MixinHandlerName { get; set; } = "mixin";
         }
 
         public static Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(Program));
@@ -75,7 +77,7 @@ namespace SharpILMixins.Processor
                 Logger.Info($"Starting to process {mixinAssemblyFile.Name}");
                 try
                 {
-                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir, o.DumpTargets, o.NoInline);
+                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir, new WorkspaceSettings(o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
 
                     workspace.Apply();
                 }

@@ -16,7 +16,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
                
                var mixinMethodBody = action.MixinMethod.Body;
                
-               if (!Workspace.NoInline)
+               if (!Workspace.MixinProcessor.CopyScaffoldingHandler.IsMethodInlined(action.MixinMethod))
                {
                    foreach (var handler in mixinMethodBody.ExceptionHandlers) body.ExceptionHandlers.Add(handler);
                    foreach (var variable in mixinMethodBody.Variables) body.Variables.Add(variable);

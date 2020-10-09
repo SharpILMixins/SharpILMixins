@@ -12,11 +12,13 @@ namespace SharpILMixins.Processor.Workspace.Processor
     {
         public TypeDef MixinType { get; }
         public TypeDef TargetType { get; }
+        public MixinWorkspace Workspace { get; set; }
 
-        public MixinRelation(TypeDef mixinType, TypeDef targetType)
+        public MixinRelation(TypeDef mixinType, TypeDef targetType, MixinWorkspace workspace)
         {
             MixinType = mixinType;
             TargetType = targetType;
+            Workspace = workspace;
             MixinActions = LoadActions(mixinType);
         }
 
@@ -26,7 +28,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 .Select(m =>
                 {
                     var attribute = m.GetCustomAttribute<BaseMixinAttribute>();
-                    return attribute != null ? new MixinAction(m, attribute, TargetType) : null;
+                    return attribute != null ? new MixinAction(m, attribute, TargetType, Workspace) : null;
                 }).Where(t => t is not null).ToList()!;
         }
 

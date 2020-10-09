@@ -27,7 +27,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
         public void Process(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
-            if (Workspace.ShouldDumpTargets) DumpTargetsIfRequired(mixinRelations);
+            if (Workspace.Settings.ShouldDumpTargets) DumpTargetsIfRequired(mixinRelations);
 
             CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef);
             foreach (var mixinRelation in mixinRelations)

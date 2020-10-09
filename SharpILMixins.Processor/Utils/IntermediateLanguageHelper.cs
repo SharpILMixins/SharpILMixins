@@ -3,6 +3,7 @@ using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Parameters;
+using SharpILMixins.Processor.Workspace;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject;
 
@@ -13,9 +14,22 @@ namespace SharpILMixins.Processor.Utils
         public delegate void ModifyParameterInstructionHandler(int argumentIndex,
             ref IEnumerable<Instruction> parameterInstructions, List<Instruction> afterCallInstructions);
 
-        public static IEnumerable<Instruction> InvokeMethod(MethodDef methodToInvoke, int argumentsToPass,
-            ModifyParameterInstructionHandler? modifyParameterHandler = null, MethodDef? targetMethod = null)
+        public static IEnumerable<Instruction> InvokeMethod(MixinWorkspace workspace, MethodDef methodToInvoke,
+            int argumentsToPass, ModifyParameterInstructionHandler? modifyParameterHandler = null, MethodDef? targetMethod = null)
         {
+            if (targetMethod != null && workspace.MixinProcessor.CopyScaffoldingHandler.IsMethodInlined(methodToInvoke))
+            {
+                var methodReturnsVoid = methodToInvoke.ReturnType.FullName ==
+                                        methodToInvoke.Module.CorLibTypes.Void.FullName;
+                var skipLastAmount = methodReturnsVoid ? 1 : 0;
+
+                foreach (var handler in methodToInvoke.Body.ExceptionHandlers) targetMethod.Body.ExceptionHandlers.Add(handler);
+                foreach (var variable in methodToInvoke.Body.Variables) targetMethod.Body.Variables.Add(variable);
+                foreach (var instruction in methodToInvoke.Body.Instructions.SkipLast(skipLastAmount)) yield return instruction;
+
+                yield break;
+            }
+
             var parametersMethod = targetMethod ?? methodToInvoke;
             var paramsMethodParams = parametersMethod.Parameters.Where(p => !p.IsHiddenThisParameter).ToArray();
             if (!methodToInvoke.IsStatic)
@@ -49,8 +63,8 @@ namespace SharpILMixins.Processor.Utils
 
         public static IEnumerable<Instruction> InvokeMethod(MixinAction action, Instruction? nextInstruction = null)
         {
-            return InvokeMethod(action.MixinMethod, action.MixinMethod.GetParamCount(),
-                (int index, ref IEnumerable<Instruction> instructions, List<Instruction> callInstructions) =>
+            return InvokeMethod(action.Workspace, action.MixinMethod,
+                action.MixinMethod.GetParamCount(), (int index, ref IEnumerable<Instruction> instructions, List<Instruction> callInstructions) =>
                     HandleParameterInstruction(action, index, ref instructions, callInstructions, nextInstruction), action.TargetMethod);
         }
 

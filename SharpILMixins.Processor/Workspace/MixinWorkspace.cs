@@ -13,15 +13,11 @@ namespace SharpILMixins.Processor.Workspace
 {
     public class MixinWorkspace
     {
+        public WorkspaceSettings Settings { get; private set; }
+
         public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspace));
 
         public DirectoryInfo TargetDir { get; }
-
-        public bool ShouldInlineMethods => !NoInline;
-        
-        public bool NoInline { get; }
-
-        public bool ShouldDumpTargets { get; }
 
         public ModuleDefMD MixinModule { get; }
 
@@ -29,14 +25,13 @@ namespace SharpILMixins.Processor.Workspace
 
         public ModuleContext ModuleContext { get; set; }
 
-        public MixinWorkspace(FileInfo mixinToApply, DirectoryInfo targetDir, bool shouldDumpTargets, bool noInline)
+        public MixinWorkspace(FileInfo mixinToApply, DirectoryInfo targetDir, WorkspaceSettings settings)
         {
             ModuleContext = ModuleDef.CreateModuleContext();
             SetupContext();
             TargetDir = targetDir;
-            ShouldDumpTargets = shouldDumpTargets;
-            NoInline = noInline;
 
+            Settings = settings;
             MixinModule = ModuleDefMD.Load(mixinToApply.FullName, ModuleContext);
             MixinAssembly = MixinModule.Assembly;
 

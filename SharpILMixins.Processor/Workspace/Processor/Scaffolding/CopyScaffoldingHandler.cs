@@ -41,7 +41,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
                 if (field.GetCustomAttribute<UniqueAttribute>() != null)
                 {
-                    copyField.Name = Utilities.GenerateRandomName();
+                    copyField.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
                 }
 
                 targetType.Fields.Add(copyField);
@@ -92,13 +92,13 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             foreach (var mixinMethod in mixinMethods)
             {
                 //Overwrite handlers are only copied if NoInline is enabled
-                var isOverwriteMethod = mixinMethod.GetCustomAttribute<OverwriteAttribute>() != null;
-                if (Workspace.ShouldInlineMethods && isOverwriteMethod)
+                if (IsMethodInlined(mixinMethod))
                 {
                     //Redirect mixin method to target method
-                    var exception = new MixinApplyException("Unable to redirect overwrite mixin method to original");
+                    var exception = new MixinApplyException("Unable to inline mixin method");
                     var mixinAttribute = mixinMethod.GetCustomAttribute<BaseMixinAttribute>() ?? throw exception;
-                    var targetMethod = MixinAction.GetTargetMethod(mixinMethod, mixinAttribute, targetType) ?? throw exception;
+                    var targetMethod = MixinAction.GetTargetMethod(mixinMethod, mixinAttribute, targetType) ??
+                                       throw exception;
 
                     RedirectManager.RegisterRedirect(mixinMethod, targetMethod);
                     continue;
@@ -107,8 +107,23 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 var newMethod = CreateNewMethodCopy(targetType, mixinMethod);
                 RedirectManager.RegisterRedirect(mixinMethod, newMethod);
 
-                newMethod.Name = Utilities.GenerateRandomName("overwrite");
+                if (mixinMethod.GetCustomAttribute<OverwriteAttribute>() != null)
+                {
+                    newMethod.Name = Utilities.GenerateRandomName("overwrite");
+                }
             }
+        }
+
+        public bool IsMethodInlined(MethodDef method)
+        {
+            var inlineOptionAttribute = method.GetCustomAttribute<MethodInlineOptionAttribute>();
+
+            //Either inline all methods (requested by user)
+            //or because the mixin creator asked to inline their method
+            //or, if nothing else was specified, only inline if it's an overwrite handler
+            return !method.GetParams().Any(p => p.IsByRef) && (Workspace.Settings.ExperimentalInlineHandlers ||
+                    inlineOptionAttribute?.Setting == InlineSetting.DoInline ||
+                    method.GetCustomAttribute<OverwriteAttribute>() != null);
         }
 
         private MethodDefUser CreateNewMethodCopy(TypeDef targetType, MethodDef method)
@@ -116,7 +131,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var newMethod = CopyUtils.CopyMethod(method, targetType, false);
             if (method.GetCustomAttribute<UniqueAttribute>() != null)
             {
-                newMethod.Name = Utilities.GenerateRandomName();
+                newMethod.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
             }
 
             RedirectManager.ProcessRedirects(method.Body);

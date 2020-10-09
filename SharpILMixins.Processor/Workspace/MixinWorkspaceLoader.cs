@@ -71,7 +71,7 @@ namespace SharpILMixins.Processor.Workspace
             var targetType = targetTypes.GetValueOrDefault(attribute.Target) ?? throw new MixinApplyException(
                 $"Unable to find Target Type \"{attribute.Target}\" in Target Assembly");
 
-            return new MixinRelation(foundType, targetType);
+            return new MixinRelation(foundType, targetType, Workspace);
         }
     }
 }
