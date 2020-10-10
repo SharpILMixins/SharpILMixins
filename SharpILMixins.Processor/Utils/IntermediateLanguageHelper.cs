@@ -15,7 +15,8 @@ namespace SharpILMixins.Processor.Utils
             ref IEnumerable<Instruction> parameterInstructions, List<Instruction> afterCallInstructions);
 
         public static IEnumerable<Instruction> InvokeMethod(MixinWorkspace workspace, MethodDef methodToInvoke,
-            int argumentsToPass, ModifyParameterInstructionHandler? modifyParameterHandler = null, MethodDef? targetMethod = null)
+            int argumentsToPass, ModifyParameterInstructionHandler? modifyParameterHandler = null,
+            MethodDef? targetMethod = null)
         {
             if (targetMethod != null && workspace.MixinProcessor.CopyScaffoldingHandler.IsMethodInlined(methodToInvoke))
             {
@@ -23,9 +24,11 @@ namespace SharpILMixins.Processor.Utils
                                         methodToInvoke.Module.CorLibTypes.Void.FullName;
                 var skipLastAmount = methodReturnsVoid ? 1 : 0;
 
-                foreach (var handler in methodToInvoke.Body.ExceptionHandlers) targetMethod.Body.ExceptionHandlers.Add(handler);
+                foreach (var handler in methodToInvoke.Body.ExceptionHandlers)
+                    targetMethod.Body.ExceptionHandlers.Add(handler);
                 foreach (var variable in methodToInvoke.Body.Variables) targetMethod.Body.Variables.Add(variable);
-                foreach (var instruction in methodToInvoke.Body.Instructions.SkipLast(skipLastAmount)) yield return instruction;
+                foreach (var instruction in methodToInvoke.Body.Instructions.SkipLast(skipLastAmount))
+                    yield return instruction;
 
                 yield break;
             }
@@ -41,6 +44,10 @@ namespace SharpILMixins.Processor.Utils
             for (var i = 0; i < argumentsToPass; i++)
             {
                 var isRef = methodToInvoke.GetParams()[i].IsByRef;
+                //We can't have a byref of byref
+                if (targetMethod?.GetParam(i)?.IsByRef == true && isRef)
+                    isRef = false;
+
                 IEnumerable<Instruction> ldArgInst = new[]
                     {new Instruction(isRef ? OpCodes.Ldarga : OpCodes.Ldarg, paramsMethodParams.ElementAtOrDefault(i))};
 
@@ -64,8 +71,10 @@ namespace SharpILMixins.Processor.Utils
         public static IEnumerable<Instruction> InvokeMethod(MixinAction action, Instruction? nextInstruction = null)
         {
             return InvokeMethod(action.Workspace, action.MixinMethod,
-                action.MixinMethod.GetParamCount(), (int index, ref IEnumerable<Instruction> instructions, List<Instruction> callInstructions) =>
-                    HandleParameterInstruction(action, index, ref instructions, callInstructions, nextInstruction), action.TargetMethod);
+                action.MixinMethod.GetParamCount(), (int index, ref IEnumerable<Instruction> instructions,
+                        List<Instruction> callInstructions) =>
+                    HandleParameterInstruction(action, index, ref instructions, callInstructions, nextInstruction),
+                action.TargetMethod);
         }
 
         public static void HandleParameterInstruction(MixinAction action, int index,
@@ -80,7 +89,8 @@ namespace SharpILMixins.Processor.Utils
                 {
                     case InjectCancelParamAttribute injectCancelParamAttribute:
                         var isCancelledVariable =
-                            new Local(new ClassSig(action.MixinMethod.Module.CorLibTypes.Boolean.TypeDefOrRef), Utilities.GenerateRandomName("isCancelled"));
+                            new Local(new ClassSig(action.MixinMethod.Module.CorLibTypes.Boolean.TypeDefOrRef),
+                                Utilities.GenerateRandomName("isCancelled"));
                         action.TargetMethod.Body.Variables.Add(isCancelledVariable);
 
                         instruction = new[]
@@ -91,9 +101,10 @@ namespace SharpILMixins.Processor.Utils
                         };
 
 
-
                         afterCallInstructions.Add(new Instruction(OpCodes.Ldloc, isCancelledVariable));
-                        afterCallInstructions.Add(new Instruction(OpCodes.Brfalse, nextInstruction ?? throw new MixinApplyException($"Unable to find next instruction to jump to after cancelling the method {action.TargetMethod} on {action.MixinMethod}")));
+                        afterCallInstructions.Add(new Instruction(OpCodes.Brfalse,
+                            nextInstruction ?? throw new MixinApplyException(
+                                $"Unable to find next instruction to jump to after cancelling the method {action.TargetMethod} on {action.MixinMethod}")));
                         afterCallInstructions.Add(new Instruction(OpCodes.Ret));
 
                         break;

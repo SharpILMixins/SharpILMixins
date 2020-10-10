@@ -13,17 +13,24 @@ namespace SharpILMixins.Processor.Workspace.Processor
         public TypeDef MixinType { get; }
         public TypeDef TargetType { get; }
         public MixinWorkspace Workspace { get; set; }
+        public bool IsAccessor { get; set; }
 
-        public MixinRelation(TypeDef mixinType, TypeDef targetType, MixinWorkspace workspace)
+
+        public MixinRelation(TypeDef mixinType, TypeDef targetType, MixinWorkspace workspace,
+            MixinAttribute mixinAttribute)
         {
             MixinType = mixinType;
             TargetType = targetType;
             Workspace = workspace;
+            IsAccessor = mixinAttribute is AccessorAttribute;
             MixinActions = LoadActions(mixinType);
         }
 
         public List<MixinAction> LoadActions(TypeDef mixinType)
         {
+            //Mixin Accessors don't support mixin actions
+            if (IsAccessor) return new List<MixinAction>(0);
+
             return mixinType.Methods
                 .Select(m =>
                 {

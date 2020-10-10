@@ -97,8 +97,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     //Redirect mixin method to target method
                     var exception = new MixinApplyException("Unable to inline mixin method");
                     var mixinAttribute = mixinMethod.GetCustomAttribute<BaseMixinAttribute>() ?? throw exception;
-                    var targetMethod = MixinAction.GetTargetMethod(mixinMethod, mixinAttribute, targetType) ??
-                                       throw exception;
+                    var targetMethod =
+                        MixinAction.GetTargetMethodThrow(mixinMethod, mixinAttribute, targetType, Workspace);
+
 
                     RedirectManager.RegisterRedirect(mixinMethod, targetMethod);
                     continue;

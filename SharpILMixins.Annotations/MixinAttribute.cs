@@ -5,7 +5,7 @@ namespace SharpILMixins.Annotations
 {
     [MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)]
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public sealed class MixinAttribute : Attribute
+    public class MixinAttribute : Attribute
     {
         public string Target { get; }
 

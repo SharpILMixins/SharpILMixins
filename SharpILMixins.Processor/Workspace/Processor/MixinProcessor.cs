@@ -33,11 +33,19 @@ namespace SharpILMixins.Processor.Workspace.Processor
             foreach (var mixinRelation in mixinRelations)
             {
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
-                
+
+                if (mixinRelation.IsAccessor)
+                {
+                    Logger.Info($"Mixin {mixinRelation.MixinType.Name} is an accessor for {mixinRelation.TargetType.Name}.");
+                    CopyScaffoldingHandler.RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+                    continue;
+                }
+
                 CopyScaffoldingHandler.ProcessType(mixinRelation.TargetType, mixinRelation.MixinType);
 
                 foreach (var action in mixinRelation.MixinActions.OrderBy(a => a.Priority))
                 {
+                    action.LocateTargetMethod();
                     Logger.Debug($"Starting to proccess action for \"{action.MixinMethod.FullName}\"");
 
                     
