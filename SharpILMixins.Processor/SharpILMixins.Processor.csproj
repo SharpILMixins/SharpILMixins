@@ -5,6 +5,12 @@
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
+    <Version>1.0.6</Version>
+    <Authors>NickAcPT</Authors>
+    <Description>The processor for Mixins made for SharpILMixins.
+
+This package includes the entire program.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
