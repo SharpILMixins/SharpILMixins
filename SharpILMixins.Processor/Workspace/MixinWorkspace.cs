@@ -42,7 +42,8 @@ namespace SharpILMixins.Processor.Workspace
 
         private void SetupContext()
         {
-            ModuleDefMD.Load(typeof(BaseMixinAttribute).Assembly.Location, ModuleContext);
+            var moduleDefMd = ModuleDefMD.Load(typeof(BaseMixinAttribute).Assembly.Location, ModuleContext);
+            var assemblyDef = ModuleContext.AssemblyResolver.Resolve(moduleDefMd.Assembly, moduleDefMd);
         }
 
         public static MixinConfiguration TryToLoadConfiguration(AssemblyDef mixinToApply)

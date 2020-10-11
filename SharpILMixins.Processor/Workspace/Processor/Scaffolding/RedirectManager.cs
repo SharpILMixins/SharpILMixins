@@ -28,29 +28,49 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         public SigComparer SigComparer { get; }
 
         public Dictionary<IMemberRef, IMemberRef> Dictionary { get; } = new Dictionary<IMemberRef, IMemberRef>();
-        public Dictionary<string, IMemberRefParent> TypeRedirectDictionary { get; } = new Dictionary<string, IMemberRefParent>();
+        public Dictionary<string, TypeDef> TypeRedirectDictionary { get; } = new Dictionary<string, TypeDef>();
 
         public void RegisterRedirect(IMemberRef originalMember, IMemberRef newMember)
         {
             Dictionary.Add(originalMember, newMember);
         }
+
         public void RegisterTypeRedirect(TypeDef originalMember, TypeDef newMember)
         {
             foreach (var accessorMethod in originalMember.Methods)
             {
-                var targetMethod = MixinAction.GetTargetMethod(accessorMethod, accessorMethod.GetCustomAttribute<BaseMixinAttribute>(),
+                var targetMethod = MixinAction.GetTargetMethod(accessorMethod,
+                    accessorMethod.GetCustomAttribute<BaseMixinAttribute>(),
                     newMember, Workspace);
                 if (targetMethod != null)
                 {
-                    Logger.Debug($"Found target method {targetMethod.FullName} for accessor method {accessorMethod.FullName}");
+                    Logger.Debug(
+                        $"Found target method {targetMethod.FullName} for accessor method {accessorMethod.FullName}");
                     RegisterRedirect(accessorMethod, targetMethod);
                 }
             }
+
+            foreach (var accessorField in originalMember.Fields)
+            {
+                var targetField = newMember.FindField(accessorField.Name);
+                if (targetField != null)
+                {
+                    Logger.Debug(
+                        $"Found target field {targetField.FullName} for accessor field {accessorField.FullName}");
+                    RegisterRedirect(accessorField, targetField);
+                }
+            }
+
             TypeRedirectDictionary.Add(originalMember.FullName, newMember);
         }
 
         public void ProcessRedirects(CilBody body)
         {
+            foreach (var bodyVariable in body.Variables)
+            {
+                bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type);
+            }
+
             //body.KeepOldMaxStack = true;
             foreach (var instruction in body.Instructions)
             {
@@ -59,6 +79,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     var operandReplacement = Dictionary.FirstOrDefault(m => m.Key.FullName.Equals(memberRef.FullName));
                     if (!operandReplacement.IsDefault())
                     {
+                        Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement.Value}");
                         instruction.Operand = operandReplacement.Value;
                     }
 
@@ -71,7 +92,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             if (iMemberRef.DeclaringType == null) return;
             var typeReplacement =
-                TypeRedirectDictionary.FirstOrDefault(m => SigComparer.Equals(m.Key, iMemberRef.DeclaringType.FullName));
+                TypeRedirectDictionary.FirstOrDefault(m =>
+                    SigComparer.Equals(m.Key, iMemberRef.DeclaringType.FullName));
             if (!typeReplacement.IsDefault())
             {
                 var replacementValue = typeReplacement.Value;
@@ -85,8 +107,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     var baseMixinAttribute = methodDef.GetCustomAttribute<BaseMixinAttribute>();
                     if (baseMixinAttribute != null)
                     {
-                        var targetMethod = MixinAction.GetTargetMethod(methodDef, baseMixinAttribute, typeDef, Workspace);
-                        
+                        var targetMethod =
+                            MixinAction.GetTargetMethod(methodDef, baseMixinAttribute, typeDef, Workspace);
+
                         Debugger.Break();
                     }
                 }
@@ -103,10 +126,37 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var pair = TypeRedirectDictionary.FirstOrDefault(m => Equals(m.Key, type));
             return pair.IsDefault() ? type : pair.Value.FullName;
         }
+
         public IMemberRefParent? RedirectTypeMember(string type)
         {
             var pair = TypeRedirectDictionary.FirstOrDefault(m => Equals(m.Key, type));
             return pair.IsDefault() ? null : pair.Value;
+        }
+
+        public TypeSig? ProcessTypeRedirect(TypeSig? parameterType)
+        {
+            switch (parameterType)
+            {
+                case ClassSig classSig:
+                    return new ClassSig(TypeRedirectDictionary.GetValueOrDefault(classSig.TypeDefOrRef.FullName) ??
+                                        classSig.TypeDefOrRef);
+
+                case ByRefSig byRefSig:
+                    return new ByRefSig(ProcessTypeRedirect(byRefSig.Next));
+
+                case ValueTypeSig valueTypeSig:
+                    return new ValueTypeSig(
+                        TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
+                        valueTypeSig.TypeDefOrRef);
+            }
+
+            if (parameterType != null)
+            {
+                Logger.Warn(
+                    $"Skipped translating type redirect for type {parameterType} ({parameterType.GetType().Name})");
+            }
+
+            return parameterType;
         }
     }
 }

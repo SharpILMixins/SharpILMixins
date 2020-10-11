@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Processor.Utils;
@@ -9,7 +10,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
     {
         public override AtLocation Location => AtLocation.Return;
 
-        public override IEnumerable<Instruction> GetInstructionsForAction(MixinAction action, InjectAttribute attribute, int location,
+        public override IEnumerable<Instruction> GetInstructionsForAction(MixinAction action, InjectAttribute attribute,
+            int location,
             Instruction? nextInstruction)
         {
             return IntermediateLanguageHelper.InvokeMethod(action, nextInstruction);
@@ -17,11 +19,17 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 
         public override IEnumerable<int> FindInjectionPoints(MixinAction action, InjectAttribute attribute)
         {
-            for (var index = 0; index < action.TargetMethod.Body.Instructions.Count; index++)
+            var bodyInstructions = action.TargetMethod.Body.Instructions;
+            var instructions = bodyInstructions.Where(i => i.OpCode == OpCodes.Ret);
+            if (attribute.Ordinal == -1)
             {
-                var instruction = action.TargetMethod.Body.Instructions[index];
-                if (instruction.OpCode == OpCodes.Ret) yield return index;
+                foreach (var x in instructions.Select(bodyInstructions.IndexOf)) yield return x;
+                yield break;
             }
+
+            yield return bodyInstructions.IndexOf(instructions.ElementAtOrDefault(attribute.Ordinal) ??
+                                                  throw new MixinApplyException(
+                                                      $"Unable to find Return instruction with ordinal {attribute.Ordinal}"));
         }
     }
 }

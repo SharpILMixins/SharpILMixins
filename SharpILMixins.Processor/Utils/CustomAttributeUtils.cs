@@ -1,19 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using dnlib.DotNet;
-using Dynamitey;
-using ImpromptuInterface;
 
 namespace SharpILMixins.Processor.Utils
 {

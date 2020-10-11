@@ -2,7 +2,7 @@
 
 namespace SharpILMixins.Annotations
 {
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum)]
     public sealed class AccessorAttribute : MixinAttribute
     {
         public AccessorAttribute(Type target) : base(target)

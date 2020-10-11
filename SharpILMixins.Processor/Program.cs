@@ -20,8 +20,7 @@ namespace SharpILMixins.Processor
             [Option('m', "mixins", Required = true)]
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
 
-            [Option("dump-targets")]
-            public bool DumpTargets { get; set; }
+            [Option("dump-targets")] public bool DumpTargets { get; set; }
 
             [Option("experimental-inline-methods")]
             public bool ExperimentalInlineMethods { get; set; }
@@ -46,8 +45,11 @@ namespace SharpILMixins.Processor
                         LogException(e, o);
                     }
                 });
-            Logger.Info("Press any key to continue..");
-            Console.ReadKey();
+            if (!Debugger.IsAttached)
+            {
+                Logger.Info("Press any key to continue..");
+                Console.ReadKey();
+            }
         }
 
         private static void LogException(Exception e, ProcessOptions processOptions, bool inner = false)
@@ -77,7 +79,8 @@ namespace SharpILMixins.Processor
                 Logger.Info($"Starting to process {mixinAssemblyFile.Name}");
                 try
                 {
-                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir, new WorkspaceSettings(o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
+                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir,
+                        new WorkspaceSettings(o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
 
                     workspace.Apply();
                 }
@@ -85,7 +88,7 @@ namespace SharpILMixins.Processor
                 {
                     throw new MixinApplyException(
                         $"{mixinAssemblyFile.Name} is not a valid Mixin workspace",
-                            e);
+                        e);
                 }
             }
         }

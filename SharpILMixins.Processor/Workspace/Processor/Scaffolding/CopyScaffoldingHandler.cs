@@ -129,7 +129,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         private MethodDefUser CreateNewMethodCopy(TypeDef targetType, MethodDef method)
         {
-            var newMethod = CopyUtils.CopyMethod(method, targetType, false);
+            var newMethod = CopyUtils.CopyMethod(method, Workspace, targetType, false);
             if (method.GetCustomAttribute<UniqueAttribute>() != null)
             {
                 newMethod.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);

@@ -18,11 +18,14 @@ namespace SharpILMixins.Annotations.Inject
             At = at;
         }
 
-        public InjectAttribute(string target, AtLocation at, int priority = 1000) : base(target, priority)
+        public InjectAttribute(string target, AtLocation at, int priority = 1000, int ordinal = -1) : base(target, priority)
         {
             At = at;
+            Ordinal = ordinal;
         }
 
         public AtLocation At { get; set; }
+
+        public int Ordinal { get; }
     }
 }
