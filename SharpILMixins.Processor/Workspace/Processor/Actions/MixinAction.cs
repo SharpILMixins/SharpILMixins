@@ -62,7 +62,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
                 return directResult ?? throw exception;
             }
 
-            var redirectManager = workspace.MixinProcessor.CopyScaffoldingHandler.RedirectManager;
+            var redirectManager = workspace.RedirectManager;
 
             var returnType = targetAttribute?.ReturnType ?? mixinMethod.ReturnType.FullName;
             var name = targetAttribute?.Name ?? mixinMethod.Name;

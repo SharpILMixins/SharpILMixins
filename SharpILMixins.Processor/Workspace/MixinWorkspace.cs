@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using dnlib.DotNet;
 using dnlib.DotNet.Writer;
 using Newtonsoft.Json;
@@ -8,12 +10,13 @@ using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor;
+using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 
 namespace SharpILMixins.Processor.Workspace
 {
     public class MixinWorkspace
     {
-        public WorkspaceSettings Settings { get; private set; }
+        public MixinWorkspaceSettings Settings { get; private set; }
 
         public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspace));
 
@@ -25,7 +28,9 @@ namespace SharpILMixins.Processor.Workspace
 
         public ModuleContext ModuleContext { get; set; }
 
-        public MixinWorkspace(FileInfo mixinToApply, DirectoryInfo targetDir, WorkspaceSettings settings)
+        public PlaceholderManager PlaceholderManager { get; set; }
+
+        public MixinWorkspace(FileInfo mixinToApply, DirectoryInfo targetDir, MixinWorkspaceSettings settings)
         {
             ModuleContext = ModuleDef.CreateModuleContext();
             SetupContext();
@@ -38,6 +43,7 @@ namespace SharpILMixins.Processor.Workspace
             Configuration = TryToLoadConfiguration(MixinAssembly);
             Loader = new MixinWorkspaceLoader(this);
             MixinProcessor = new MixinProcessor(this);
+            PlaceholderManager = new PlaceholderManager(this);
         }
 
         private void SetupContext()
@@ -45,6 +51,14 @@ namespace SharpILMixins.Processor.Workspace
             var moduleDefMd = ModuleDefMD.Load(typeof(BaseMixinAttribute).Assembly.Location, ModuleContext);
             var assemblyDef = ModuleContext.AssemblyResolver.Resolve(moduleDefMd.Assembly, moduleDefMd);
         }
+
+        public MixinConfiguration Configuration { get; }
+
+        public MixinWorkspaceLoader Loader { get; }
+
+        public MixinProcessor MixinProcessor { get; }
+
+        public RedirectManager RedirectManager => MixinProcessor.CopyScaffoldingHandler.RedirectManager;
 
         public static MixinConfiguration TryToLoadConfiguration(AssemblyDef mixinToApply)
         {
@@ -69,12 +83,6 @@ namespace SharpILMixins.Processor.Workspace
             return jObject.ToObject<MixinConfiguration>() ??
                    throw new MixinApplyException("Unable to load Mixin Configuration correctly.");
         }
-
-        public MixinConfiguration Configuration { get; }
-
-        public MixinWorkspaceLoader Loader { get; }
-
-        public MixinProcessor MixinProcessor { get; }
 
         public void Apply()
         {

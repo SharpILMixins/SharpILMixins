@@ -80,7 +80,7 @@ namespace SharpILMixins.Processor
                 try
                 {
                     var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir,
-                        new WorkspaceSettings(o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
+                        new MixinWorkspaceSettings(o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
 
                     workspace.Apply();
                 }

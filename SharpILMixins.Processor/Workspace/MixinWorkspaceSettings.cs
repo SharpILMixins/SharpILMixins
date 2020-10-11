@@ -1,8 +1,8 @@
 ﻿namespace SharpILMixins.Processor.Workspace
 {
-    public class WorkspaceSettings
+    public class MixinWorkspaceSettings
     {
-        public WorkspaceSettings(bool shouldDumpTargets, string mixinHandlerName, bool experimentalInlineHandlers)
+        public MixinWorkspaceSettings(bool shouldDumpTargets, string mixinHandlerName, bool experimentalInlineHandlers)
         {
             MixinHandlerName = mixinHandlerName;
             ShouldDumpTargets = shouldDumpTargets;

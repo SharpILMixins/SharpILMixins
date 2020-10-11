@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using dnlib.DotNet;
 using NLog;
-using NLog.Fluent;
-using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
@@ -18,6 +14,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
         public MixinWorkspace Workspace { get; }
 
         public CopyScaffoldingHandler CopyScaffoldingHandler { get; set; }
+
+        public RedirectManager RedirectManager => CopyScaffoldingHandler.RedirectManager;
 
         public MixinProcessor(MixinWorkspace workspace)
         {
@@ -37,7 +35,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 if (mixinRelation.IsAccessor)
                 {
                     Logger.Info($"Mixin {mixinRelation.MixinType.Name} is an accessor for {mixinRelation.TargetType.Name}.");
-                    CopyScaffoldingHandler.RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+                    RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
                     continue;
                 }
 
@@ -51,7 +49,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     var processor = BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
                     processor.ProcessAction(action, action.MixinAttribute);
                  
-                    CopyScaffoldingHandler.RedirectManager.ProcessRedirects(action.TargetMethod.Body);
+                    RedirectManager.ProcessRedirects(action.TargetMethod.Body);
+                    Workspace.PlaceholderManager.ProcessPlaceholders(action.TargetMethod.Body);
                     Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
                 }
 
