@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using dnlib.DotNet;
@@ -14,7 +15,7 @@ using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 
 namespace SharpILMixins.Processor.Workspace
 {
-    public class MixinWorkspace
+    public class MixinWorkspace : IDisposable
     {
         public MixinWorkspaceSettings Settings { get; private set; }
 
@@ -103,6 +104,7 @@ namespace SharpILMixins.Processor.Workspace
                                  Path.GetExtension(filePathFullName);
                 
                 WriteFinalModule(targetModuleModuleDef, finalPath);
+                targetModuleModuleDef.Dispose();
                 Logger.Debug($"Finished to process {targetAssembly.FullName} with output named {Path.GetFileName(finalPath)}");
             }
         }
@@ -117,6 +119,11 @@ namespace SharpILMixins.Processor.Workspace
             {
                 targetModuleModuleDef.NativeWrite(path);
             }
+        }
+
+        public void Dispose()
+        {
+            MixinModule.Dispose();
         }
     }
 }
