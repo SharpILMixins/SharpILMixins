@@ -135,7 +135,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 newMethod.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
             }
 
-            RedirectManager.ProcessRedirects(method.Body);
+            RedirectManager.ProcessRedirects(method, method.Body);
 
             return newMethod;
         }

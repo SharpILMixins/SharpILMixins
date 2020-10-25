@@ -16,10 +16,10 @@ namespace SharpILMixins.Processor.Utils
             {
                 Body = original.Body,
             };
-            copyMethod.ReturnType = redirectManager.ProcessTypeRedirect(copyMethod.ReturnType);
+            copyMethod.ReturnType = redirectManager.ProcessTypeRedirect(copyMethod.ReturnType, declaringType?.DefinitionAssembly);
             foreach (var parameter in copyMethod.Parameters)
             {
-                parameter.Type = redirectManager.ProcessTypeRedirect(parameter.Type);
+                parameter.Type = redirectManager.ProcessTypeRedirect(parameter.Type, declaringType?.DefinitionAssembly);
             }
 
             copyMethod.ParamDefs.Clear();

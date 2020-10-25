@@ -65,12 +65,12 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             TypeRedirectDictionary.Add(originalMember.FullName, newMember);
         }
 
-        public void ProcessRedirects(CilBody body)
+        public void ProcessRedirects(MethodDef method, CilBody body)
         {
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
             {
-                bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type);
+                bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
             }
 
             //body.KeepOldMaxStack = true;
@@ -88,7 +88,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     //PerformTypeReplacement(memberRef, instruction);
                 }
 
-                if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
+                if (instruction.Operand is ITypeDefOrRef typeDefOrRef && typeDefOrRef.DefinitionAssembly.FullName.Equals(method.DeclaringType.DefinitionAssembly.FullName))
                 {
                     instruction.Operand = typeDefOrRef.ResolveTypeDef() ?? typeDefOrRef;
                 }
@@ -140,21 +140,21 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             return pair.IsDefault() ? null : pair.Value;
         }
 
-        public TypeSig? ProcessTypeRedirect(TypeSig? parameterType)
+        public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)
         {
             switch (parameterType)
             {
                 case ClassSig classSig:
                     return new ClassSig(TypeRedirectDictionary.GetValueOrDefault(classSig.TypeDefOrRef.FullName) ??
-                                        classSig.TypeDefOrRef.ResolveTypeDef() ?? classSig.TypeDefOrRef);
+                                        ResolveTypeDefIfNeeded(classSig.TypeDefOrRef, definitionAssembly));
 
                 case ByRefSig byRefSig:
-                    return new ByRefSig(ProcessTypeRedirect(byRefSig.Next));
+                    return new ByRefSig(ProcessTypeRedirect(byRefSig.Next, definitionAssembly));
 
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
-                        valueTypeSig.TypeDefOrRef.ResolveTypeDef() ?? valueTypeSig.TypeDefOrRef);
+                        ResolveTypeDefIfNeeded(valueTypeSig.TypeDefOrRef, definitionAssembly));
             }
 
             if (parameterType != null)
@@ -164,6 +164,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             }
 
             return parameterType;
+        }
+
+        private static ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
+        {
+            if (definitionAssembly == null) return defOrRef;
+
+            //This is needed because otherwise we'll be referencing the target assembly
+            if (definitionAssembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName))
+                return defOrRef.ResolveTypeDef() ?? defOrRef;
+            return defOrRef;
         }
     }
 }
