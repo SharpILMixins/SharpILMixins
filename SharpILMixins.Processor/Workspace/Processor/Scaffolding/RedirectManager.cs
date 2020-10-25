@@ -111,6 +111,12 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 case ByRefSig byRefSig:
                     return new ByRefSig(ProcessTypeRedirect(byRefSig.Next, definitionAssembly));
 
+                case GenericInstSig genericInstSig:
+                    return new GenericInstSig(
+                        ProcessTypeRedirect(genericInstSig.GenericType, definitionAssembly).ToClassOrValueTypeSig(),
+                        genericInstSig.GenericArguments.Select(t => ProcessTypeRedirect(t, definitionAssembly))
+                            .ToList());
+
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
