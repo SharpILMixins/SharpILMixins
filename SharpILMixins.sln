@@ -21,7 +21,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleProjectFramework", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleProjectFrameworkMixins", "Samples\SampleProjectFrameworkMixins\SampleProjectFrameworkMixins.csproj", "{6FE86A82-D5D9-4816-B269-E9D108A1A7CA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bootstrap", "Bootstrap", "{9A3415C7-B2F8-4984-BBD8-AC2F80519F8D}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BootstrapCore", "Bootstrap\BootstrapCore\BootstrapCore.shproj", "{1611F80C-B6DF-4561-9287-49A714960A7F}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Bootstrap\BootstrapCore\BootstrapCore.projitems*{1611f80c-b6df-4561-9287-49a714960a7f}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -62,6 +69,7 @@ Global
 		{2177F8D4-F3BA-4980-8F29-9067CC443835} = {0AFD3280-DBC0-467E-93D9-AB2CA67A6E40}
 		{DAED2FB6-3533-40D7-B2D3-72EF1D99F405} = {2177F8D4-F3BA-4980-8F29-9067CC443835}
 		{6FE86A82-D5D9-4816-B269-E9D108A1A7CA} = {2177F8D4-F3BA-4980-8F29-9067CC443835}
+		{1611F80C-B6DF-4561-9287-49A714960A7F} = {9A3415C7-B2F8-4984-BBD8-AC2F80519F8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B22D16A2-A9FD-4407-A6A4-05BAF8D8F440}
