@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
@@ -37,6 +38,15 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     }
 
                     instruction.Operand = str;
+                } else if (instruction.Operand is UTF8String utf8String)
+                {
+                    var tmpStr = utf8String.String;
+                    foreach (var (key, func) in Placeholders)
+                    {
+                        tmpStr = tmpStr.Replace($"$${key}$$", func());
+                    }
+
+                    instruction.Operand = new UTF8String(tmpStr);
                 }
             }
         }

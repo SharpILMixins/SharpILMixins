@@ -8,7 +8,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 {
     public record MixinAction
     {
-        public MixinAction(MethodDef mixinMethod, BaseMixinAttribute mixinAttribute, TypeDef targetType, MixinWorkspace workspace)
+        public MixinAction(MethodDef mixinMethod, BaseMixinAttribute mixinAttribute, TypeDef targetType,
+            MixinWorkspace workspace)
         {
             MixinMethod = mixinMethod;
             MixinAttribute = mixinAttribute;
@@ -58,7 +59,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
             if (!string.IsNullOrEmpty(mixinAttribute?.Target))
             {
-                var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Target);
+                var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Target) ??
+                                   targetType.Methods.Single(m => m.Name == mixinAttribute.Target);
                 return directResult ?? throw exception;
             }
 
@@ -67,7 +69,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             var returnType = targetAttribute?.ReturnType ?? mixinMethod.ReturnType.FullName;
             var name = targetAttribute?.Name ?? mixinMethod.Name;
             var argumentTypes = (targetAttribute?.ArgumentTypes ??
-                                 mixinMethod.GetParams().Select(c => c.FullName)).Select(redirectManager.RedirectType).ToArray();
+                                 mixinMethod.GetParams().Select(c => c.FullName)).Select(redirectManager.RedirectType)
+                .ToArray();
 
             var result = targetType.Methods.FirstOrDefault(m =>
             {

@@ -5,7 +5,7 @@ using SharpILMixins.Annotations.Parameters;
 
 namespace SampleProject.Mixins
 {
-    [Mixin("SampleProject.Program")]
+    [Mixin(typeof(Program))]
     public class MixinProgram
     {
         [Shadow] private static int _coolNumber;
@@ -20,11 +20,11 @@ namespace SampleProject.Mixins
             return 42;
         }
 
-        [Inject("System.Void SampleProject.Program::Main(System.String[])", AtLocation.Head)]
-        public static void BeforeMain([InjectCancelParam] out bool isCancelled)
+        [Inject("Main", AtLocation.Head)]
+        public static void BeforeMain(string[] args, [InjectCancelParam] out bool isCancelled)
         {
             isCancelled = true;
-            Console.WriteLine($"Hello World from Mixins! Random number was: {RandomNumber()}");
+            Console.WriteLine($"Hello World from Mixins! Random number was: {RandomNumber()} {args}");
             Console.WriteLine($"Cool number before: {_coolNumber}");
             _coolNumber = 42;
             _ourString = "Mixins on C# are cool!";

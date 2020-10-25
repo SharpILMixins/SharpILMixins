@@ -66,6 +66,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public void ProcessRedirects(CilBody body)
         {
+            Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
             {
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type);

@@ -50,7 +50,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     processor.ProcessAction(action, action.MixinAttribute);
                  
                     RedirectManager.ProcessRedirects(action.TargetMethod.Body);
-                    Workspace.PlaceholderManager.ProcessPlaceholders(action.TargetMethod.Body);
                     Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
                 }
 

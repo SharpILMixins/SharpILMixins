@@ -46,11 +46,12 @@ namespace SharpILMixins.Processor.Utils
             {
                 var argument = constructorArguments[i];
                 var obj = argument.Value;
-
                 if (obj is TypeRef type)
                     yield return type.FullName;
                 else if (obj is CorLibTypeSig corLibType)
                     yield return corLibType.FullName;
+                else if (obj is ClassSig)
+                    yield return obj.ToString();
                 else if (parameterType(i).IsArray)
                 {
                     if (obj is IList<CAArgument> iList)

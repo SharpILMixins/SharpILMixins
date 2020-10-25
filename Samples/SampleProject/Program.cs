@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SampleProject
 {
-    class Program
+    public class Program
     {
         private static int _coolNumber = 9;
 

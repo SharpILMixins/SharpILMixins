@@ -43,13 +43,14 @@ namespace SharpILMixins.Processor
                     catch (Exception e)
                     {
                         LogException(e, o);
+                        Environment.ExitCode = 1;
                     }
                 });
-            if (!Debugger.IsAttached)
+            /*if (!Debugger.IsAttached)
             {
                 Logger.Info("Press any key to continue..");
                 Console.ReadKey();
-            }
+            }*/
         }
 
         private static void LogException(Exception e, ProcessOptions processOptions, bool inner = false)
@@ -80,7 +81,7 @@ namespace SharpILMixins.Processor
                 try
                 {
                     var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir,
-                        new MixinWorkspaceSettings(o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
+                        new MixinWorkspaceSettings(Environment.CurrentDirectory, o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
 
                     workspace.Apply();
                 }

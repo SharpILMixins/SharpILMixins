@@ -100,9 +100,9 @@ namespace SharpILMixins.Processor.Workspace
                 MixinProcessor.Process(mixinRelations, targetModule);
 
                 var filePathFullName = targetModule.FilePath.FullName;
-                var finalPath = Path.GetFileNameWithoutExtension(filePathFullName) + "-out" +
-                                 Path.GetExtension(filePathFullName);
-                
+                var finalPath = Path.Combine(Settings.OutputPath,
+                    Path.GetFileNameWithoutExtension(filePathFullName) + "-out" + Path.GetExtension(filePathFullName));
+
                 WriteFinalModule(targetModuleModuleDef, finalPath);
                 targetModuleModuleDef.Dispose();
                 Logger.Debug($"Finished to process {targetAssembly.FullName} with output named {Path.GetFileName(finalPath)}");
