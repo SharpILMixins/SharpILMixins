@@ -377,4 +377,6 @@ obj/
 # End of https://www.toptal.com/developers/gitignore/api/csharp,vscode,dotnetcore
 
 SampleProject-out.dll
+SampleProjectCore-out.dll
+SampleProjectFramework-out.dll
 launchSettings.json

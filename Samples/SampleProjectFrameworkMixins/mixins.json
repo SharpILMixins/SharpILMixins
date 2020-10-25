@@ -1,0 +1,9 @@
+﻿{
+  "namespace": "SampleProjectFrameworkMixins",
+  "targets": [
+    "SampleProjectFramework.dll"
+  ],
+  "mixins": [
+    "ProgramMixin"
+  ]
+}

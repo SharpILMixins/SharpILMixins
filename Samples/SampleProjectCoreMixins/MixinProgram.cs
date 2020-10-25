@@ -1,9 +1,10 @@
 ﻿using System;
+using SampleProject;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Annotations.Parameters;
 
-namespace SampleProject.Mixins
+namespace SampleProjectCore.Mixins
 {
     [Mixin(typeof(Program))]
     public class MixinProgram

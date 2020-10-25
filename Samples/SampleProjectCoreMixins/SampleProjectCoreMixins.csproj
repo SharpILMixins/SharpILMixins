@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RootNamespace>SampleProject.Mixins</RootNamespace>
+    <RootNamespace>SampleProjectCore.Mixins</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
-    <ProjectReference Include="..\SampleProject\SampleProject.csproj" />
+    <ProjectReference Include="..\SampleProjectCore\SampleProjectCore.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
