@@ -10,16 +10,21 @@ namespace SharpILMixins.Processor.Utils
     {
         public static T? GetCustomAttribute<T>(this IHasCustomAttribute provider) where T : class
         {
-            var attribute =
-                provider.CustomAttributes.FirstOrDefault(attr =>
-                {
-                    var definition = attr.AttributeType.ResolveTypeDef();
-                    return attr.AttributeType.FullName == typeof(T).FullName || definition?.BaseType != null &&
-                        definition.BaseType.FullName == typeof(T).FullName;
-                });
+            return GetCustomAttributes<T>(provider).FirstOrDefault();
+        }
 
-            if (attribute == null) return null;
+        public static T[] GetCustomAttributes<T>(this IHasCustomAttribute provider) where T : class
+        {
+            return provider.CustomAttributes.Where(attr =>
+            {
+                var definition = attr.AttributeType.ResolveTypeDef();
+                return attr.AttributeType.FullName == typeof(T).FullName || definition?.BaseType != null &&
+                    definition.BaseType.FullName == typeof(T).FullName;
+            }).Select(GetCustomAttributeFromMetadata<T>).Where(c => c != null).ToArray()!;
+        }
 
+        private static T? GetCustomAttributeFromMetadata<T>(CustomAttribute attribute) where T : class
+        {
             var type = typeof(T).Assembly.GetType(attribute.AttributeType.FullName);
             var constructorInfos = type?.GetConstructors();
             if (constructorInfos == null) return null;
@@ -31,7 +36,7 @@ namespace SharpILMixins.Processor.Utils
 
                     return constructor?.Invoke(values) as T;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // ignored
                 }
@@ -46,35 +51,44 @@ namespace SharpILMixins.Processor.Utils
             {
                 var argument = constructorArguments[i];
                 var obj = argument.Value;
-                if (obj is TypeRef type)
+                switch (obj)
                 {
-                    yield return type.FullName;
-                }
-                else if (obj is CorLibTypeSig corLibType)
-                {
-                    yield return corLibType.FullName;
-                }
-                else if (obj is ClassSig)
-                {
-                    yield return obj.ToString();
-                }
-                else if (parameterType(i).IsArray)
-                {
-                    if (obj is IList<CAArgument> iList)
+                    case TypeRef type:
+                        yield return type.FullName;
+                        break;
+                    case CorLibTypeSig corLibType:
+                        yield return corLibType.FullName;
+                        break;
+                    case ClassSig:
+                        yield return obj.ToString();
+                        break;
+                    default:
                     {
-                        var elementType = parameterType(i).GetElementType()!;
-                        var array = Array.CreateInstance(elementType, iList.Count);
-                        var fixedValues = FixValues(iList, _ => elementType).ToArray();
-                        for (var index = 0; index < iList.Count; index++) array.SetValue(fixedValues[index], index);
+                        if (parameterType(i).IsArray)
+                        {
+                            foreach (var o in FixArrayValues(parameterType, obj, i)) yield return o;
+                        }
+                        else
+                        {
+                            yield return Cast(obj, parameterType(i));
+                        }
 
-                        yield return array;
+                        break;
                     }
                 }
-                else
-                {
-                    yield return Cast(obj, parameterType(i));
-                }
             }
+        }
+
+        private static IEnumerable<object> FixArrayValues(Func<int, Type> parameterType, object obj, int i)
+        {
+            if (obj is not IList<CAArgument> iList) yield break;
+
+            var elementType = parameterType(i).GetElementType()!;
+            var array = Array.CreateInstance(elementType, iList.Count);
+            var fixedValues = FixValues(iList, _ => elementType).ToArray();
+            for (var index = 0; index < iList.Count; index++) array.SetValue(fixedValues[index], index);
+
+            yield return array;
         }
 
         public static object? Cast(object data, Type type)
