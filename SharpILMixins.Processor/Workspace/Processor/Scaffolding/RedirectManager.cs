@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
@@ -84,46 +83,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                         Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement.Value}");
                         instruction.Operand = operandReplacement.Value;
                     }
-
-                    //PerformTypeReplacement(memberRef, instruction);
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef && typeDefOrRef.DefinitionAssembly.FullName.Equals(method.DeclaringType.DefinitionAssembly.FullName))
                 {
                     instruction.Operand = typeDefOrRef.ResolveTypeDef() ?? typeDefOrRef;
-                }
-            }
-        }
-
-        private void PerformTypeReplacement(IMemberRef iMemberRef, Instruction instruction)
-        {
-            if (iMemberRef.DeclaringType == null) return;
-            var typeReplacement =
-                TypeRedirectDictionary.FirstOrDefault(m =>
-                    SigComparer.Equals(m.Key, iMemberRef.DeclaringType.FullName));
-            if (!typeReplacement.IsDefault())
-            {
-                var replacementValue = typeReplacement.Value;
-
-                if (iMemberRef is MemberRef memberRef)
-                {
-                    memberRef.Class = replacementValue;
-                }
-                else if (iMemberRef is MethodDef methodDef && replacementValue is TypeDef typeDef)
-                {
-                    var baseMixinAttribute = methodDef.GetCustomAttribute<BaseMixinAttribute>();
-                    if (baseMixinAttribute != null)
-                    {
-                        var targetMethod =
-                            MixinAction.GetTargetMethod(methodDef, baseMixinAttribute, typeDef, Workspace);
-
-                        Debugger.Break();
-                    }
-                }
-                else
-                {
-                    throw new MixinApplyException(
-                        $"Unable to apply type replacement for member ref of type \"{iMemberRef.GetType().Name}\"");
                 }
             }
         }
@@ -155,6 +119,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
                         ResolveTypeDefIfNeeded(valueTypeSig.TypeDefOrRef, definitionAssembly));
+
+                //Pass-through the corlib type signature.
+                case CorLibTypeSig:
+                    return parameterType;
             }
 
             if (parameterType != null)
