@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using SharpILMixins.Processor.Utils;
@@ -25,7 +26,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
         public void Process(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
-            if (Workspace.Settings.ShouldDumpTargets) DumpTargetsIfRequired(mixinRelations);
+            DumpRequestedTargets(mixinRelations, Workspace.Settings.DumpTargets);
 
             CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef);
             foreach (var mixinRelation in mixinRelations)
@@ -47,6 +48,17 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     action.LocateTargetMethod();
                     Logger.Debug($"Starting to proccess action for \"{action.MixinMethod.FullName}\"");
 
+                    try
+                    {
+                        action.CheckIsValid();
+                    }
+                    catch (Exception e)
+                    {
+                        throw new MixinApplyException(
+                            $"Method \"{action.TargetMethod}\" is not a valid target for \"{action.MixinMethod}\"",
+                            e);
+                    }
+
                     var processor =
                         BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
                     processor.ProcessAction(action, action.MixinAttribute);
@@ -59,14 +71,24 @@ namespace SharpILMixins.Processor.Workspace.Processor
             }
         }
 
-        private void DumpTargetsIfRequired(List<MixinRelation> mixinRelations)
+        private void DumpRequestedTargets(List<MixinRelation> mixinRelations, DumpTargetType dumpTargets)
         {
             foreach (var relation in mixinRelations.DistinctBy(r => r.MixinType.FullName))
             {
+                if (!ShouldDump(relation, dumpTargets)) continue;
+
                 var targetType = relation.TargetType;
                 Logger.Info($"> {targetType.FullName}");
                 foreach (var method in targetType.Methods) Logger.Info($">> {method.FullName}");
             }
+        }
+
+        private bool ShouldDump(MixinRelation relation, DumpTargetType dumpTargets)
+        {
+            if (dumpTargets.HasFlagFast(DumpTargetType.All))
+                return true;
+
+            return false;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using dnlib.DotNet;
 using SharpILMixins.Annotations;
+using SharpILMixins.Annotations.Parameters;
 using SharpILMixins.Processor.Utils;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Actions
@@ -26,6 +27,29 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
         public BaseMixinAttribute MixinAttribute { get; }
         public TypeDef TargetType { get; }
         public MixinWorkspace Workspace { get; }
+
+        public void CheckIsValid()
+        {
+            CheckStaticMismatch();
+
+            if (MixinMethod.ParamDefs.Count(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null) > 1)
+            {
+                throw new MixinApplyException(
+                    "The mixin method contains multiple parameters with the [InjectCancelParam] Attribute.");
+            }
+        }
+
+        private void CheckStaticMismatch()
+        {
+            if (TargetMethod.IsStatic != MixinMethod.IsStatic)
+            {
+                var targetIsStatic = $"is{(!TargetMethod.IsStatic ? "n't" : "")}";
+                var mixinIsStatic = $"is{(!MixinMethod.IsStatic ? "n't" : "")}";
+
+                throw new MixinApplyException(
+                    $"The mixin method {mixinIsStatic} static but the target method {targetIsStatic}.");
+            }
+        }
 
         private static string GetTargetDescription(MethodDef mixinMethod, BaseMixinAttribute? mixinAttribute)
         {

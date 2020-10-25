@@ -69,7 +69,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
 
-            //body.KeepOldMaxStack = true;
+            //body.KeepOldMaxStack = true;  
             foreach (var instruction in body.Instructions)
             {
                 if (instruction.Operand is IMemberRef memberRef)
@@ -116,6 +116,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                         ProcessTypeRedirect(genericInstSig.GenericType, definitionAssembly).ToClassOrValueTypeSig(),
                         genericInstSig.GenericArguments.Select(t => ProcessTypeRedirect(t, definitionAssembly))
                             .ToList());
+
+                case SZArraySig szArraySig:
+                    return new SZArraySig(ProcessTypeRedirect(szArraySig.Next, definitionAssembly));
 
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
