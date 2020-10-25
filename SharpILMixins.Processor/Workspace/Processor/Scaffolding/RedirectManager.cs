@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using Ninject.Injection;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
@@ -86,6 +87,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
                     //PerformTypeReplacement(memberRef, instruction);
                 }
+
+                if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
+                {
+                    instruction.Operand = typeDefOrRef.ResolveTypeDef() ?? typeDefOrRef;
+                }
             }
         }
 
@@ -140,7 +146,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             {
                 case ClassSig classSig:
                     return new ClassSig(TypeRedirectDictionary.GetValueOrDefault(classSig.TypeDefOrRef.FullName) ??
-                                        classSig.TypeDefOrRef);
+                                        classSig.TypeDefOrRef.ResolveTypeDef() ?? classSig.TypeDefOrRef);
 
                 case ByRefSig byRefSig:
                     return new ByRefSig(ProcessTypeRedirect(byRefSig.Next));
@@ -148,7 +154,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
-                        valueTypeSig.TypeDefOrRef);
+                        valueTypeSig.TypeDefOrRef.ResolveTypeDef() ?? valueTypeSig.TypeDefOrRef);
             }
 
             if (parameterType != null)
