@@ -12,7 +12,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject
         public virtual IEnumerable<Instruction>
             GetInstructionsForAction(MixinAction action, InjectAttribute attribute, int location)
         {
-            throw new MixinApplyException($"No implementation found for {nameof(GetInstructionsForAction)} of type {GetType().FullName}");
+            throw new MixinApplyException(
+                $"No implementation found for {nameof(GetInstructionsForAction)} of type {GetType().FullName}");
         }
 
         public virtual IEnumerable<Instruction>

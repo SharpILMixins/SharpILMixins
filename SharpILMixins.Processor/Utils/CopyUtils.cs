@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
 using SharpILMixins.Processor.Workspace;
 
 namespace SharpILMixins.Processor.Utils
@@ -14,20 +12,17 @@ namespace SharpILMixins.Processor.Utils
             var copyMethod = new MethodDefUser(original.Name, original.MethodSig, original.ImplAttributes,
                 original.Attributes)
             {
-                Body = original.Body,
+                Body = original.Body
             };
-            copyMethod.ReturnType = redirectManager.ProcessTypeRedirect(copyMethod.ReturnType, declaringType?.DefinitionAssembly);
+            copyMethod.ReturnType =
+                redirectManager.ProcessTypeRedirect(copyMethod.ReturnType, declaringType?.DefinitionAssembly);
             foreach (var parameter in copyMethod.Parameters)
-            {
                 parameter.Type = redirectManager.ProcessTypeRedirect(parameter.Type, declaringType?.DefinitionAssembly);
-            }
 
             copyMethod.ParamDefs.Clear();
             foreach (var originalParamDef in original.ParamDefs)
-            {
                 copyMethod.ParamDefs.Add(new ParamDefUser(originalParamDef.Name, originalParamDef.Sequence,
                     originalParamDef.Attributes));
-            }
 
             if (declaringType != null) copyMethod.DeclaringType = declaringType;
             if (copyAttributes) copyMethod.Attributes = original.Attributes;

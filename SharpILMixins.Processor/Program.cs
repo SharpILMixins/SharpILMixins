@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using CommandLine;
 using NLog;
@@ -9,29 +8,12 @@ using SharpILMixins.Processor.Workspace;
 
 namespace SharpILMixins.Processor
 {
-    class Program
+    internal class Program
     {
-        [Verb("process", true)]
-        public class ProcessOptions
-        {
-            [Option('t', "target-dir", Required = true)]
-            public DirectoryInfo TargetDir { get; set; } = null!;
-
-            [Option('m', "mixins", Required = true)]
-            public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
-
-            [Option("dump-targets")] public bool DumpTargets { get; set; }
-
-            [Option("experimental-inline-methods")]
-            public bool ExperimentalInlineMethods { get; set; }
-
-            [Option("mixin-handler-name")] public string MixinHandlerName { get; set; } = "mixin";
-        }
-
         public static Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(Program));
 
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Parser.Default.ParseArguments<ProcessOptions>(args)
                 .WithParsed(o =>
@@ -67,10 +49,7 @@ namespace SharpILMixins.Processor
             else
                 Logger.Fatal(e, diagnosticMessage);
 
-            if (e.InnerException != null && e.InnerException != e)
-            {
-                LogException(e.InnerException, processOptions, true);
-            }
+            if (e.InnerException != null && e.InnerException != e) LogException(e.InnerException, processOptions, true);
         }
 
         private static void ProcessMixins(ProcessOptions o)
@@ -81,7 +60,8 @@ namespace SharpILMixins.Processor
                 try
                 {
                     var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir,
-                        new MixinWorkspaceSettings(Environment.CurrentDirectory, o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
+                        new MixinWorkspaceSettings(Environment.CurrentDirectory, o.DumpTargets, o.MixinHandlerName,
+                            o.ExperimentalInlineMethods));
 
                     workspace.Apply();
                 }
@@ -92,6 +72,23 @@ namespace SharpILMixins.Processor
                         e);
                 }
             }
+        }
+
+        [Verb("process", true)]
+        public class ProcessOptions
+        {
+            [Option('t', "target-dir", Required = true)]
+            public DirectoryInfo TargetDir { get; set; } = null!;
+
+            [Option('m', "mixins", Required = true)]
+            public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
+
+            [Option("dump-targets")] public bool DumpTargets { get; set; }
+
+            [Option("experimental-inline-methods")]
+            public bool ExperimentalInlineMethods { get; set; }
+
+            [Option("mixin-handler-name")] public string MixinHandlerName { get; set; } = "mixin";
         }
     }
 }

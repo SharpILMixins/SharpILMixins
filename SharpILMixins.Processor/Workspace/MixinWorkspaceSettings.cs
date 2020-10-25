@@ -1,10 +1,9 @@
-﻿using System;
-
-namespace SharpILMixins.Processor.Workspace
+﻿namespace SharpILMixins.Processor.Workspace
 {
     public class MixinWorkspaceSettings
     {
-        public MixinWorkspaceSettings(string outputPath, bool shouldDumpTargets = false, string mixinHandlerName = "mixin",
+        public MixinWorkspaceSettings(string outputPath, bool shouldDumpTargets = false,
+            string mixinHandlerName = "mixin",
             bool experimentalInlineHandlers = false)
         {
             OutputPath = outputPath;

@@ -2,7 +2,6 @@
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using Ninject.Injection;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
@@ -12,18 +11,18 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class RedirectManager
     {
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
-
-        public CopyScaffoldingHandler CopyScaffoldingHandler { get; }
-
-        public MixinWorkspace Workspace { get; }
-
         public RedirectManager(CopyScaffoldingHandler copyScaffoldingHandler)
         {
             CopyScaffoldingHandler = copyScaffoldingHandler;
             Workspace = copyScaffoldingHandler.Workspace;
             SigComparer = new SigComparer();
         }
+
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
+
+        public CopyScaffoldingHandler CopyScaffoldingHandler { get; }
+
+        public MixinWorkspace Workspace { get; }
 
         public SigComparer SigComparer { get; }
 
@@ -68,9 +67,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
-            {
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
-            }
 
             //body.KeepOldMaxStack = true;
             foreach (var instruction in body.Instructions)
@@ -85,10 +82,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     }
                 }
 
-                if (instruction.Operand is ITypeDefOrRef typeDefOrRef && typeDefOrRef.DefinitionAssembly.FullName.Equals(method.DeclaringType.DefinitionAssembly.FullName))
-                {
+                if (instruction.Operand is ITypeDefOrRef typeDefOrRef &&
+                    typeDefOrRef.DefinitionAssembly.FullName.Equals(method.DeclaringType.DefinitionAssembly.FullName))
                     instruction.Operand = typeDefOrRef.ResolveTypeDef() ?? typeDefOrRef;
-                }
             }
         }
 
@@ -126,10 +122,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             }
 
             if (parameterType != null)
-            {
                 Logger.Warn(
                     $"Skipped translating type redirect for type {parameterType} ({parameterType.GetType().Name})");
-            }
 
             return parameterType;
         }

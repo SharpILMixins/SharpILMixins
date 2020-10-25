@@ -42,7 +42,8 @@ namespace SharpILMixins.Processor.Utils
             config.AddRule(Utilities.DebugMode ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, target);
         }
 
-        private static void AddLogLevelRule(ColoredConsoleTarget consoleTarget, LogLevel level, ConsoleOutputColor foregroundColor,
+        private static void AddLogLevelRule(ColoredConsoleTarget consoleTarget, LogLevel level,
+            ConsoleOutputColor foregroundColor,
             ConsoleOutputColor backgroundColor)
         {
             consoleTarget.RowHighlightingRules.Add(new ConsoleRowHighlightingRule(

@@ -2,7 +2,6 @@
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Processor.Utils;
 

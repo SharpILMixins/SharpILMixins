@@ -9,6 +9,12 @@ namespace SharpILMixins.Processor.Workspace.Processor
 {
     public class MixinProcessor
     {
+        public MixinProcessor(MixinWorkspace workspace)
+        {
+            Workspace = workspace;
+            CopyScaffoldingHandler = new CopyScaffoldingHandler(workspace);
+        }
+
         public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinProcessor));
 
         public MixinWorkspace Workspace { get; }
@@ -16,12 +22,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
         public CopyScaffoldingHandler CopyScaffoldingHandler { get; set; }
 
         public RedirectManager RedirectManager => CopyScaffoldingHandler.RedirectManager;
-
-        public MixinProcessor(MixinWorkspace workspace)
-        {
-            Workspace = workspace;
-            CopyScaffoldingHandler = new CopyScaffoldingHandler(workspace);
-        }
 
         public void Process(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
@@ -34,7 +34,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 if (mixinRelation.IsAccessor)
                 {
-                    Logger.Info($"Mixin {mixinRelation.MixinType.Name} is an accessor for {mixinRelation.TargetType.Name}.");
+                    Logger.Info(
+                        $"Mixin {mixinRelation.MixinType.Name} is an accessor for {mixinRelation.TargetType.Name}.");
                     RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
                     continue;
                 }
@@ -46,16 +47,16 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     action.LocateTargetMethod();
                     Logger.Debug($"Starting to proccess action for \"{action.MixinMethod.FullName}\"");
 
-                    var processor = BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
+                    var processor =
+                        BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
                     processor.ProcessAction(action, action.MixinAttribute);
-                 
+
                     RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);
                     Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
                 }
 
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
             }
-            
         }
 
         private void DumpTargetsIfRequired(List<MixinRelation> mixinRelations)
@@ -64,10 +65,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
             {
                 var targetType = relation.TargetType;
                 Logger.Info($"> {targetType.FullName}");
-                foreach (var method in targetType.Methods)
-                {
-                    Logger.Info($">> {method.FullName}");
-                }
+                foreach (var method in targetType.Methods) Logger.Info($">> {method.FullName}");
             }
         }
     }

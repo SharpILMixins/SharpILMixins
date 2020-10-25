@@ -7,9 +7,11 @@
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <Version>1.0.12</Version>
     <Authors>NickAcPT</Authors>
-    <Description>The processor for Mixins made for SharpILMixins.
+    <Description>
+      The processor for Mixins made for SharpILMixins.
 
-This package includes the entire program.</Description>
+      This package includes the entire program.
+    </Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

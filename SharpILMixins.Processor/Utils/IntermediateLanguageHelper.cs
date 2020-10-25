@@ -5,7 +5,6 @@ using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Parameters;
 using SharpILMixins.Processor.Workspace;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
-using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject;
 
 namespace SharpILMixins.Processor.Utils
 {
@@ -20,16 +19,14 @@ namespace SharpILMixins.Processor.Utils
         {
             if (targetMethod != null && workspace.MixinProcessor.CopyScaffoldingHandler.IsMethodInlined(methodToInvoke))
             {
-                foreach (var instruction1 in InvokeMethodAsInlined(methodToInvoke, targetMethod)) yield return instruction1;
+                foreach (var instruction1 in InvokeMethodAsInlined(methodToInvoke, targetMethod))
+                    yield return instruction1;
                 yield break;
             }
 
             var parametersMethod = targetMethod ?? methodToInvoke;
             var paramsMethodParams = parametersMethod.Parameters.Where(p => !p.IsHiddenThisParameter).ToArray();
-            if (!methodToInvoke.IsStatic)
-            {
-                yield return new Instruction(OpCodes.Ldarg_0); //this instance
-            }
+            if (!methodToInvoke.IsStatic) yield return new Instruction(OpCodes.Ldarg_0); //this instance
 
             var afterCallInstructions = new List<Instruction>();
             for (var i = 0; i < argumentsToPass; i++)
@@ -47,18 +44,12 @@ namespace SharpILMixins.Processor.Utils
 
                 modifyParameterHandler?.Invoke(i, ref ldArgInst, afterCallInstructions);
 
-                foreach (var instruction in ldArgInst)
-                {
-                    yield return instruction; //parameter
-                }
+                foreach (var instruction in ldArgInst) yield return instruction; //parameter
             }
 
             yield return new Instruction(OpCodes.Call, methodToInvoke);
 
-            foreach (var instruction in afterCallInstructions)
-            {
-                yield return instruction;
-            }
+            foreach (var instruction in afterCallInstructions) yield return instruction;
         }
 
         private static IEnumerable<Instruction> InvokeMethodAsInlined(MethodDef methodToInvoke, MethodDef targetMethod)
@@ -90,7 +81,6 @@ namespace SharpILMixins.Processor.Utils
             //action.TargetMethod.Body.KeepOldMaxStack = true;
             var attribute = action.MixinMethod.ParamDefs[index].GetCustomAttribute<BaseParameterAttribute>();
             if (attribute != null)
-            {
                 switch (attribute)
                 {
                     case InjectCancelParamAttribute injectCancelParamAttribute:
@@ -118,7 +108,6 @@ namespace SharpILMixins.Processor.Utils
                         throw new MixinApplyException(
                             $"Unable to process {attribute} in parameter {index} on {action.MixinMethod}.");
                 }
-            }
         }
     }
 }
