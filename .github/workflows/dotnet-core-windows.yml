@@ -17,11 +17,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.100-rc.2.20479.15'
-    - name: Install dependencies
-      run: dotnet restore
       
     - name: Build Processor (win-x64)
-      run: dotnet publish SharpILMixins.Processor -r win-x64 --no-restore
+      run: dotnet publish SharpILMixins.Processor -r win-x64
       
     - name: Upload NuGet Build Artifact
       uses: actions/upload-artifact@v2.2.0
