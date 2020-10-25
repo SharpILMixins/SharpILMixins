@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleProjectFramework", "Samples\SampleProjectFramework\SampleProjectFramework.csproj", "{DAED2FB6-3533-40D7-B2D3-72EF1D99F405}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleProjectFrameworkMixins", "C:\Users\NickAc\Source\Repos\SharpILMixins\Samples\SampleProjectFrameworkMixins\SampleProjectFrameworkMixins.csproj", "{6FE86A82-D5D9-4816-B269-E9D108A1A7CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleProjectFrameworkMixins", "Samples\SampleProjectFrameworkMixins\SampleProjectFrameworkMixins.csproj", "{6FE86A82-D5D9-4816-B269-E9D108A1A7CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
