@@ -94,6 +94,8 @@ namespace SharpILMixins.Processor.Workspace
 
                 var targetModuleModuleDef = targetModule.ModuleDef;
                 var targetAssembly = targetModuleModuleDef.Assembly;
+                //Add target assembly to cache.
+                (ModuleContext.AssemblyResolver as AssemblyResolver)?.AddToCache(targetAssembly);
 
                 Logger.Debug($"Starting to process {targetAssembly.FullName}");
                 var mixinRelations = Loader.LoadMixins(MixinAssembly, targetAssembly);

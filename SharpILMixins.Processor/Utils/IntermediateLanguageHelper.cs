@@ -20,16 +20,7 @@ namespace SharpILMixins.Processor.Utils
         {
             if (targetMethod != null && workspace.MixinProcessor.CopyScaffoldingHandler.IsMethodInlined(methodToInvoke))
             {
-                var methodReturnsVoid = methodToInvoke.ReturnType.FullName ==
-                                        methodToInvoke.Module.CorLibTypes.Void.FullName;
-                var skipLastAmount = methodReturnsVoid ? 1 : 0;
-
-                foreach (var handler in methodToInvoke.Body.ExceptionHandlers)
-                    targetMethod.Body.ExceptionHandlers.Add(handler);
-                foreach (var variable in methodToInvoke.Body.Variables) targetMethod.Body.Variables.Add(variable);
-                foreach (var instruction in methodToInvoke.Body.Instructions.SkipLast(skipLastAmount))
-                    yield return instruction;
-
+                foreach (var instruction1 in InvokeMethodAsInlined(methodToInvoke, targetMethod)) yield return instruction1;
                 yield break;
             }
 
@@ -68,6 +59,19 @@ namespace SharpILMixins.Processor.Utils
             {
                 yield return instruction;
             }
+        }
+
+        private static IEnumerable<Instruction> InvokeMethodAsInlined(MethodDef methodToInvoke, MethodDef targetMethod)
+        {
+            var methodReturnsVoid = methodToInvoke.ReturnType.FullName ==
+                                    methodToInvoke.Module.CorLibTypes.Void.FullName;
+            var skipLastAmount = methodReturnsVoid ? 1 : 0;
+
+            foreach (var handler in methodToInvoke.Body.ExceptionHandlers)
+                targetMethod.Body.ExceptionHandlers.Add(handler);
+            foreach (var variable in methodToInvoke.Body.Variables) targetMethod.Body.Variables.Add(variable);
+            foreach (var instruction in methodToInvoke.Body.Instructions.SkipLast(skipLastAmount))
+                yield return instruction;
         }
 
         public static IEnumerable<Instruction> InvokeMethod(MixinAction action, Instruction? nextInstruction = null)
