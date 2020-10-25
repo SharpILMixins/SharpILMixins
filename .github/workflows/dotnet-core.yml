@@ -1,0 +1,31 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Install dependencies
+      run: dotnet restore
+      
+    - name: Build Processor (win-x64)
+      run: dotnet publish SharpILMixins.Processor -r win-x64 --no-restore
+      
+    - name: Upload NuGet Build Artifact
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: 'SharpILMixins.Processor-nupkg'
+        # A file, directory or wildcard pattern that describes what to upload
+        path: 'SharpILMixins.Processor\bin\*\*.nupgk'
