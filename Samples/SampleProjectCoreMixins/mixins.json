@@ -2,9 +2,10 @@
   "$schema": "..\\..\\SharpILMixins.Processor\\mixin.config.schema.json",
   "namespace": "SampleProjectCore.Mixins",
   "targets": [
-    "SampleProject.dll"
+    "SampleProjectCore.dll"
   ],
   "mixins": [
-    "MixinProgram"
+    "MixinProgram",
+    "MixinRandomClass2"
   ]
 }

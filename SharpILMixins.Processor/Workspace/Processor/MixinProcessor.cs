@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using dnlib.DotNet;
 using NLog;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
@@ -63,11 +66,46 @@ namespace SharpILMixins.Processor.Workspace.Processor
                         BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
                     processor.ProcessAction(action, action.MixinAttribute);
 
+                    FindLeakingAssemblyRefs(action.TargetType);
+
                     RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);
                     Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
                 }
 
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
+            }
+        }
+
+        private void FindLeakingAssemblyRefs(object obj)
+        {
+            foreach (var propertyInfo in obj.GetType().GetProperties())
+            {
+                try
+                {
+                    var value = propertyInfo.GetValue(obj);
+                    if (value is AssemblyRef asmRef && !asmRef.Name.Contains("System.Runtime"))
+                    {
+                        Debugger.Break();
+                    }
+                    else if (value is ICollection collection)
+                    {
+                        foreach (var o in collection)
+                        {
+                            if (o != null && o.GetType().FullName?.StartsWith("System.") != true && !o.Equals(obj))
+                            {
+                                FindLeakingAssemblyRefs(o);
+                            }
+                        }
+                    }
+                    else if (value != null && value.GetType().FullName?.StartsWith("System.") != true && !value.Equals(obj))
+                    {
+                        FindLeakingAssemblyRefs(value);
+                    }
+                }
+                catch (Exception e)
+                {
+                    //Logger.Debug(e);
+                }
             }
         }
 

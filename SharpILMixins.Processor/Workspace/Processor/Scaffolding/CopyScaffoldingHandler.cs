@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using dnlib.DotNet;
+using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
@@ -9,6 +10,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class CopyScaffoldingHandler
     {
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
+
         public CopyScaffoldingHandler(MixinWorkspace workspace)
         {
             Workspace = workspace;
@@ -21,8 +24,21 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public void ProcessType(TypeDef targetType, TypeDef mixinType)
         {
+            //ProcessInterfaces(targetType, mixinType);
             ProcessFields(targetType, mixinType);
             ProcessMethods(targetType, mixinType);
+        }
+
+        private void ProcessInterfaces(TypeDef targetType, TypeDef mixinType)
+        {
+            if (mixinType.HasInterfaces)
+            {
+                foreach (var impl in mixinType.Interfaces)
+                {
+                    targetType.Interfaces.Add(new InterfaceImplUser(RedirectManager.ResolveTypeDefIfNeeded(impl.Interface, targetType.DefinitionAssembly)));
+                    Logger.Info($"Mixin {mixinType.Name} provided Target Type {targetType.Name} the implementation of Interface {impl.Interface.Name}");
+                }
+            }
         }
 
         private void ProcessFields(TypeDef targetType, TypeDef mixinType)

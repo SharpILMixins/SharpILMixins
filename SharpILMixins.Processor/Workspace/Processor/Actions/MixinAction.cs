@@ -25,7 +25,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
         public MethodDef MixinMethod { get; }
 
         public BaseMixinAttribute MixinAttribute { get; }
+
         public TypeDef TargetType { get; }
+
         public MixinWorkspace Workspace { get; }
 
         public void CheckIsValid()

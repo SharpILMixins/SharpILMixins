@@ -6,6 +6,7 @@ using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
+using static SharpILMixins.Processor.Workspace.Processor.Scaffolding.RedirectManager;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
@@ -82,9 +83,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     }
                 }
 
-                if (instruction.Operand is ITypeDefOrRef typeDefOrRef &&
-                    typeDefOrRef.DefinitionAssembly.FullName.Equals(method.DeclaringType.DefinitionAssembly.FullName))
-                    instruction.Operand = typeDefOrRef.ResolveTypeDef() ?? typeDefOrRef;
+                if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
+                    instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
             }
         }
 
@@ -137,7 +137,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             return parameterType;
         }
 
-        private static ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
+        public static ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
 
