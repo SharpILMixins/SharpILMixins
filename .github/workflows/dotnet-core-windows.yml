@@ -21,6 +21,15 @@ jobs:
     - name: Build Processor (win-x64)
       run: dotnet publish SharpILMixins.Processor -r win-x64 -o publish-out
 
+    - name: Build Annotations
+      run: dotnet build SharpILMixins.Annotations
+      
+    - name: Pack Annotations
+      run: dotnet pack SharpILMixins.Annotations -o .
+      
+    - name: NuGet Push Annotations
+      run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json
+
     - name: Upload Publish Build Artifact (win-x64)
       uses: actions/upload-artifact@v2.2.0
       with:
