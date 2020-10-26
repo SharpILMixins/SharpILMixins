@@ -27,6 +27,9 @@ jobs:
     - name: Pack Annotations
       run: dotnet pack SharpILMixins.Annotations -o .
       
+    - name: Build Processor
+      run: dotnet build SharpILMixins.Processor
+      
     - name: Pack Processor
       run: dotnet pack SharpILMixins.Processor -o .
       
