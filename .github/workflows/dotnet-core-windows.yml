@@ -28,7 +28,7 @@ jobs:
       run: dotnet pack SharpILMixins.Annotations -o .
       
     - name: NuGet Push Annotations
-      run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Upload Publish Build Artifact (win-x64)
       uses: actions/upload-artifact@v2.2.0
