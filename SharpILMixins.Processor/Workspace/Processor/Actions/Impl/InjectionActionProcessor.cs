@@ -26,7 +26,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
             foreach (var injectionPoint in points.OrderByDescending(c => c))
             {
                 var finalInjectionPoint = injectionPoint;
-                finalInjectionPoint += attribute.Shift;
+                finalInjectionPoint += action.MixinMethod.GetCustomAttribute<ShiftAttribute>()?.ByAmount ?? 0;
 
                 var instructions = injectionProcessor.GetInstructionsForAction(action, attribute, finalInjectionPoint,
                     targetMethod.Body.Instructions.ElementAtOrDefault(finalInjectionPoint));

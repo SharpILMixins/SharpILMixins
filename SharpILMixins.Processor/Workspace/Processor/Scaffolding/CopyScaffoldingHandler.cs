@@ -28,8 +28,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             ProcessInterfaces(targetType, mixinType);
             ProcessFields(targetType, mixinType);
             ProcessMethods(targetType, mixinType);
-
-            foreach (var nestedType in targetType.NestedTypes) ProcessType(nestedType, mixinType);
         }
 
         private void ProcessInterfaces(TypeDef targetType, TypeDef mixinType)
@@ -115,7 +113,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var mixinMethods = mixinType.Methods.Where(ShouldCopyMethod).ToList();
             ProcessShadowElements(mixinType.Methods, targetType.Methods.Cast<IMemberRef>().ToList());
 
-            
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
             var superElements = targetType.BaseType.ResolveTypeDef().Fields;
             ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
