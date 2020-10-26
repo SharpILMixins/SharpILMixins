@@ -25,10 +25,13 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
 
             foreach (var injectionPoint in points.OrderByDescending(c => c))
             {
-                var instructions = injectionProcessor.GetInstructionsForAction(action, attribute, injectionPoint,
-                    targetMethod.Body.Instructions.ElementAtOrDefault(injectionPoint));
+                var finalInjectionPoint = injectionPoint;
+                finalInjectionPoint += attribute.Shift;
+
+                var instructions = injectionProcessor.GetInstructionsForAction(action, attribute, finalInjectionPoint,
+                    targetMethod.Body.Instructions.ElementAtOrDefault(finalInjectionPoint));
                 foreach (var instruction in instructions.Reverse())
-                    targetMethod.Body.Instructions.Insert(injectionPoint, instruction);
+                    targetMethod.Body.Instructions.Insert(finalInjectionPoint, instruction);
             }
         }
     }
