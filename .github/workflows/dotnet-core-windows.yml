@@ -27,6 +27,9 @@ jobs:
     - name: Pack Annotations
       run: dotnet pack SharpILMixins.Annotations -o .
       
+    - name: Pack Processor
+      run: dotnet pack SharpILMixins.Processor -o .
+      
     - name: NuGet Push Annotations
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
