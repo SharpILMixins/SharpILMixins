@@ -32,6 +32,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public void RegisterRedirect(IMemberRef originalMember, IMemberRef newMember)
         {
+            Dictionary.Remove(originalMember);
             Dictionary.Add(originalMember, newMember);
         }
 

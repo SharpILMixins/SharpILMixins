@@ -67,7 +67,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     processor.ProcessAction(action, action.MixinAttribute);
 
 #if DEBUG
-                    FindLeakingAssemblyRefs(action.TargetType);
+                    //FindLeakingAssemblyRefs(action.TargetType);
 #endif
 
                     RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);

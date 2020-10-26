@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using NLog;
@@ -24,9 +25,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public void ProcessType(TypeDef targetType, TypeDef mixinType)
         {
-            //ProcessInterfaces(targetType, mixinType);
+            ProcessInterfaces(targetType, mixinType);
             ProcessFields(targetType, mixinType);
             ProcessMethods(targetType, mixinType);
+
+            foreach (var nestedType in targetType.NestedTypes) ProcessType(nestedType, mixinType);
         }
 
         private void ProcessInterfaces(TypeDef targetType, TypeDef mixinType)
@@ -35,7 +38,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             {
                 foreach (var impl in mixinType.Interfaces)
                 {
-                    targetType.Interfaces.Add(new InterfaceImplUser(RedirectManager.ResolveTypeDefIfNeeded(impl.Interface, targetType.DefinitionAssembly)));
+                    var implUser = new InterfaceImplUser(RedirectManager.ResolveTypeDefIfNeeded(impl.Interface, targetType.DefinitionAssembly));
+                    targetType.Interfaces.Add(implUser);
                     Logger.Info($"Mixin {mixinType.Name} provided Target Type {targetType.Name} the implementation of Interface {impl.Interface.Name}");
                 }
             }
@@ -46,6 +50,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
             ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList());
             CopyFields(targetType, fields);
+            
+            //These elements might be used if the Mixin extends the class they're targeting and accesses from super
+            var superElements = targetType.BaseType.ResolveTypeDef().Fields;
+            ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
         }
 
         private void CopyFields(TypeDef targetType, List<FieldDef> fields)
@@ -72,8 +80,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements)
         {
             foreach (var element in mixinElements)
-                if (element is IHasCustomAttribute customAttribute &&
-                    customAttribute.GetCustomAttribute<ShadowAttribute>() != null)
+                if (IsShadowElement(element, targetElements))
                 {
                     var targetMethod =
                         targetElements.FirstOrDefault(m => RedirectManager.SigComparer.Equals(m, element)) ??
@@ -83,15 +90,21 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 }
         }
 
+        private static bool IsShadowElement(IMemberRef element, IList<IMemberRef> targetElements)
+        {
+            return targetElements.Contains(element) || element is IHasCustomAttribute customAttribute &&
+                customAttribute.GetCustomAttribute<ShadowAttribute>() != null;
+        }
+
         public void CopyNonMixinClasses(ModuleDefMD mixinModule, ModuleDefMD targetModule)
         {
-            var mixinTypes = mixinModule.Types.Where(mixinType =>
+            var nonMixinTypes = mixinModule.Types.Where(mixinType =>
                 mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>").ToList();
 
-            foreach (var mixinType in mixinTypes)
+            foreach (var typeDef in nonMixinTypes)
             {
-                mixinModule.Types.Remove(mixinType);
-                targetModule.Types.Add(mixinType);
+                mixinModule.Types.Remove(typeDef);
+                targetModule.Types.Add(typeDef);
             }
         }
 
@@ -101,6 +114,12 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var mixinMethods = mixinType.Methods.Where(ShouldCopyMethod).ToList();
             ProcessShadowElements(mixinType.Methods, targetType.Methods.Cast<IMemberRef>().ToList());
+
+            
+            //These elements might be used if the Mixin extends the class they're targeting and accesses from super
+            var superElements = targetType.BaseType.ResolveTypeDef().Fields;
+            ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
+           
             CreateMethodHandlers(targetType, mixinMethods);
         }
 
