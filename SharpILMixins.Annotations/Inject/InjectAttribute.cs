@@ -33,6 +33,14 @@ namespace SharpILMixins.Annotations.Inject
 
         public int Ordinal { get; set; }
 
-        public int ShiftBy { get; set; }
+        public int ShiftBy
+        {
+            get => ShiftByAmount;
+            set => ShiftByAmount = value;
+        }
+
+        public Shift Shift { get; set; }
+
+        public int ShiftByAmount { get; set; }
     }
 }

@@ -5,7 +5,13 @@ namespace SharpILMixins.Annotations.Inject
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class ShiftAttribute : Attribute
     {
-        public int ByAmount { get; }
+        public ShiftAttribute()
+        {
+        }
+
+        public Shift Shift { get; set; }
+
+        public int ByAmount { get; set; }
 
         public ShiftAttribute(int byAmount)
         {

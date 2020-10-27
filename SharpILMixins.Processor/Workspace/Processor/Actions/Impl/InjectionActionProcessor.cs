@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using SharpILMixins.Annotations.Inject;
@@ -26,12 +27,29 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
             foreach (var injectionPoint in points.OrderByDescending(c => c))
             {
                 var finalInjectionPoint = injectionPoint;
-                finalInjectionPoint += action.MixinMethod.GetCustomAttribute<ShiftAttribute>()?.ByAmount ?? 0;
+                var shiftAttribute = action.MixinMethod.GetCustomAttribute<ShiftAttribute>() ?? new ShiftAttribute
+                    {Shift = attribute.Shift, ByAmount = attribute.ShiftByAmount};
+
+                finalInjectionPoint += shiftAttribute.ByAmount;
+                
+                var index = finalInjectionPoint.BeforePoint;
+                switch (shiftAttribute.Shift)
+                {
+                    case Shift.Before:
+                        index = finalInjectionPoint.BeforePoint;
+                        break;
+                    case Shift.After:
+                        index = finalInjectionPoint.AfterPoint;
+                        break;
+                    case Shift.By:
+                        index += shiftAttribute.ByAmount;
+                        break;
+                }
 
                 var instructions = injectionProcessor.GetInstructionsForAction(action, attribute, finalInjectionPoint,
-                    targetMethod.Body.Instructions.ElementAtOrDefault(finalInjectionPoint));
+                    targetMethod.Body.Instructions.ElementAtOrDefault(index));
                 foreach (var instruction in instructions.Reverse())
-                    targetMethod.Body.Instructions.Insert(finalInjectionPoint, instruction);
+                    targetMethod.Body.Instructions.Insert(index, instruction);
             }
         }
     }
