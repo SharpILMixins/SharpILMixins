@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using dnlib.DotNet;
+using dnlib.DotNet.Pdb;
+using dnlib.DotNet.Writer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -21,7 +23,8 @@ namespace SharpILMixins.Processor.Workspace
             TargetDir = targetDir;
 
             Settings = settings;
-            MixinModule = ModuleDefMD.Load(mixinToApply.FullName, ModuleContext);
+            MixinModule = ModuleDefMD.Load(mixinToApply.FullName,
+                new ModuleCreationOptions(ModuleContext) {TryToLoadPdbFromDisk = true});
             MixinAssembly = MixinModule.Assembly;
 
             Configuration = TryToLoadConfiguration(MixinAssembly);
@@ -117,7 +120,12 @@ namespace SharpILMixins.Processor.Workspace
         private static void WriteFinalModule(ModuleDefMD targetModuleModuleDef, string path)
         {
             if (targetModuleModuleDef.IsILOnly)
-                targetModuleModuleDef.Write(path);
+            {
+                targetModuleModuleDef.Write(path, new ModuleWriterOptions(targetModuleModuleDef)
+                {
+                    WritePdb = true,
+                });
+            }
             else
                 targetModuleModuleDef.NativeWrite(path);
         }

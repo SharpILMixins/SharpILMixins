@@ -27,7 +27,7 @@ namespace SharpILMixins.Processor.Workspace
         {
             return Configuration.Targets
                 .Select(LocateTarget)
-                .Select(s => new MixinTargetModule(new FileInfo(s), ModuleDefMD.Load(s, Workspace.ModuleContext)))
+                .Select(s => new MixinTargetModule(new FileInfo(s), ModuleDefMD.Load(s, new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true})))
                 .ToList();
         }
 

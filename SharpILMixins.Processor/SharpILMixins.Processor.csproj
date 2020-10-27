@@ -5,7 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
-    <Version>1.0.15</Version>
+    <Version>1.0.16</Version>
     <Authors>NickAcPT</Authors>
     <Description>
       The processor for Mixins made for SharpILMixins.
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
-    <PackageReference Include="NickAcPT.dnlib" Version="3.3.3" />
+    <PackageReference Include="NickAcPT.dnlib" Version="3.3.4" />
     <PackageReference Include="ImpromptuInterface" Version="7.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.14-beta2" />
