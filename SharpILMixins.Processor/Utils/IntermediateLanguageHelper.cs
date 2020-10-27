@@ -85,7 +85,7 @@ namespace SharpILMixins.Processor.Utils
                 {
                     case InjectCancelParamAttribute injectCancelParamAttribute:
                         var isCancelledVariable =
-                            new Local(new ClassSig(action.MixinMethod.Module.CorLibTypes.Boolean.TypeDefOrRef),
+                            new Local(new CorLibTypeSig(action.MixinMethod.Module.CorLibTypes.Boolean.TypeDefOrRef, ElementType.Boolean),
                                 Utilities.GenerateRandomName("isCancelled"));
                         action.TargetMethod.Body.Variables.Add(isCancelledVariable);
 
