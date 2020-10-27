@@ -21,7 +21,7 @@ namespace SampleProjectCore.Mixins
             return 42;
         }
 
-        [Inject("Main", AtLocation.Head)]
+        [Inject(Target = "Main", At = AtLocation.Head)]
         public static void BeforeMain(string[] args, [InjectCancelParam] out bool isCancelled)
         {
             isCancelled = true;

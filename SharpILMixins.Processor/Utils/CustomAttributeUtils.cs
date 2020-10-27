@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using dnlib.DotNet;
 
 namespace SharpILMixins.Processor.Utils
@@ -34,7 +36,33 @@ namespace SharpILMixins.Processor.Utils
                     var values = FixValues(attribute.ConstructorArguments,
                         i => constructor.GetParameters()[i].ParameterType).ToArray();
 
-                    return constructor?.Invoke(values) as T;
+                    var result = constructor?.Invoke(values) as T;
+                    if (attribute.HasNamedArguments)
+                    {
+                        var arguments = attribute.NamedArguments.Select(c => c.Argument).ToList();
+                        var fixedValues = FixValues(arguments,
+                            i => Type.GetType(attribute.NamedArguments[i].Type.FullName) ?? typeof(object)).ToArray();
+                        var valueTypes = Enumerable.Range(0, attribute.NamedArguments.Count)
+                            .Select(i => (attribute.NamedArguments[i], fixedValues[i]));
+
+                        foreach (var (argument, value) in valueTypes)
+                        {
+                            var member = (MemberInfo)(argument.IsProperty
+                                ? typeof(T).GetProperty(argument.Name)
+                                : typeof(T).GetField(argument.Name));
+
+                            switch (member)
+                            {
+                                case PropertyInfo prop:
+                                    prop.SetValue(result, value);
+                                    break;
+                                case FieldInfo field:
+                                    field.SetValue(result, value);
+                                    break;
+                            }
+                        }
+                    }
+                    return result;
                 }
                 catch (Exception)
                 {

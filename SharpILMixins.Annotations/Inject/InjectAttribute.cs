@@ -5,6 +5,11 @@ namespace SharpILMixins.Annotations.Inject
     [AttributeUsage(AttributeTargets.Method)]
     public class InjectAttribute : BaseMixinAttribute
     {
+        public InjectAttribute()
+        {
+            
+        }
+
         public InjectAttribute(AtLocation at) : this(string.Empty, at)
         {
         }
@@ -26,6 +31,8 @@ namespace SharpILMixins.Annotations.Inject
 
         public AtLocation At { get; set; }
 
-        public int Ordinal { get; }
+        public int Ordinal { get; set; }
+
+        public int ShiftBy { get; set; }
     }
 }
