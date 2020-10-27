@@ -5,7 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
-    <Version>1.0.14</Version>
+    <Version>1.0.15</Version>
     <Authors>NickAcPT</Authors>
     <Description>
       The processor for Mixins made for SharpILMixins.
