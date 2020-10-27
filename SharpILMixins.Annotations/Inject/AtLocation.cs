@@ -3,6 +3,7 @@
     public enum AtLocation
     {
         Head,
-        Return
+        Return,
+        Tail
     }
 }

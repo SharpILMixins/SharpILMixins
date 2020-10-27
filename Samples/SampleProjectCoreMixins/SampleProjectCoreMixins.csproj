@@ -8,6 +8,7 @@
   <ItemGroup>
     <None Remove="mixins.json" />
     <None Remove="SampleProject-out.dll" />
+    <None Remove="SampleProjectCore-out.dll" />
   </ItemGroup>
 
   <ItemGroup>

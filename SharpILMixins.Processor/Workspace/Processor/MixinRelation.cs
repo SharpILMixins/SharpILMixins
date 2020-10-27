@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using dnlib.DotNet;
 using SharpILMixins.Annotations;
@@ -10,12 +9,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
 {
     public record MixinRelation
     {
-        public TypeDef MixinType { get; }
-        public TypeDef TargetType { get; }
-        public MixinWorkspace Workspace { get; set; }
-        public bool IsAccessor { get; set; }
-
-
         public MixinRelation(TypeDef mixinType, TypeDef targetType, MixinWorkspace workspace,
             MixinAttribute mixinAttribute)
         {
@@ -25,6 +18,13 @@ namespace SharpILMixins.Processor.Workspace.Processor
             IsAccessor = mixinAttribute is AccessorAttribute;
             MixinActions = LoadActions(mixinType);
         }
+
+        public TypeDef MixinType { get; }
+        public TypeDef TargetType { get; }
+        public MixinWorkspace Workspace { get; set; }
+        public bool IsAccessor { get; set; }
+
+        public List<MixinAction> MixinActions { get; set; }
 
         public List<MixinAction> LoadActions(TypeDef mixinType)
         {
@@ -38,7 +38,5 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     return attribute != null ? new MixinAction(m, attribute, TargetType, Workspace) : null;
                 }).Where(t => t is not null).ToList()!;
         }
-
-        public List<MixinAction> MixinActions { get; set; }
     }
 }

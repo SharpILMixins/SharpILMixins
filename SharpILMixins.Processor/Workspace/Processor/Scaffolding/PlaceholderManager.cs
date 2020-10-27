@@ -7,12 +7,14 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class PlaceholderManager
     {
-        public MixinWorkspace Workspace { get; }
-
         public PlaceholderManager(MixinWorkspace workspace)
         {
             Workspace = workspace;
         }
+
+        public MixinWorkspace Workspace { get; }
+
+        public Dictionary<string, Func<string>> Placeholders { get; set; } = new Dictionary<string, Func<string>>();
 
         public void RegisterPlaceholder(string key, string value)
         {
@@ -24,31 +26,22 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             Placeholders.Add(key, valueFetcher);
         }
 
-        public Dictionary<string, Func<string>> Placeholders { get; set; } = new Dictionary<string, Func<string>>();
-
         public void ProcessPlaceholders(CilBody body)
         {
             foreach (var instruction in body.Instructions)
-            {
                 if (instruction.Operand is string str)
                 {
-                    foreach (var (key, func) in Placeholders)
-                    {
-                        str = str.Replace($"$${key}$$", func());
-                    }
+                    foreach (var (key, func) in Placeholders) str = str.Replace($"$${key}$$", func());
 
                     instruction.Operand = str;
-                } else if (instruction.Operand is UTF8String utf8String)
+                }
+                else if (instruction.Operand is UTF8String utf8String)
                 {
                     var tmpStr = utf8String.String;
-                    foreach (var (key, func) in Placeholders)
-                    {
-                        tmpStr = tmpStr.Replace($"$${key}$$", func());
-                    }
+                    foreach (var (key, func) in Placeholders) tmpStr = tmpStr.Replace($"$${key}$$", func());
 
                     instruction.Operand = new UTF8String(tmpStr);
                 }
-            }
         }
     }
 }

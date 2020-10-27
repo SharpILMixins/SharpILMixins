@@ -1,7 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using dnlib.DotNet;
 using SharpILMixins.Annotations;
+using SharpILMixins.Annotations.Parameters;
 using SharpILMixins.Processor.Utils;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Actions
@@ -18,20 +18,51 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             Priority = mixinAttribute.Priority;
         }
 
+        public int Priority { get; set; }
+
+        public MethodDef TargetMethod { get; set; } = null!;
+
+        public MethodDef MixinMethod { get; }
+
+        public BaseMixinAttribute MixinAttribute { get; }
+
+        public TypeDef TargetType { get; }
+
+        public MixinWorkspace Workspace { get; }
+
+        public void CheckIsValid()
+        {
+            CheckStaticMismatch();
+
+            if (MixinMethod.ParamDefs.Count(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null) > 1)
+            {
+                throw new MixinApplyException(
+                    "The mixin method contains multiple parameters with the [InjectCancelParam] Attribute.");
+            }
+        }
+
+        private void CheckStaticMismatch()
+        {
+            if (TargetMethod.IsStatic != MixinMethod.IsStatic)
+            {
+                var targetIsStatic = $"is{(!TargetMethod.IsStatic ? "n't" : "")}";
+                var mixinIsStatic = $"is{(!MixinMethod.IsStatic ? "n't" : "")}";
+
+                throw new MixinApplyException(
+                    $"The mixin method {mixinIsStatic} static but the target method {targetIsStatic}.");
+            }
+        }
+
         private static string GetTargetDescription(MethodDef mixinMethod, BaseMixinAttribute? mixinAttribute)
         {
             var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
             if (targetAttribute != null)
-            {
                 return
                     $"{targetAttribute.ReturnType} {targetAttribute.Name}({string.Join(',', targetAttribute.ArgumentTypes)})";
-            }
 
             if (string.IsNullOrEmpty(mixinAttribute?.Target))
-            {
                 return
                     $"{mixinMethod.ReturnType} {mixinMethod.Name}({string.Join(',', mixinMethod.GetParams().Select(c => c.FullName))})";
-            }
 
             return mixinAttribute.Target;
         }
@@ -90,16 +121,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             });
             return result ?? throw exception;
         }
-
-        public int Priority { get; set; }
-
-        public MethodDef TargetMethod { get; set; } = null!;
-
-        public MethodDef MixinMethod { get; }
-
-        public BaseMixinAttribute MixinAttribute { get; }
-        public TypeDef TargetType { get; }
-        public MixinWorkspace Workspace { get; }
 
         public void Deconstruct(out MethodDef targetMethod, out MethodDef mixinMethod,
             out BaseMixinAttribute mixinAttribute)

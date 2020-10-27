@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
+using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
@@ -10,9 +11,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class CopyScaffoldingHandler
     {
-        public MixinWorkspace Workspace { get; }
-
-        public RedirectManager RedirectManager { get; set; }
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
 
         public CopyScaffoldingHandler(MixinWorkspace workspace)
         {
@@ -20,10 +19,28 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             RedirectManager = new RedirectManager(this);
         }
 
+        public MixinWorkspace Workspace { get; }
+
+        public RedirectManager RedirectManager { get; set; }
+
         public void ProcessType(TypeDef targetType, TypeDef mixinType)
         {
+            ProcessInterfaces(targetType, mixinType);
             ProcessFields(targetType, mixinType);
             ProcessMethods(targetType, mixinType);
+        }
+
+        private void ProcessInterfaces(TypeDef targetType, TypeDef mixinType)
+        {
+            if (mixinType.HasInterfaces)
+            {
+                foreach (var impl in mixinType.Interfaces)
+                {
+                    var implUser = new InterfaceImplUser(RedirectManager.ResolveTypeDefIfNeeded(impl.Interface, targetType.DefinitionAssembly));
+                    targetType.Interfaces.Add(implUser);
+                    Logger.Info($"Mixin {mixinType.Name} provided Target Type {targetType.Name} the implementation of Interface {impl.Interface.Name}");
+                }
+            }
         }
 
         private void ProcessFields(TypeDef targetType, TypeDef mixinType)
@@ -31,6 +48,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
             ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList());
             CopyFields(targetType, fields);
+            
+            //These elements might be used if the Mixin extends the class they're targeting and accesses from super
+            var superElements = targetType.BaseType.ResolveTypeDef().Fields;
+            ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
         }
 
         private void CopyFields(TypeDef targetType, List<FieldDef> fields)
@@ -40,9 +61,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 var copyField = new FieldDefUser(field.Name, field.FieldSig, field.Attributes);
 
                 if (field.GetCustomAttribute<UniqueAttribute>() != null)
-                {
                     copyField.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
-                }
 
                 targetType.Fields.Add(copyField);
                 RedirectManager.RegisterRedirect(field, copyField);
@@ -59,9 +78,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements)
         {
             foreach (var element in mixinElements)
-            {
-                if (element is IHasCustomAttribute customAttribute &&
-                    customAttribute.GetCustomAttribute<ShadowAttribute>() != null)
+                if (IsShadowElement(element, targetElements))
                 {
                     var targetMethod =
                         targetElements.FirstOrDefault(m => RedirectManager.SigComparer.Equals(m, element)) ??
@@ -69,6 +86,23 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                             $"Unable to find target for Shadow element \"{element.FullName}\"");
                     RedirectManager.RegisterRedirect(element, targetMethod);
                 }
+        }
+
+        private static bool IsShadowElement(IMemberRef element, IList<IMemberRef> targetElements)
+        {
+            return targetElements.Contains(element) || element is IHasCustomAttribute customAttribute &&
+                customAttribute.GetCustomAttribute<ShadowAttribute>() != null;
+        }
+
+        public void CopyNonMixinClasses(ModuleDefMD mixinModule, ModuleDefMD targetModule)
+        {
+            var nonMixinTypes = mixinModule.Types.Where(mixinType =>
+                mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>").ToList();
+
+            foreach (var typeDef in nonMixinTypes)
+            {
+                mixinModule.Types.Remove(typeDef);
+                targetModule.Types.Add(typeDef);
             }
         }
 
@@ -78,6 +112,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var mixinMethods = mixinType.Methods.Where(ShouldCopyMethod).ToList();
             ProcessShadowElements(mixinType.Methods, targetType.Methods.Cast<IMemberRef>().ToList());
+
+            //These elements might be used if the Mixin extends the class they're targeting and accesses from super
+            var superElements = targetType.BaseType.ResolveTypeDef().Fields;
+            ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
+           
             CreateMethodHandlers(targetType, mixinMethods);
         }
 
@@ -109,9 +148,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 RedirectManager.RegisterRedirect(mixinMethod, newMethod);
 
                 if (mixinMethod.GetCustomAttribute<OverwriteAttribute>() != null)
-                {
                     newMethod.Name = Utilities.GenerateRandomName("overwrite");
-                }
             }
         }
 
@@ -123,35 +160,22 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             //or because the mixin creator asked to inline their method
             //or, if nothing else was specified, only inline if it's an overwrite handler
             return !method.GetParams().Any(p => p.IsByRef) && (Workspace.Settings.ExperimentalInlineHandlers ||
-                    inlineOptionAttribute?.Setting == InlineSetting.DoInline ||
-                    method.GetCustomAttribute<OverwriteAttribute>() != null);
+                                                               inlineOptionAttribute?.Setting ==
+                                                               InlineSetting.DoInline ||
+                                                               method.GetCustomAttribute<OverwriteAttribute>() != null);
         }
 
         private MethodDefUser CreateNewMethodCopy(TypeDef targetType, MethodDef method)
         {
             var newMethod = CopyUtils.CopyMethod(method, Workspace, targetType, false);
             if (method.GetCustomAttribute<UniqueAttribute>() != null)
-            {
                 newMethod.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
-            }
 
-            RedirectManager.ProcessRedirects(method.Body);
+            RedirectManager.ProcessRedirects(method, method.Body);
 
             return newMethod;
         }
 
         #endregion
-
-        public void CopyNonMixinClasses(ModuleDefMD mixinModule, ModuleDefMD targetModule)
-        {
-            var mixinTypes = mixinModule.Types.Where(mixinType =>
-                mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>").ToList();
-
-            foreach (var mixinType in mixinTypes)
-            {
-                mixinModule.Types.Remove(mixinType);
-                targetModule.Types.Add(mixinType);
-            }
-        }
     }
 }

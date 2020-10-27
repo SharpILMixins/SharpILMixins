@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using CommandLine;
 using NLog;
@@ -9,29 +8,11 @@ using SharpILMixins.Processor.Workspace;
 
 namespace SharpILMixins.Processor
 {
-    class Program
+    internal class Program
     {
-        [Verb("process", true)]
-        public class ProcessOptions
-        {
-            [Option('t', "target-dir", Required = true)]
-            public DirectoryInfo TargetDir { get; set; } = null!;
-
-            [Option('m', "mixins", Required = true)]
-            public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
-
-            [Option("dump-targets")] public bool DumpTargets { get; set; }
-
-            [Option("experimental-inline-methods")]
-            public bool ExperimentalInlineMethods { get; set; }
-
-            [Option("mixin-handler-name")] public string MixinHandlerName { get; set; } = "mixin";
-        }
-
         public static Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(Program));
 
-
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Parser.Default.ParseArguments<ProcessOptions>(args)
                 .WithParsed(o =>
@@ -45,12 +26,11 @@ namespace SharpILMixins.Processor
                         LogException(e, o);
                         Environment.ExitCode = 1;
                     }
+
+                    if (!o.PauseOnExit) return;
+                    Logger.Info("Press any key to continue..");
+                    Console.ReadKey();
                 });
-            /*if (!Debugger.IsAttached)
-            {
-                Logger.Info("Press any key to continue..");
-                Console.ReadKey();
-            }*/
         }
 
         private static void LogException(Exception e, ProcessOptions processOptions, bool inner = false)
@@ -67,10 +47,7 @@ namespace SharpILMixins.Processor
             else
                 Logger.Fatal(e, diagnosticMessage);
 
-            if (e.InnerException != null && e.InnerException != e)
-            {
-                LogException(e.InnerException, processOptions, true);
-            }
+            if (e.InnerException != null && e.InnerException != e) LogException(e.InnerException, processOptions, true);
         }
 
         private static void ProcessMixins(ProcessOptions o)
@@ -80,8 +57,11 @@ namespace SharpILMixins.Processor
                 Logger.Info($"Starting to process {mixinAssemblyFile.Name}");
                 try
                 {
-                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir,
-                        new MixinWorkspaceSettings(Environment.CurrentDirectory, o.DumpTargets, o.MixinHandlerName, o.ExperimentalInlineMethods));
+                    var workDir = new DirectoryInfo(Environment.CurrentDirectory);
+
+                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir ?? workDir,
+                        new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets, o.MixinHandlerName,
+                            o.ExperimentalInlineMethods));
 
                     workspace.Apply();
                 }
@@ -92,6 +72,33 @@ namespace SharpILMixins.Processor
                         e);
                 }
             }
+        }
+
+        [Verb("process", true)]
+        public class ProcessOptions
+        {
+            [Option('t', "target-dir", Required = true, HelpText = "The directory of the target assemblies")]
+            public DirectoryInfo? TargetDir { get; set; } = null;
+
+            [Option('o', "output-dir",
+                HelpText = "The directory of where to place the output files processed by this tool")]
+            public DirectoryInfo? OutputDir { get; set; } = null;
+
+            [Option('m', "mixins", Required = true, HelpText = "The path to the Mixin Assemblies to apply")]
+            public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
+
+            [Option('d', "dump-targets", HelpText = "Whether or not dump the targets to the console output")]
+            public DumpTargetType DumpTargets { get; set; } = DumpTargetType.None;
+
+            [Option("experimental-inline-methods", HelpText = "Whether or not to inline methods [Experimental]")]
+            public bool ExperimentalInlineMethods { get; set; }
+
+            [Option("mixin-handler-name", HelpText = "Prefix for the unique name of the handler methods")]
+            public string MixinHandlerName { get; set; } = "mixin";
+
+            [Option('p', "pause",
+                HelpText = "Whether or not to wait for the user's input after the processing is done")]
+            public bool PauseOnExit { get; set; }
         }
     }
 }

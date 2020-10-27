@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
@@ -12,34 +11,37 @@ namespace SharpILMixins.Processor.Workspace
 {
     public class MixinWorkspaceLoader
     {
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspaceLoader));
-
-        public MixinWorkspace Workspace { get; }
-
-        public MixinConfiguration Configuration { get; }
-
         public MixinWorkspaceLoader(MixinWorkspace workspace)
         {
             Workspace = workspace;
             Configuration = workspace.Configuration;
         }
 
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspaceLoader));
+
+        public MixinWorkspace Workspace { get; }
+
+        public MixinConfiguration Configuration { get; }
+
         public List<MixinTargetModule> LocateAndLoadTargets()
         {
             return Configuration.Targets
                 .Select(LocateTarget)
-                .Select(s => new MixinTargetModule(new FileInfo(s), ModuleDefMD.Load(s, Workspace.ModuleContext))).ToList();
+                .Select(s => new MixinTargetModule(new FileInfo(s), ModuleDefMD.Load(s, Workspace.ModuleContext)))
+                .ToList();
         }
 
         /// <summary>
-        /// Locates a target by looking it up on the configuration file
+        ///     Locates a target by looking it up on the configuration file
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         private string LocateTarget(string name)
         {
             Logger.Debug($"Attempting to locate target named \"{name}\"");
-            var result = Workspace.TargetDir.EnumerateFiles(name).FirstOrDefault(c => !Path.GetFileNameWithoutExtension(c.FullName).EndsWith("-out"))?.FullName ??
+            var result = Workspace.TargetDir.EnumerateFiles(name)
+                             .FirstOrDefault(c => !Path.GetFileNameWithoutExtension(c.FullName).EndsWith("-out"))
+                             ?.FullName ??
                          throw new MixinApplyException($"Unable to find target named {name}");
 
             Logger.Debug($"Target named \"{name}\" was found.");
@@ -55,7 +57,7 @@ namespace SharpILMixins.Processor.Workspace
             AssemblyDef targetAssembly)
         {
             var mixinTypes = mixinAssembly.Modules.SelectMany(c => c.Types).ToDictionary(t => t.FullName, t => t);
-            var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types).ToDictionary(t => t.FullName, t => t);
+            var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types).SelectMany(c => c.NestedTypes.Concat(new[] {c})).ToDictionary(t => t.FullName, t => t);
             var fullName = typeName;
             if (!fullName.Contains('.') && Configuration.BaseNamespace != null)
                 fullName = $"{Configuration.BaseNamespace}.{fullName}";

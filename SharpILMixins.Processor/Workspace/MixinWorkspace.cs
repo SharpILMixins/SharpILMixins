@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using dnlib.DotNet;
-using dnlib.DotNet.Writer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
@@ -17,20 +14,6 @@ namespace SharpILMixins.Processor.Workspace
 {
     public class MixinWorkspace : IDisposable
     {
-        public MixinWorkspaceSettings Settings { get; private set; }
-
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspace));
-
-        public DirectoryInfo TargetDir { get; }
-
-        public ModuleDefMD MixinModule { get; }
-
-        public AssemblyDef MixinAssembly { get; }
-
-        public ModuleContext ModuleContext { get; set; }
-
-        public PlaceholderManager PlaceholderManager { get; set; }
-
         public MixinWorkspace(FileInfo mixinToApply, DirectoryInfo targetDir, MixinWorkspaceSettings settings)
         {
             ModuleContext = ModuleDef.CreateModuleContext();
@@ -47,11 +30,19 @@ namespace SharpILMixins.Processor.Workspace
             PlaceholderManager = new PlaceholderManager(this);
         }
 
-        private void SetupContext()
-        {
-            var moduleDefMd = ModuleDefMD.Load(typeof(BaseMixinAttribute).Assembly.Location, ModuleContext);
-            var assemblyDef = ModuleContext.AssemblyResolver.Resolve(moduleDefMd.Assembly, moduleDefMd);
-        }
+        public MixinWorkspaceSettings Settings { get; }
+
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspace));
+
+        public DirectoryInfo TargetDir { get; }
+
+        public ModuleDefMD MixinModule { get; }
+
+        public AssemblyDef MixinAssembly { get; }
+
+        public ModuleContext ModuleContext { get; set; }
+
+        public PlaceholderManager PlaceholderManager { get; set; }
 
         public MixinConfiguration Configuration { get; }
 
@@ -60,6 +51,17 @@ namespace SharpILMixins.Processor.Workspace
         public MixinProcessor MixinProcessor { get; }
 
         public RedirectManager RedirectManager => MixinProcessor.CopyScaffoldingHandler.RedirectManager;
+
+        public void Dispose()
+        {
+            MixinModule.Dispose();
+        }
+
+        private void SetupContext()
+        {
+            var moduleDefMd = ModuleDefMD.Load(typeof(BaseMixinAttribute).Assembly.Location, ModuleContext);
+            var assemblyDef = ModuleContext.AssemblyResolver.Resolve(moduleDefMd.Assembly, moduleDefMd);
+        }
 
         public static MixinConfiguration TryToLoadConfiguration(AssemblyDef mixinToApply)
         {
@@ -77,9 +79,7 @@ namespace SharpILMixins.Processor.Workspace
 
             var jSchema = JSchema.Parse(Utilities.ReadResource("mixin.config.schema.json"));
             if (!(JsonConvert.DeserializeObject(configurationString) is JObject jObject) || !jObject.IsValid(jSchema))
-            {
                 throw new MixinApplyException("Invalid Mixin project configuration.");
-            }
 
             return jObject.ToObject<MixinConfiguration>() ??
                    throw new MixinApplyException("Unable to load Mixin Configuration correctly.");
@@ -94,9 +94,9 @@ namespace SharpILMixins.Processor.Workspace
 
                 var targetModuleModuleDef = targetModule.ModuleDef;
                 var targetAssembly = targetModuleModuleDef.Assembly;
-                
+
                 //Add target assembly to cache.
-                var assemblyResolver = (ModuleContext.AssemblyResolver as AssemblyResolver);
+                var assemblyResolver = ModuleContext.AssemblyResolver as AssemblyResolver;
                 assemblyResolver?.AddToCache(targetAssembly);
 
                 Logger.Debug($"Starting to process {targetAssembly.FullName}");
@@ -109,25 +109,17 @@ namespace SharpILMixins.Processor.Workspace
 
                 WriteFinalModule(targetModuleModuleDef, finalPath);
                 targetModuleModuleDef.Dispose();
-                Logger.Debug($"Finished to process {targetAssembly.FullName} with output named {Path.GetFileName(finalPath)}");
+                Logger.Debug(
+                    $"Finished to process {targetAssembly.FullName} with output named {Path.GetFileName(finalPath)}");
             }
         }
 
         private static void WriteFinalModule(ModuleDefMD targetModuleModuleDef, string path)
         {
             if (targetModuleModuleDef.IsILOnly)
-            {
                 targetModuleModuleDef.Write(path);
-            }
             else
-            {
                 targetModuleModuleDef.NativeWrite(path);
-            }
-        }
-
-        public void Dispose()
-        {
-            MixinModule.Dispose();
         }
     }
 }

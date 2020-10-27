@@ -1,30 +1,29 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using Ninject.Injection;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
+using static SharpILMixins.Processor.Workspace.Processor.Scaffolding.RedirectManager;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class RedirectManager
     {
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
-
-        public CopyScaffoldingHandler CopyScaffoldingHandler { get; }
-
-        public MixinWorkspace Workspace { get; }
-
         public RedirectManager(CopyScaffoldingHandler copyScaffoldingHandler)
         {
             CopyScaffoldingHandler = copyScaffoldingHandler;
             Workspace = copyScaffoldingHandler.Workspace;
             SigComparer = new SigComparer();
         }
+
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
+
+        public CopyScaffoldingHandler CopyScaffoldingHandler { get; }
+
+        public MixinWorkspace Workspace { get; }
 
         public SigComparer SigComparer { get; }
 
@@ -33,6 +32,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public void RegisterRedirect(IMemberRef originalMember, IMemberRef newMember)
         {
+            Dictionary.Remove(originalMember);
             Dictionary.Add(originalMember, newMember);
         }
 
@@ -65,15 +65,13 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             TypeRedirectDictionary.Add(originalMember.FullName, newMember);
         }
 
-        public void ProcessRedirects(CilBody body)
+        public void ProcessRedirects(MethodDef method, CilBody body)
         {
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
-            {
-                bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type);
-            }
+                bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
 
-            //body.KeepOldMaxStack = true;
+            //body.KeepOldMaxStack = true;  
             foreach (var instruction in body.Instructions)
             {
                 if (instruction.Operand is IMemberRef memberRef)
@@ -84,47 +82,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                         Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement.Value}");
                         instruction.Operand = operandReplacement.Value;
                     }
-
-                    //PerformTypeReplacement(memberRef, instruction);
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
-                {
-                    instruction.Operand = typeDefOrRef.ResolveTypeDef() ?? typeDefOrRef;
-                }
-            }
-        }
-
-        private void PerformTypeReplacement(IMemberRef iMemberRef, Instruction instruction)
-        {
-            if (iMemberRef.DeclaringType == null) return;
-            var typeReplacement =
-                TypeRedirectDictionary.FirstOrDefault(m =>
-                    SigComparer.Equals(m.Key, iMemberRef.DeclaringType.FullName));
-            if (!typeReplacement.IsDefault())
-            {
-                var replacementValue = typeReplacement.Value;
-
-                if (iMemberRef is MemberRef memberRef)
-                {
-                    memberRef.Class = replacementValue;
-                }
-                else if (iMemberRef is MethodDef methodDef && replacementValue is TypeDef typeDef)
-                {
-                    var baseMixinAttribute = methodDef.GetCustomAttribute<BaseMixinAttribute>();
-                    if (baseMixinAttribute != null)
-                    {
-                        var targetMethod =
-                            MixinAction.GetTargetMethod(methodDef, baseMixinAttribute, typeDef, Workspace);
-
-                        Debugger.Break();
-                    }
-                }
-                else
-                {
-                    throw new MixinApplyException(
-                        $"Unable to apply type replacement for member ref of type \"{iMemberRef.GetType().Name}\"");
-                }
+                    instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
             }
         }
 
@@ -140,30 +101,51 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             return pair.IsDefault() ? null : pair.Value;
         }
 
-        public TypeSig? ProcessTypeRedirect(TypeSig? parameterType)
+        public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)
         {
             switch (parameterType)
             {
                 case ClassSig classSig:
                     return new ClassSig(TypeRedirectDictionary.GetValueOrDefault(classSig.TypeDefOrRef.FullName) ??
-                                        classSig.TypeDefOrRef.ResolveTypeDef() ?? classSig.TypeDefOrRef);
+                                        ResolveTypeDefIfNeeded(classSig.TypeDefOrRef, definitionAssembly));
 
                 case ByRefSig byRefSig:
-                    return new ByRefSig(ProcessTypeRedirect(byRefSig.Next));
+                    return new ByRefSig(ProcessTypeRedirect(byRefSig.Next, definitionAssembly));
+
+                case GenericInstSig genericInstSig:
+                    return new GenericInstSig(
+                        ProcessTypeRedirect(genericInstSig.GenericType, definitionAssembly).ToClassOrValueTypeSig(),
+                        genericInstSig.GenericArguments.Select(t => ProcessTypeRedirect(t, definitionAssembly))
+                            .ToList());
+
+                case SZArraySig szArraySig:
+                    return new SZArraySig(ProcessTypeRedirect(szArraySig.Next, definitionAssembly));
 
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
-                        valueTypeSig.TypeDefOrRef.ResolveTypeDef() ?? valueTypeSig.TypeDefOrRef);
+                        ResolveTypeDefIfNeeded(valueTypeSig.TypeDefOrRef, definitionAssembly));
+
+                //Pass-through the corlib type signature.
+                case CorLibTypeSig:
+                    return parameterType;
             }
 
             if (parameterType != null)
-            {
                 Logger.Warn(
                     $"Skipped translating type redirect for type {parameterType} ({parameterType.GetType().Name})");
-            }
 
             return parameterType;
+        }
+
+        public static ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
+        {
+            if (definitionAssembly == null) return defOrRef;
+
+            //This is needed because otherwise we'll be referencing the target assembly
+            if (definitionAssembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName))
+                return defOrRef.ResolveTypeDef() ?? defOrRef;
+            return defOrRef;
         }
     }
 }
