@@ -9,13 +9,13 @@ namespace SharpILMixins.Annotations
         {
         }
 
-        protected BaseMixinAttribute(string target, int priority = 1000)
+        protected BaseMixinAttribute(string method, int priority = 1000)
         {
-            Target = target;
+            Method = method;
             Priority = priority;
         }
 
-        public string Target { get; set; } = string.Empty;
+        public string Method { get; set; } = string.Empty;
         public int Priority { get; set; } = 1000;
     }
 }

@@ -37,7 +37,7 @@ namespace SharpILMixins.Processor.Utils
                         i => constructor.GetParameters()[i].ParameterType).ToArray();
 
                     var result = constructor?.Invoke(values) as T;
-                    if (attribute.HasNamedArguments)
+                    if (result == null || !attribute.HasNamedArguments) return result;
                     {
                         var arguments = attribute.NamedArguments.Select(c => c.Argument).ToList();
                         var fixedValues = FixValues(arguments,
@@ -48,8 +48,8 @@ namespace SharpILMixins.Processor.Utils
                         foreach (var (argument, value) in valueTypes)
                         {
                             var member = (MemberInfo)(argument.IsProperty
-                                ? typeof(T).GetProperty(argument.Name)
-                                : typeof(T).GetField(argument.Name));
+                                ? result.GetType().GetProperty(argument.Name)
+                                : result.GetType().GetField(argument.Name));
 
                             switch (member)
                             {

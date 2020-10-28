@@ -10,6 +10,7 @@
     <None Remove="mixins.json" />
     <None Remove="SampleProject-out.dll" />
     <None Remove="SampleProjectCore-out.dll" />
+    <None Remove="SampleProjectCore-out.pdb" />
   </ItemGroup>
 
   <ItemGroup>

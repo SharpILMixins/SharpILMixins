@@ -11,6 +11,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject
             Register(new HeadInjectionProcessor());
             Register(new ReturnInjectionProcessor());
             Register(new TailInjectionProcessor());
+            Register(new InvokeInjectionProcessor());
         }
 
         public static Dictionary<AtLocation, BaseInjectionProcessor> InjectionProcessors { get; } =

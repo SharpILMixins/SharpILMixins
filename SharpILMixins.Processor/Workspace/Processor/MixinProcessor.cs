@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using NLog;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
+using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 
 namespace SharpILMixins.Processor.Workspace.Processor
@@ -82,16 +84,28 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 var targetType = relation.TargetType;
                 Logger.Info($"> {targetType.FullName}");
-                foreach (var method in targetType.Methods) Logger.Info($">> {method.FullName}");
+                foreach (var method in targetType.Methods)
+                {
+                    Logger.Info($">> {method.FullName}");
+
+                    if (dumpTargets.HasFlagFast(DumpTargetType.Invoke))
+                    {
+                        var invokeCalls = method.Body.Instructions
+                            .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
+                            .Select(i => i.Operand)
+                            .OfType<IMethodDefOrRef>()
+                            .Select(i => i.FullName).Distinct().ToList();
+                        invokeCalls.ForEach(c => Logger.Info($">>> {c}"));
+                    }
+                }
+
+                Logger.Info("");
             }
         }
 
         private bool ShouldDump(MixinRelation relation, DumpTargetType dumpTargets)
         {
-            if (dumpTargets.HasFlagFast(DumpTargetType.All))
-                return true;
-
-            return false;
+            return !dumpTargets.HasFlagFast(DumpTargetType.None);
         }
     }
 }

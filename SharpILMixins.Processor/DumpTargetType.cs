@@ -6,7 +6,9 @@ namespace SharpILMixins.Processor
     public enum DumpTargetType
     {
         None = 0,
-        All = 1 << 0
+        Methods = 1 << 0,
+        Invoke = Methods | 2 << 0,
+        All = Invoke
     }
 
     public static class DumpTargetTypeExtensions

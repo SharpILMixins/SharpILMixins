@@ -60,11 +60,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
                 return
                     $"{targetAttribute.ReturnType} {targetAttribute.Name}({string.Join(',', targetAttribute.ArgumentTypes)})";
 
-            if (string.IsNullOrEmpty(mixinAttribute?.Target))
+            if (string.IsNullOrEmpty(mixinAttribute?.Method))
                 return
                     $"{mixinMethod.ReturnType} {mixinMethod.Name}({string.Join(',', mixinMethod.GetParams().Select(c => c.FullName))})";
 
-            return mixinAttribute.Target;
+            return mixinAttribute.Method;
         }
 
         public static MethodDef? GetTargetMethod(MethodDef mixinMethod, BaseMixinAttribute? mixinAttribute,
@@ -88,10 +88,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 
 
             var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
-            if (!string.IsNullOrEmpty(mixinAttribute?.Target))
+            if (!string.IsNullOrEmpty(mixinAttribute?.Method))
             {
-                var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Target) ??
-                                   targetType.Methods.Single(m => m.Name == mixinAttribute.Target);
+                var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Method) ??
+                                   targetType.Methods.Single(m => m.Name == mixinAttribute.Method);
                 return directResult ?? throw exception;
             }
 
