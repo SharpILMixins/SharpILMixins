@@ -10,17 +10,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject
         public abstract AtLocation Location { get; }
 
         public virtual IEnumerable<Instruction>
-            GetInstructionsForAction(MixinAction action, InjectAttribute attribute, InjectionPoint location)
-        {
-            throw new MixinApplyException(
-                $"No implementation found for {nameof(GetInstructionsForAction)} of type {GetType().FullName}");
-        }
-
-        public virtual IEnumerable<Instruction>
             GetInstructionsForAction(MixinAction action, InjectAttribute attribute, InjectionPoint location,
                 Instruction? nextInstruction)
         {
-            return GetInstructionsForAction(action, attribute, location);
+            return IntermediateLanguageHelper.InvokeMethod(action, nextInstruction);
         }
 
         public abstract IEnumerable<InjectionPoint> FindInjectionPoints(MixinAction action, InjectAttribute attribute);

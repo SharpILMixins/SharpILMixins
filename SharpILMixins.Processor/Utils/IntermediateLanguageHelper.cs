@@ -15,7 +15,7 @@ namespace SharpILMixins.Processor.Utils
 
         public static IEnumerable<Instruction> InvokeMethod(MixinWorkspace workspace, MethodDef methodToInvoke,
             int argumentsToPass, ModifyParameterInstructionHandler? modifyParameterHandler = null,
-            MethodDef? targetMethod = null)
+            MethodDef? targetMethod = null, bool discardResult = false)
         {
             if (targetMethod != null && workspace.MixinProcessor.CopyScaffoldingHandler.IsMethodInlined(methodToInvoke))
             {
@@ -48,6 +48,8 @@ namespace SharpILMixins.Processor.Utils
             }
 
             yield return new Instruction(OpCodes.Call, methodToInvoke);
+            if (discardResult && methodToInvoke.HasReturnType)
+                yield return new Instruction(OpCodes.Pop);
 
             foreach (var instruction in afterCallInstructions) yield return instruction;
         }
@@ -65,13 +67,13 @@ namespace SharpILMixins.Processor.Utils
                 yield return instruction;
         }
 
-        public static IEnumerable<Instruction> InvokeMethod(MixinAction action, Instruction? nextInstruction = null)
+        public static IEnumerable<Instruction> InvokeMethod(MixinAction action, Instruction? nextInstruction = null, bool discardResult = false)
         {
             return InvokeMethod(action.Workspace, action.MixinMethod,
                 action.MixinMethod.GetParamCount(), (int index, ref IEnumerable<Instruction> instructions,
                         List<Instruction> callInstructions) =>
                     HandleParameterInstruction(action, index, ref instructions, callInstructions, nextInstruction),
-                action.TargetMethod);
+                action.TargetMethod, discardResult);
         }
 
         public static void HandleParameterInstruction(MixinAction action, int index,

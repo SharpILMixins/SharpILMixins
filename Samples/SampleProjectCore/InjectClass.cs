@@ -21,6 +21,7 @@ namespace SampleProjectCore
                 // `InjectReturn` should target here
                 return;
             }
+            Console.WriteLine();
 
             // `InjectReturn` should target here
             // `InjectTail` should target here

@@ -16,7 +16,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             TargetType = targetType;
             Workspace = workspace;
             Priority = mixinAttribute.Priority;
+            GetMixinAttributeInfo();
         }
+
+        private void GetMixinAttributeInfo()
+        {
+            HasCancelParameter =
+                MixinMethod.ParamDefs.Any(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null);
+        }
+
+        public bool HasCancelParameter { get; set; }
 
         public int Priority { get; set; }
 

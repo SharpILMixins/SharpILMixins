@@ -11,12 +11,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
     {
         public override AtLocation Location => AtLocation.Head;
 
-        public override IEnumerable<Instruction> GetInstructionsForAction(MixinAction action, InjectAttribute attribute,
-            InjectionPoint location, Instruction? nextInstruction)
-        {
-            return IntermediateLanguageHelper.InvokeMethod(action, nextInstruction);
-        }
-
         public override IEnumerable<InjectionPoint> FindInjectionPoints(MixinAction action, InjectAttribute attribute)
         {
             var ctorCall = action.TargetMethod.Body.Instructions.FirstOrDefault(c =>

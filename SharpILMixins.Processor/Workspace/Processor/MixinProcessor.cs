@@ -67,8 +67,13 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     var processor =
                         BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
                     processor.ProcessAction(action, action.MixinAttribute);
+                    if (action.TargetMethod.Body != null)
+                    {
+                        action.TargetMethod.Body.UpdateInstructionOffsets();
 
-                    RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);
+                        RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);
+                    }
+
                     Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
                 }
 
@@ -83,23 +88,53 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 if (!ShouldDump(relation, dumpTargets)) continue;
 
                 var targetType = relation.TargetType;
-                Logger.Info($"> {targetType.FullName}");
+                Logger.Info($"Target dump for \"{targetType.FullName}\":");
+                
+                Logger.Info($"Methods:");
                 foreach (var method in targetType.Methods)
                 {
                     Logger.Info($">> {method.FullName}");
 
-                    if (dumpTargets.HasFlagFast(DumpTargetType.Invoke))
+                    if (method.Body != null)
                     {
-                        var invokeCalls = method.Body.Instructions
-                            .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
-                            .Select(i => i.Operand)
-                            .OfType<IMethodDefOrRef>()
-                            .Select(i => i.FullName).Distinct().ToList();
-                        invokeCalls.ForEach(c => Logger.Info($">>> {c}"));
+                        DumpInvokeTargets(method, dumpTargets);
+                        DumpFieldTargets(method, dumpTargets);
                     }
                 }
 
                 Logger.Info("");
+            }
+        }
+
+        private void DumpInvokeTargets(MethodDef method, DumpTargetType dumpTargets)
+        {
+            if (dumpTargets.HasFlagFast(DumpTargetType.Invoke))
+            {
+                Logger.Info($"");
+                Logger.Info($"Invoke targets:");
+
+                var invokeCalls = method.Body.Instructions
+                    .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
+                    .Select(i => i.Operand)
+                    .OfType<IMethodDefOrRef>()
+                    .Select(i => i.FullName).Distinct().ToList();
+                invokeCalls.ForEach(c => Logger.Info($">>> {c}"));
+            }
+        }
+        private void DumpFieldTargets(MethodDef method, DumpTargetType dumpTargets)
+        {
+            if (dumpTargets.HasFlagFast(DumpTargetType.Invoke))
+            {
+                Logger.Info("");
+                Logger.Info($"Field targets:");
+
+                var fieldCalls = method.Body.Instructions
+                    .Where(i => FieldInjectionProcessor.IsFieldOpCode(i.OpCode))
+                    .Select(i => i.Operand)
+                    .OfType<IField>()
+                    .Select(i => i.FullName).Distinct().ToList();
+                fieldCalls.ForEach(c => Logger.Info($">>> {c}"));
+
             }
         }
 

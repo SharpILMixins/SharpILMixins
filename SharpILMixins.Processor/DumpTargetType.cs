@@ -8,7 +8,8 @@ namespace SharpILMixins.Processor
         None = 0,
         Methods = 1 << 0,
         Invoke = Methods | 2 << 0,
-        All = Invoke
+        Field = 3 << 0,
+        All = Field | Invoke
     }
 
     public static class DumpTargetTypeExtensions

@@ -70,8 +70,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
-            
-            //body.KeepOldMaxStack = true;  
+
+            //body.KeepOldMaxStack = true;
             foreach (var instruction in body.Instructions)
             {
                 if (instruction.Operand is IMemberRef memberRef)

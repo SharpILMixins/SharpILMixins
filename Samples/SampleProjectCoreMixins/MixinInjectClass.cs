@@ -1,5 +1,6 @@
 ﻿using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
+using SharpILMixins.Annotations.Parameters;
 
 namespace SampleProjectCore.Mixins
 {
@@ -16,6 +17,13 @@ namespace SampleProjectCore.Mixins
         private void InjectShifted()
         {
 
+        }
+
+        [Inject(At = AtLocation.Field, Method = "Example", Target = "System.Double SampleProjectCore.InjectClass::_d")]
+        private int InjectField([InjectCancelParam] out bool cancel)
+        {
+            cancel = true;
+            return 0;
         }
     }
 }
