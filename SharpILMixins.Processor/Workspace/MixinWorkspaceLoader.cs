@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
+using dnlib.DotNet.Pdb;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
@@ -27,9 +28,16 @@ namespace SharpILMixins.Processor.Workspace
         {
             return Configuration.Targets
                 .Select(LocateTarget)
-                .Select(s => new MixinTargetModule(new FileInfo(s),
-                    ModuleDefMD.Load(s,
-                        new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true})))
+                .Select(s =>
+                {
+                    var moduleDef = ModuleDefMD.Load(s, new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true});
+                    if (moduleDef.PdbState == null)
+                    {
+                        moduleDef.SetPdbState(new PdbState(moduleDef, PdbFileKind.PortablePDB));
+                    }
+                    return new MixinTargetModule(new FileInfo(s),
+                        moduleDef);
+                })
                 .ToList();
         }
 

@@ -5,5 +5,6 @@ namespace SharpILMixins.Processor.Workspace
 {
     public record MixinTargetModule(FileInfo FilePath, ModuleDefMD ModuleDef)
     {
+        
     }
 }
