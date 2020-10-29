@@ -13,7 +13,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
         public override IEnumerable<InjectionPoint> FindInjectionPoints(MixinAction action, InjectAttribute attribute)
         {
             var bodyInstructions = action.TargetMethod.Body.Instructions;
-            var instructions = bodyInstructions.Where(i => i.OpCode == OpCodes.Ret);
+            var instructions = GetInstructionsWithOpCode(bodyInstructions, OpCodes.Ret);
             if (attribute.Ordinal == -1)
             {
                 foreach (var x in instructions.Select(bodyInstructions.IndexOf)) yield return new InjectionPoint(x);

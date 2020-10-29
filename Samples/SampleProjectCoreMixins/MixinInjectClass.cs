@@ -20,10 +20,22 @@ namespace SampleProjectCore.Mixins
         }
 
         [Inject(At = AtLocation.Field, Method = "Example", Target = "System.Double SampleProjectCore.InjectClass::_d")]
-        private int InjectField([InjectCancelParam] out bool cancel)
+        private int InjectField()
         {
-            cancel = true;
             return 0;
+        }
+
+        
+        [Inject(Method = "Example", At = AtLocation.Invoke, Target = "System.Int32 System.Random::Next()")]
+        private void InjectInvoke() {
+        }
+
+        [Inject(Method = "Example", At = AtLocation.Return)]
+        private void InjectReturn() {
+        }
+
+        [Inject(Method = "Example", At = AtLocation.Tail)]
+        private void InjectTail() {
         }
     }
 }

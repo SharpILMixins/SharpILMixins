@@ -32,7 +32,7 @@ namespace SharpILMixins.Annotations.Inject
 
         public AtLocation At { get; set; }
 
-        public int Ordinal { get; set; }
+        public int Ordinal { get; set; } = -1;
 
         public int ShiftBy
         {

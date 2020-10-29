@@ -19,9 +19,13 @@ namespace SampleProjectCore
             // `InjectField` should target here
             if (Math.Abs(new Random().Next() - _d) < double.Epsilon) {
                 // `InjectReturn` should target here
+                Console.WriteLine("In");
+                // `InjectShifted` should target here
                 return;
             }
-            Console.WriteLine();
+
+            Console.WriteLine("Out");
+            // `InjectShifted` should target here
 
             // `InjectReturn` should target here
             // `InjectTail` should target here
