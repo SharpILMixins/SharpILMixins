@@ -8,9 +8,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
     {
         public override AtLocation Location => AtLocation.Field;
 
-        public override bool IsInterestingOpCode(OpCode code)
+        public override bool IsInterestingInstruction(Instruction instruction, InjectAttribute injectAttribute)
         {
-            return IsFieldOpCode(code);
+            return IsFieldOpCode(instruction.OpCode);
         }
 
         public static bool IsFieldOpCode(OpCode opCode)

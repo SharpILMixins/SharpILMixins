@@ -45,5 +45,7 @@ namespace SharpILMixins.Annotations.Inject
         public Shift Shift { get; set; }
 
         public int ShiftByAmount { get; set; }
+
+        public object ConstantValue { get; set; }
     }
 }

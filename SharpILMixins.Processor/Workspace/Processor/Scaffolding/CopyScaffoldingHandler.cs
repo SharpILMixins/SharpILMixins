@@ -5,6 +5,7 @@ using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
+using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {

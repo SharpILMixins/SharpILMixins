@@ -25,6 +25,15 @@ namespace SampleProjectCore.Mixins
         }
 
         
+        [Inject(Method = "Example", At = AtLocation.Constant, ConstantValue = 0.01d)]
+        private void InjectConstant() {
+        }
+        
+        [Inject(Method = "Example", At = AtLocation.Constant, ConstantValue = "In")]
+        private void InjectConstant2() {
+        }
+
+        
         [Inject(Method = "Example", At = AtLocation.Invoke, Target = "System.Int32 System.Random::Next()")]
         private void InjectInvoke() {
         }

@@ -6,6 +6,7 @@
         Return,
         Invoke,
         Field,
+        Constant,
         Tail
     }
 }

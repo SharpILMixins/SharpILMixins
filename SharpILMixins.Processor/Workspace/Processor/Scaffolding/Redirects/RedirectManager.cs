@@ -7,7 +7,7 @@ using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
 
-namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
+namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 {
     public class RedirectManager
     {
@@ -92,12 +92,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var pair = TypeRedirectDictionary.FirstOrDefault(m => Equals(m.Key, type));
             return pair.IsDefault() ? type : pair.Value.FullName;
-        }
-
-        public IMemberRefParent? RedirectTypeMember(string type)
-        {
-            var pair = TypeRedirectDictionary.FirstOrDefault(m => Equals(m.Key, type));
-            return pair.IsDefault() ? null : pair.Value;
         }
 
         public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)

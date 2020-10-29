@@ -10,6 +10,7 @@ using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
+using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
 
 namespace SharpILMixins.Processor.Workspace
 {
