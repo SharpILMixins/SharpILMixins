@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Inject;
@@ -9,6 +8,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject
 {
     public abstract class BaseInjectionProcessor
     {
+        public abstract AtLocation Location { get; }
+
         protected IEnumerable<Instruction> GetInstructionsWithOpCode(IList<Instruction> instructions, OpCode opCode)
         {
             return instructions
@@ -20,13 +21,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject
         private IEnumerable<(Instruction instruction, OpCode code)> ResolveInstructions(Instruction arg)
         {
             yield return (arg, arg.OpCode);
-            if (arg.Operand is Instruction instruction)
-            {
-                yield return (arg, instruction.OpCode);
-            }
+            if (arg.Operand is Instruction instruction) yield return (arg, instruction.OpCode);
         }
-
-        public abstract AtLocation Location { get; }
 
         public virtual IEnumerable<Instruction>
             GetInstructionsForAction(MixinAction action, InjectAttribute attribute, InjectionPoint location,

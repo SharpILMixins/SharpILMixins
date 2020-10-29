@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using SharpILMixins.Annotations.Inject;
@@ -31,7 +30,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
                     {Shift = attribute.Shift, ByAmount = attribute.ShiftByAmount};
 
                 finalInjectionPoint += shiftAttribute.ByAmount;
-                
+
                 var index = finalInjectionPoint.BeforePoint;
                 switch (shiftAttribute.Shift)
                 {

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SharpILMixins.Processor.Workspace
+﻿namespace SharpILMixins.Processor.Workspace
 {
     public class MixinWorkspaceSettings
     {

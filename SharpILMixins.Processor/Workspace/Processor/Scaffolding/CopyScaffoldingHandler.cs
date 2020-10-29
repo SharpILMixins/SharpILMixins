@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using NLog;
@@ -11,13 +10,13 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class CopyScaffoldingHandler
     {
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
-
         public CopyScaffoldingHandler(MixinWorkspace workspace)
         {
             Workspace = workspace;
             RedirectManager = new RedirectManager(this);
         }
+
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
 
         public MixinWorkspace Workspace { get; }
 
@@ -33,7 +32,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         private void ProcessInterfaces(TypeDef targetType, TypeDef mixinType)
         {
             if (mixinType.HasInterfaces)
-            {
                 foreach (var impl in mixinType.Interfaces)
                 {
                     var implUser =
@@ -43,7 +41,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     Logger.Info(
                         $"Mixin {mixinType.Name} provided Target Type {targetType.Name} the implementation of Interface {impl.Interface.Name}");
                 }
-            }
         }
 
         private void ProcessFields(TypeDef targetType, TypeDef mixinType)
@@ -101,7 +98,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var nonMixinTypes = mixinModule.Types
                 .SelectMany(t => t.NestedTypes.Concat(new[] {t})).Where(mixinType =>
-                    mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>").ToList();
+                    mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>")
+                .ToList();
 
             foreach (var typeDef in nonMixinTypes)
             {
@@ -110,18 +108,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 mixinModule.Types.Remove(typeDef);
 
                 if (newDeclaringType != null)
-                {
                     newDeclaringType.NestedTypes.Add(typeDef);
-                }
                 else
-                {
                     targetModule.Types.Add(typeDef);
-                }
-                
-                foreach (var method in typeDef.Methods)
-                {
-                    RedirectManager.ProcessRedirects(method, method.Body);
-                }
+
+                foreach (var method in typeDef.Methods) RedirectManager.ProcessRedirects(method, method.Body);
             }
         }
 
@@ -131,7 +122,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             if (mixinAttribute == null) return null;
             var ownerType = targetModule.Find(mixinAttribute.Target, false);
             return ownerType;
-
         }
 
         #region Methods

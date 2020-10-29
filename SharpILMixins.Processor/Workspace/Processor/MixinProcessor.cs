@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
-using dnlib.DotNet.Emit;
 using NLog;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
@@ -89,8 +86,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 var targetType = relation.TargetType;
                 Logger.Info($"Target dump for \"{targetType.FullName}\":");
-                
-                Logger.Info($"Methods:");
+
+                Logger.Info("Methods:");
                 foreach (var method in targetType.Methods)
                 {
                     Logger.Info($">> {method.FullName}");
@@ -110,8 +107,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
         {
             if (dumpTargets.HasFlagFast(DumpTargetType.Invoke))
             {
-                Logger.Info($"");
-                Logger.Info($"Invoke targets:");
+                Logger.Info("");
+                Logger.Info("Invoke targets:");
 
                 var invokeCalls = method.Body.Instructions
                     .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
@@ -121,12 +118,13 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 invokeCalls.ForEach(c => Logger.Info($">>> {c}"));
             }
         }
+
         private void DumpFieldTargets(MethodDef method, DumpTargetType dumpTargets)
         {
             if (dumpTargets.HasFlagFast(DumpTargetType.Invoke))
             {
                 Logger.Info("");
-                Logger.Info($"Field targets:");
+                Logger.Info("Field targets:");
 
                 var fieldCalls = method.Body.Instructions
                     .Where(i => FieldInjectionProcessor.IsFieldOpCode(i.OpCode))
@@ -134,7 +132,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     .OfType<IField>()
                     .Select(i => i.FullName).Distinct().ToList();
                 fieldCalls.ForEach(c => Logger.Info($">>> {c}"));
-
             }
         }
 

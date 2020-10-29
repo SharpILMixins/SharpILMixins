@@ -19,12 +19,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             GetMixinAttributeInfo();
         }
 
-        private void GetMixinAttributeInfo()
-        {
-            HasCancelParameter =
-                MixinMethod.ParamDefs.Any(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null);
-        }
-
         public bool HasCancelParameter { get; set; }
 
         public int Priority { get; set; }
@@ -39,15 +33,19 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 
         public MixinWorkspace Workspace { get; }
 
+        private void GetMixinAttributeInfo()
+        {
+            HasCancelParameter =
+                MixinMethod.ParamDefs.Any(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null);
+        }
+
         public void CheckIsValid()
         {
             CheckStaticMismatch();
 
             if (MixinMethod.ParamDefs.Count(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null) > 1)
-            {
                 throw new MixinApplyException(
                     "The mixin method contains multiple parameters with the [InjectCancelParam] Attribute.");
-            }
         }
 
         private void CheckStaticMismatch()

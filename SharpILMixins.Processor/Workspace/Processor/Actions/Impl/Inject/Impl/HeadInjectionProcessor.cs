@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using dnlib.DotNet;
-using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Inject;
-using SharpILMixins.Processor.Utils;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 {
@@ -17,7 +15,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
                 c.Operand is IMethodDefOrRef methodCall && methodCall.Name == ".ctor" &&
                 methodCall.DeclaringType.FullName == action.TargetMethod.DeclaringType.BaseType.FullName);
 
-            yield return new InjectionPoint(ctorCall != null ? action.TargetMethod.Body.Instructions.IndexOf(ctorCall) + 1 : 0);
+            yield return new InjectionPoint(ctorCall != null
+                ? action.TargetMethod.Body.Instructions.IndexOf(ctorCall) + 1
+                : 0);
         }
     }
 }

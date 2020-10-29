@@ -6,7 +6,7 @@ using SharpILMixins.Processor.Utils;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 {
-    public abstract class InterestingOperandProcessor<T> : BaseInjectionProcessor where T: IFullName
+    public abstract class InterestingOperandProcessor<T> : BaseInjectionProcessor where T : IFullName
     {
         public override IEnumerable<Instruction> GetInstructionsForAction(MixinAction action, InjectAttribute attribute,
             InjectionPoint location,
@@ -24,7 +24,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
             {
                 if (!IsInterestingOpCode(i.OpCode)) continue;
                 if (i.Operand is T target && IsTargetOperand(attribute, target))
-                    yield return new InjectionPoint(instructions.IndexOf(i) + GetOpCodeInstructionOffset(action, instructions, i));
+                    yield return new InjectionPoint(instructions.IndexOf(i) +
+                                                    GetOpCodeInstructionOffset(action, instructions, i));
             }
         }
 
@@ -34,7 +35,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
         }
 
         public virtual int GetOpCodeInstructionOffset(MixinAction action, IList<Instruction> instructions,
-            Instruction instruction) => 0;
+            Instruction instruction)
+        {
+            return 0;
+        }
 
         public abstract bool IsInterestingOpCode(OpCode code);
     }

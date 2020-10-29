@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using dnlib.DotNet;
-using dnlib.DotNet.Pdb;
 using dnlib.DotNet.Writer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -120,12 +119,10 @@ namespace SharpILMixins.Processor.Workspace
         private static void WriteFinalModule(ModuleDefMD targetModuleModuleDef, string path)
         {
             if (targetModuleModuleDef.IsILOnly)
-            {
                 targetModuleModuleDef.Write(path, new ModuleWriterOptions(targetModuleModuleDef)
                 {
-                    WritePdb = true,
+                    WritePdb = true
                 });
-            }
             else
                 targetModuleModuleDef.NativeWrite(path);
         }

@@ -27,7 +27,9 @@ namespace SharpILMixins.Processor.Workspace
         {
             return Configuration.Targets
                 .Select(LocateTarget)
-                .Select(s => new MixinTargetModule(new FileInfo(s), ModuleDefMD.Load(s, new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true})))
+                .Select(s => new MixinTargetModule(new FileInfo(s),
+                    ModuleDefMD.Load(s,
+                        new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true})))
                 .ToList();
         }
 
@@ -57,7 +59,8 @@ namespace SharpILMixins.Processor.Workspace
             AssemblyDef targetAssembly)
         {
             var mixinTypes = mixinAssembly.Modules.SelectMany(c => c.Types).ToDictionary(t => t.FullName, t => t);
-            var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types).SelectMany(c => c.NestedTypes.Concat(new[] {c})).ToDictionary(t => t.FullName, t => t);
+            var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types)
+                .SelectMany(c => c.NestedTypes.Concat(new[] {c})).ToDictionary(t => t.FullName, t => t);
             var fullName = typeName;
             if (!fullName.Contains('.') && Configuration.BaseNamespace != null)
                 fullName = $"{Configuration.BaseNamespace}.{fullName}";

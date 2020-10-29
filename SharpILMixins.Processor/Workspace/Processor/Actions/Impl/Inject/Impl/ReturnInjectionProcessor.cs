@@ -20,9 +20,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
                 yield break;
             }
 
-            yield return new InjectionPoint(bodyInstructions.IndexOf(instructions.ElementAtOrDefault(attribute.Ordinal) ??
-                                                                     throw new MixinApplyException(
-                                                                         $"Unable to find Return instruction with ordinal {attribute.Ordinal}")));
+            yield return new InjectionPoint(bodyInstructions.IndexOf(
+                instructions.ElementAtOrDefault(attribute.Ordinal) ??
+                throw new MixinApplyException(
+                    $"Unable to find Return instruction with ordinal {attribute.Ordinal}")));
         }
     }
 }

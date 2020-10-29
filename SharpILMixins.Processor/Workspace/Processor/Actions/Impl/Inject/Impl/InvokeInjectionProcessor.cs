@@ -19,6 +19,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
             };
         }
 
-        public override bool IsInterestingOpCode(OpCode code) => IsCallOpCode(code);
+        public override bool IsInterestingOpCode(OpCode code)
+        {
+            return IsCallOpCode(code);
+        }
     }
 }

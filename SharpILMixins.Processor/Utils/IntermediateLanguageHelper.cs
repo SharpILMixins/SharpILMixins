@@ -103,7 +103,8 @@ namespace SharpILMixins.Processor.Utils
                 switch (attribute)
                 {
                     case InjectCancelParamAttribute injectCancelParamAttribute:
-                        HandleInjectCancelParameterAttribute(action, out instruction, afterCallInstructions, nextInstruction);
+                        HandleInjectCancelParameterAttribute(action, out instruction, afterCallInstructions,
+                            nextInstruction);
                         break;
                     default:
                         throw new MixinApplyException(
@@ -111,7 +112,8 @@ namespace SharpILMixins.Processor.Utils
                 }
         }
 
-        private static void HandleInjectCancelParameterAttribute(MixinAction action, out IEnumerable<Instruction> instruction, ICollection<Instruction> afterCallInstructions,
+        private static void HandleInjectCancelParameterAttribute(MixinAction action,
+            out IEnumerable<Instruction> instruction, ICollection<Instruction> afterCallInstructions,
             Instruction? nextInstruction)
         {
             var (targetMethod, mixinMethod, _) = action;

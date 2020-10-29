@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -47,7 +46,7 @@ namespace SharpILMixins.Processor.Utils
 
                         foreach (var (argument, value) in valueTypes)
                         {
-                            var member = (MemberInfo)(argument.IsProperty
+                            var member = (MemberInfo) (argument.IsProperty
                                 ? result.GetType().GetProperty(argument.Name)
                                 : result.GetType().GetField(argument.Name));
 
@@ -93,13 +92,10 @@ namespace SharpILMixins.Processor.Utils
                     default:
                     {
                         if (parameterType(i).IsArray)
-                        {
-                            foreach (var o in FixArrayValues(parameterType, obj, i)) yield return o;
-                        }
+                            foreach (var o in FixArrayValues(parameterType, obj, i))
+                                yield return o;
                         else
-                        {
                             yield return Cast(obj, parameterType(i));
-                        }
 
                         break;
                     }

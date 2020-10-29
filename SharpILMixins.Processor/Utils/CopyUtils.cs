@@ -1,5 +1,4 @@
 ﻿using dnlib.DotNet;
-using dnlib.DotNet.Pdb;
 using SharpILMixins.Processor.Workspace;
 
 namespace SharpILMixins.Processor.Utils
@@ -19,16 +18,13 @@ namespace SharpILMixins.Processor.Utils
                 redirectManager.ProcessTypeRedirect(copyMethod.ReturnType, declaringType?.DefinitionAssembly);
             foreach (var parameter in copyMethod.Parameters)
                 parameter.Type = redirectManager.ProcessTypeRedirect(parameter.Type, declaringType?.DefinitionAssembly);
-            
+
             copyMethod.ParamDefs.Clear();
             foreach (var originalParamDef in original.ParamDefs)
                 copyMethod.ParamDefs.Add(new ParamDefUser(originalParamDef.Name, originalParamDef.Sequence,
                     originalParamDef.Attributes));
 
-            foreach (var methodOverride in original.Overrides)
-            {
-                copyMethod.Overrides.Add(methodOverride);
-            }
+            foreach (var methodOverride in original.Overrides) copyMethod.Overrides.Add(methodOverride);
 
             if (declaringType != null) copyMethod.DeclaringType = declaringType;
             if (copyAttributes) copyMethod.Attributes = original.Attributes;

@@ -17,7 +17,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 
             yield return new InjectionPoint(bodyInstructions.IndexOf(instructions.LastOrDefault() ??
                                                                      throw new MixinApplyException(
-                                                                         $"Unable to find Return instruction")));
+                                                                         "Unable to find Return instruction")));
         }
     }
 }
