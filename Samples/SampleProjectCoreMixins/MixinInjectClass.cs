@@ -20,9 +20,8 @@ namespace SampleProjectCore.Mixins
         }
 
         [Inject(At = AtLocation.Field, Method = "Example", Target = "System.Double SampleProjectCore.InjectClass::_d")]
-        private int InjectField()
+        private void InjectField()
         {
-            return 0;
         }
 
         
