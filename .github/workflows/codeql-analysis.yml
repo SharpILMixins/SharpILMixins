@@ -23,6 +23,7 @@ on:
 
 jobs:
   analyze:
+    if: "!contains(toJSON(github.event.commits.*.message), '[ci skip]')" 
     name: Analyze
     runs-on: ubuntu-latest
 
