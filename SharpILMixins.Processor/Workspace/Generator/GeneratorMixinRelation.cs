@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor;
+using SharpILMixins.Processor.Workspace.Processor.Actions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace SharpILMixins.Processor.Workspace.Generator
@@ -18,9 +19,10 @@ namespace SharpILMixins.Processor.Workspace.Generator
         public GeneratorMixinRelation(MixinRelation mixinRelation)
         {
             MixinRelation = mixinRelation;
-            MixinActions = mixinRelation.MixinActions
+            MixinActions = mixinRelation.TargetType.Methods
+                .Where(a => a.HasBody)
                 .Select(a => new GeneratorMixinAction(a))
-                .Where(i => i.MixinAction.GetIsValid())
+                .Where(a => SyntaxFacts.IsValidIdentifier(a.SimpleTargetMethodName))
                 .DistinctBy(a => a.SimpleTargetMethodName).ToList();
             var targetName = mixinRelation.GetTargetName();
             SimpleTargetName = targetName.Substring(Math.Max(0, targetName.LastIndexOf('.') + 1));

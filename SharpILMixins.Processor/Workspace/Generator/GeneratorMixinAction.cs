@@ -13,18 +13,16 @@ namespace SharpILMixins.Processor.Workspace.Generator
 {
     public class GeneratorMixinAction
     {
+        public MethodDef TargetMethod { get; }
+
         private readonly SyntaxTokenList _publicStaticModifiers =
             TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
-        public GeneratorMixinAction(MixinAction mixinAction)
+        public GeneratorMixinAction(MethodDef targetMethod)
         {
-            MixinAction = mixinAction;
-            if (mixinAction.TargetMethod == null!)
-                mixinAction.LocateTargetMethod();
-            SimpleTargetMethodName = ComputeSimpleMethodName(MixinAction.TargetMethod);
+            TargetMethod = targetMethod;
+            SimpleTargetMethodName = ComputeSimpleMethodName(TargetMethod);
         }
-
-        public MixinAction MixinAction { get; }
 
         public string SimpleTargetMethodName { get; set; }
 
@@ -48,8 +46,12 @@ namespace SharpILMixins.Processor.Workspace.Generator
 
         public IEnumerable<MemberDeclarationSyntax> ToSyntax()
         {
-            yield return GetStringLiteralField(SimpleTargetMethodName,
-                MixinAction.TargetMethod.FullName);
+            var memberDeclarationSyntax = GetStringLiteralField(SimpleTargetMethodName,
+                TargetMethod.FullName);
+            if (memberDeclarationSyntax != null)
+            {
+                yield return memberDeclarationSyntax;
+            }
 
             var injectMembers = new List<MemberDeclarationSyntax>();
 
@@ -65,27 +67,33 @@ namespace SharpILMixins.Processor.Workspace.Generator
         private void AddFieldMembers(List<MemberDeclarationSyntax> injectMembers)
         {
             injectMembers.AddRange(
-                MixinAction.TargetMethod.Body.Instructions
+                TargetMethod.Body.Instructions
                     .Where(i => FieldInjectionProcessor.IsFieldOpCode(i.OpCode))
                     .Select(i => i.Operand)
                     .OfType<IField>()
                     .DistinctBy(i => i.Name.ToString())
-                    .Select(i => GetStringLiteralField(i.Name, i.FullName)).ToList()
+                    .Select(i => GetStringLiteralField(i.Name, i.FullName))
+                    .Where(i => i is not null)
+                    .Select(i => i!).ToList()
             );
         }
 
         private void AddInvokeMembers(List<MemberDeclarationSyntax> injectMembers)
         {
-            injectMembers.AddRange(MixinAction.TargetMethod.Body.Instructions
+            injectMembers.AddRange(TargetMethod.Body.Instructions
                 .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
                 .Select(i => i.Operand)
                 .OfType<IMethodDefOrRef>()
                 .DistinctBy(i => ComputeSimpleMethodName(i, true))
-                .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, true), i.FullName)).Distinct().ToList());
+                .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, true), i.FullName))
+                .Where(i => i is not null)
+                .Select(i => i!)
+                .Distinct().ToList());
         }
 
-        private MemberDeclarationSyntax GetStringLiteralField(string name, string stringLiteral)
+        private MemberDeclarationSyntax? GetStringLiteralField(string name, string stringLiteral)
         {
+            if (!SyntaxFacts.IsValidIdentifier(name)) return null;
             return FieldDeclaration(VariableDeclaration(
                         PredefinedType(
                             Token(SyntaxKind.StringKeyword)))
