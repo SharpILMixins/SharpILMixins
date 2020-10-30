@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-
+    if: "! contains(toJSON(github.event.commits.*.message), '[ci skip]')" 
     runs-on: windows-latest
 
     steps:
@@ -34,6 +34,7 @@ jobs:
       run: dotnet pack SharpILMixins.Processor -o .
       
     - name: NuGet Push Annotations
+      if: ${{ github.event_name != 'pull_request' }}
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Upload Publish Build Artifact (win-x64)
