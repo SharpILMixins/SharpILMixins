@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace SharpILMixins.Annotations.Inject
 {
@@ -18,12 +19,12 @@ namespace SharpILMixins.Annotations.Inject
         {
         }
 
-        public InjectAttribute(string target, AtLocation at) : base(target)
+        public InjectAttribute(string method, AtLocation at) : base(method)
         {
             At = at;
         }
 
-        public InjectAttribute(string target, AtLocation at, int priority = 1000, int ordinal = -1) : base(target, priority)
+        public InjectAttribute(string method, AtLocation at, int priority = 1000, int ordinal = -1) : base(method, priority)
         {
             At = at;
             Ordinal = ordinal;
@@ -31,16 +32,20 @@ namespace SharpILMixins.Annotations.Inject
 
         public AtLocation At { get; set; }
 
-        public int Ordinal { get; set; }
+        public int Ordinal { get; set; } = -1;
 
         public int ShiftBy
         {
             get => ShiftByAmount;
             set => ShiftByAmount = value;
         }
+        
+        [CanBeNull] public string Target { get; set; }
 
         public Shift Shift { get; set; }
 
         public int ShiftByAmount { get; set; }
+
+        public object ConstantValue { get; set; }
     }
 }

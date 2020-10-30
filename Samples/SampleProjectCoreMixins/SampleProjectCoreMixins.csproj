@@ -2,13 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Library</OutputType>
     <RootNamespace>SampleProjectCore.Mixins</RootNamespace>
+    <LangVersion>preview</LangVersion>
+    <UnoSourceGeneratorCaptureGenerationHostOutput>true</UnoSourceGeneratorCaptureGenerationHostOutput>
+    <UnoSourceGeneratorUnsecureBinLogEnabled>true</UnoSourceGeneratorUnsecureBinLogEnabled>
+    <UnoSourceGeneration_FixIntellisense>true</UnoSourceGeneration_FixIntellisense>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="mixins.json" />
     <None Remove="SampleProject-out.dll" />
     <None Remove="SampleProjectCore-out.dll" />
+    <None Remove="SampleProjectCore-out.pdb" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +26,10 @@
     <ProjectReference Include="..\SampleProjectCore\SampleProjectCore.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties />
+    </VisualStudio>
+  </ProjectExtensions>
 
 </Project>

@@ -24,10 +24,7 @@ namespace SharpILMixins.Processor.Utils
                 copyMethod.ParamDefs.Add(new ParamDefUser(originalParamDef.Name, originalParamDef.Sequence,
                     originalParamDef.Attributes));
 
-            foreach (var methodOverride in original.Overrides)
-            {
-                copyMethod.Overrides.Add(methodOverride);
-            }
+            foreach (var methodOverride in original.Overrides) copyMethod.Overrides.Add(methodOverride);
 
             if (declaringType != null) copyMethod.DeclaringType = declaringType;
             if (copyAttributes) copyMethod.Attributes = original.Attributes;

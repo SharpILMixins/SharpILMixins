@@ -9,7 +9,7 @@ namespace SharpILMixins.Annotations
         {
         }
 
-        public OverwriteAttribute(string target, int priority = 1000) : base(target, priority)
+        public OverwriteAttribute(string method, int priority = 1000) : base(method, priority)
         {
         }
     }

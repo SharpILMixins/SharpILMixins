@@ -11,7 +11,18 @@ namespace SampleProject
         static void Main(string[] args)
         {
             Console.WriteLine($"Hello World from SampleProject {_coolNumber}!");
+            var val = BooleanOverload(false);
+            if (val)
+            {
+                Console.WriteLine("HEY FROM OVERLOAD");
+            }
         }
+
+        static bool BooleanOverload(bool overload)
+        {
+            return true.Equals(overload);
+        }
+
 
         static int RandomNumber()
         {

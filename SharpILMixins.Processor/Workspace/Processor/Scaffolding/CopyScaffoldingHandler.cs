@@ -1,23 +1,23 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
+using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
     public class CopyScaffoldingHandler
     {
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
-
         public CopyScaffoldingHandler(MixinWorkspace workspace)
         {
             Workspace = workspace;
             RedirectManager = new RedirectManager(this);
         }
+
+        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
 
         public MixinWorkspace Workspace { get; }
 
@@ -33,14 +33,15 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         private void ProcessInterfaces(TypeDef targetType, TypeDef mixinType)
         {
             if (mixinType.HasInterfaces)
-            {
                 foreach (var impl in mixinType.Interfaces)
                 {
-                    var implUser = new InterfaceImplUser(RedirectManager.ResolveTypeDefIfNeeded(impl.Interface, targetType.DefinitionAssembly));
+                    var implUser =
+                        new InterfaceImplUser(
+                            RedirectManager.ResolveTypeDefIfNeeded(impl.Interface, targetType.DefinitionAssembly));
                     targetType.Interfaces.Add(implUser);
-                    Logger.Info($"Mixin {mixinType.Name} provided Target Type {targetType.Name} the implementation of Interface {impl.Interface.Name}");
+                    Logger.Info(
+                        $"Mixin {mixinType.Name} provided Target Type {targetType.Name} the implementation of Interface {impl.Interface.Name}");
                 }
-            }
         }
 
         private void ProcessFields(TypeDef targetType, TypeDef mixinType)
@@ -48,7 +49,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
             ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList());
             CopyFields(targetType, fields);
-            
+
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
             var superElements = targetType.BaseType.ResolveTypeDef().Fields;
             ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
@@ -96,14 +97,32 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public void CopyNonMixinClasses(ModuleDefMD mixinModule, ModuleDefMD targetModule)
         {
-            var nonMixinTypes = mixinModule.Types.Where(mixinType =>
-                mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>").ToList();
+            var nonMixinTypes = mixinModule.Types
+                .SelectMany(t => t.NestedTypes.Concat(new[] {t})).Where(mixinType =>
+                    mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>")
+                .ToList();
 
             foreach (var typeDef in nonMixinTypes)
             {
+                var newDeclaringType = FindNewDeclaringType(typeDef, targetModule);
+                typeDef.DeclaringType = null;
                 mixinModule.Types.Remove(typeDef);
-                targetModule.Types.Add(typeDef);
+
+                if (newDeclaringType != null)
+                    newDeclaringType.NestedTypes.Add(typeDef);
+                else
+                    targetModule.Types.Add(typeDef);
+
+                foreach (var method in typeDef.Methods) RedirectManager.ProcessRedirects(method, method.Body);
             }
+        }
+
+        private static TypeDef? FindNewDeclaringType(TypeDef typeDef, ModuleDefMD targetModule)
+        {
+            var mixinAttribute = typeDef.DeclaringType?.GetCustomAttribute<MixinAttribute>();
+            if (mixinAttribute == null) return null;
+            var ownerType = targetModule.Find(mixinAttribute.Target, false);
+            return ownerType;
         }
 
         #region Methods
@@ -116,7 +135,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
             var superElements = targetType.BaseType.ResolveTypeDef().Fields;
             ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
-           
+
             CreateMethodHandlers(targetType, mixinMethods);
         }
 

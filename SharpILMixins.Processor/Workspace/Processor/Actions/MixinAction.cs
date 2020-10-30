@@ -16,7 +16,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             TargetType = targetType;
             Workspace = workspace;
             Priority = mixinAttribute.Priority;
+            GetMixinAttributeInfo();
         }
+
+        public bool HasCancelParameter { get; set; }
 
         public int Priority { get; set; }
 
@@ -30,14 +33,31 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 
         public MixinWorkspace Workspace { get; }
 
+        private void GetMixinAttributeInfo()
+        {
+            HasCancelParameter =
+                MixinMethod.ParamDefs.Any(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null);
+        }
+
         public void CheckIsValid()
         {
             CheckStaticMismatch();
 
             if (MixinMethod.ParamDefs.Count(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null) > 1)
-            {
                 throw new MixinApplyException(
                     "The mixin method contains multiple parameters with the [InjectCancelParam] Attribute.");
+        }
+
+        public bool GetIsValid()
+        {
+            try
+            {
+                CheckIsValid();
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -60,11 +80,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
                 return
                     $"{targetAttribute.ReturnType} {targetAttribute.Name}({string.Join(',', targetAttribute.ArgumentTypes)})";
 
-            if (string.IsNullOrEmpty(mixinAttribute?.Target))
+            if (string.IsNullOrEmpty(mixinAttribute?.Method))
                 return
                     $"{mixinMethod.ReturnType} {mixinMethod.Name}({string.Join(',', mixinMethod.GetParams().Select(c => c.FullName))})";
 
-            return mixinAttribute.Target;
+            return mixinAttribute.Method;
         }
 
         public static MethodDef? GetTargetMethod(MethodDef mixinMethod, BaseMixinAttribute? mixinAttribute,
@@ -88,10 +108,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 
 
             var targetAttribute = mixinMethod.GetCustomAttribute<MethodTargetAttribute>();
-            if (!string.IsNullOrEmpty(mixinAttribute?.Target))
+            if (!string.IsNullOrEmpty(mixinAttribute?.Method))
             {
-                var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Target) ??
-                                   targetType.Methods.Single(m => m.Name == mixinAttribute.Target);
+                var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Method) ??
+                                   targetType.Methods.Single(m => m.Name == mixinAttribute.Method);
                 return directResult ?? throw exception;
             }
 

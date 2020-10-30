@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
+using dnlib.DotNet.Pdb;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
@@ -27,7 +28,18 @@ namespace SharpILMixins.Processor.Workspace
         {
             return Configuration.Targets
                 .Select(LocateTarget)
-                .Select(s => new MixinTargetModule(new FileInfo(s), ModuleDefMD.Load(s, Workspace.ModuleContext)))
+                .Select(s =>
+                {
+                    var moduleDef = ModuleDefMD.Load(s,
+                        new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true});
+
+                    var mixinPdbState = Workspace.MixinModule.PdbState;
+                    
+                    if (moduleDef.PdbState == null && mixinPdbState is not null)
+                        moduleDef.SetPdbState(new PdbState(moduleDef, mixinPdbState.PdbFileKind));
+                    return new MixinTargetModule(new FileInfo(s),
+                        moduleDef);
+                })
                 .ToList();
         }
 
@@ -57,7 +69,8 @@ namespace SharpILMixins.Processor.Workspace
             AssemblyDef targetAssembly)
         {
             var mixinTypes = mixinAssembly.Modules.SelectMany(c => c.Types).ToDictionary(t => t.FullName, t => t);
-            var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types).SelectMany(c => c.NestedTypes.Concat(new[] {c})).ToDictionary(t => t.FullName, t => t);
+            var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types)
+                .SelectMany(c => c.NestedTypes.Concat(new[] {c})).ToDictionary(t => t.FullName, t => t);
             var fullName = typeName;
             if (!fullName.Contains('.') && Configuration.BaseNamespace != null)
                 fullName = $"{Configuration.BaseNamespace}.{fullName}";

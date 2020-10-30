@@ -38,5 +38,12 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     return attribute != null ? new MixinAction(m, attribute, TargetType, Workspace) : null;
                 }).Where(t => t is not null).ToList()!;
         }
+
+        public string GetTargetName()
+        {
+            var attribute = TargetType.GetCustomAttribute<AccessorAttribute>();
+            return (attribute != null ? attribute.Target : TargetType.ReflectionFullName).Replace('+', '.')
+                .Replace('/', '.');
+        }
     }
 }

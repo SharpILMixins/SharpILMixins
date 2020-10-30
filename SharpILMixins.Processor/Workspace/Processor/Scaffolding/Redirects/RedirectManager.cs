@@ -6,9 +6,8 @@ using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
-using static SharpILMixins.Processor.Workspace.Processor.Scaffolding.RedirectManager;
 
-namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
+namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 {
     public class RedirectManager
     {
@@ -71,7 +70,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
 
-            //body.KeepOldMaxStack = true;  
+            //body.KeepOldMaxStack = true;
             foreach (var instruction in body.Instructions)
             {
                 if (instruction.Operand is IMemberRef memberRef)
@@ -93,12 +92,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var pair = TypeRedirectDictionary.FirstOrDefault(m => Equals(m.Key, type));
             return pair.IsDefault() ? type : pair.Value.FullName;
-        }
-
-        public IMemberRefParent? RedirectTypeMember(string type)
-        {
-            var pair = TypeRedirectDictionary.FirstOrDefault(m => Equals(m.Key, type));
-            return pair.IsDefault() ? null : pair.Value;
         }
 
         public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)

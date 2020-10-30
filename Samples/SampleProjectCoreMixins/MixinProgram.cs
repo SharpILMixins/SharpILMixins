@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using SampleProject;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
@@ -21,9 +24,12 @@ namespace SampleProjectCore.Mixins
             return 42;
         }
 
-        [Inject(Target = "Main", At = AtLocation.Head)]
+        [Inject(Method = "Main", At = AtLocation.Head)]
         public static void BeforeMain(string[] args, [InjectCancelParam] out bool isCancelled)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += (_, __) => null;
+            Debugger.Launch();
+            Debugger.Break();
             isCancelled = true;
             Console.WriteLine($"Hello World from Mixins! Random number was: {RandomNumber()} {args}");
             Console.WriteLine($"Cool number before: {_coolNumber}");

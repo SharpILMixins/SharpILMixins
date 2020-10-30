@@ -10,13 +10,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
     {
         public override AtLocation Location => AtLocation.Tail;
 
-        public override IEnumerable<Instruction> GetInstructionsForAction(MixinAction action, InjectAttribute attribute,
-            InjectionPoint location,
-            Instruction? nextInstruction)
-        {
-            return IntermediateLanguageHelper.InvokeMethod(action, nextInstruction);
-        }
-
         public override IEnumerable<InjectionPoint> FindInjectionPoints(MixinAction action, InjectAttribute attribute)
         {
             var bodyInstructions = action.TargetMethod.Body.Instructions;
@@ -24,7 +17,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 
             yield return new InjectionPoint(bodyInstructions.IndexOf(instructions.LastOrDefault() ??
                                                                      throw new MixinApplyException(
-                                                                         $"Unable to find Return instruction")));
+                                                                         "Unable to find Return instruction")));
         }
     }
 }

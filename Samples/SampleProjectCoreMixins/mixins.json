@@ -6,6 +6,8 @@
   ],
   "mixins": [
     "MixinProgram",
-    "MixinRandomClass2"
+    "MixinRandomClass2",
+    "MixinSomeGameClass",
+    "MixinInjectClass"
   ]
 }

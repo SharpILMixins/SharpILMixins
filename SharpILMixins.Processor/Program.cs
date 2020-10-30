@@ -14,23 +14,32 @@ namespace SharpILMixins.Processor
 
         private static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<ProcessOptions>(args)
-                .WithParsed(o =>
+            Parser.Default.ParseArguments<ProcessOptions, GenerateOptions>(args)
+                .WithParsed<GenerateOptions>(o => Execute(new ProcessOptions
                 {
-                    try
-                    {
-                        ProcessMixins(o);
-                    }
-                    catch (Exception e)
-                    {
-                        LogException(e, o);
-                        Environment.ExitCode = 1;
-                    }
+                    MixinsToApply = o.MixinsToApply,
+                    OutputDir = o.OutputDir,
+                    TargetDir = o.TargetDir,
+                    IsGenerateOnly = true
+                }))
+                .WithParsed<ProcessOptions>(Execute);
+        }
 
-                    if (!o.PauseOnExit) return;
-                    Logger.Info("Press any key to continue..");
-                    Console.ReadKey();
-                });
+        private static void Execute(ProcessOptions o)
+        {
+            try
+            {
+                ProcessMixins(o);
+            }
+            catch (Exception e)
+            {
+                LogException(e, o);
+                Environment.ExitCode = 1;
+            }
+
+            if (!o.PauseOnExit) return;
+            Logger.Info("Press any key to continue..");
+            Console.ReadKey();
         }
 
         private static void LogException(Exception e, ProcessOptions processOptions, bool inner = false)
@@ -60,8 +69,8 @@ namespace SharpILMixins.Processor
                     var workDir = new DirectoryInfo(Environment.CurrentDirectory);
 
                     var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir ?? workDir,
-                        new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets, o.MixinHandlerName,
-                            o.ExperimentalInlineMethods));
+                        new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets,
+                            o.MixinHandlerName, o.ExperimentalInlineMethods, o.IsGenerateOnly));
 
                     workspace.Apply();
                 }
@@ -74,19 +83,23 @@ namespace SharpILMixins.Processor
             }
         }
 
-        [Verb("process", true)]
-        public class ProcessOptions
+        [Verb("generate", aliases: new[] {"g"}, HelpText = "Generate helper code to work with Mixins")]
+        public class GenerateOptions
         {
             [Option('t', "target-dir", Required = true, HelpText = "The directory of the target assemblies")]
-            public DirectoryInfo? TargetDir { get; set; } = null;
+            public DirectoryInfo? TargetDir { get; set; }
 
             [Option('o', "output-dir",
                 HelpText = "The directory of where to place the output files processed by this tool")]
-            public DirectoryInfo? OutputDir { get; set; } = null;
+            public DirectoryInfo? OutputDir { get; set; }
 
             [Option('m', "mixins", Required = true, HelpText = "The path to the Mixin Assemblies to apply")]
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
+        }
 
+        [Verb("process", true, new[] {"p"}, HelpText = "Offline process Mixins")]
+        public class ProcessOptions : GenerateOptions
+        {
             [Option('d', "dump-targets", HelpText = "Whether or not dump the targets to the console output")]
             public DumpTargetType DumpTargets { get; set; } = DumpTargetType.None;
 
@@ -99,6 +112,8 @@ namespace SharpILMixins.Processor
             [Option('p', "pause",
                 HelpText = "Whether or not to wait for the user's input after the processing is done")]
             public bool PauseOnExit { get; set; }
+
+            public bool IsGenerateOnly { get; set; }
         }
     }
 }

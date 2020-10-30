@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -37,7 +36,7 @@ namespace SharpILMixins.Processor.Utils
                         i => constructor.GetParameters()[i].ParameterType).ToArray();
 
                     var result = constructor?.Invoke(values) as T;
-                    if (attribute.HasNamedArguments)
+                    if (result == null || !attribute.HasNamedArguments) return result;
                     {
                         var arguments = attribute.NamedArguments.Select(c => c.Argument).ToList();
                         var fixedValues = FixValues(arguments,
@@ -47,9 +46,9 @@ namespace SharpILMixins.Processor.Utils
 
                         foreach (var (argument, value) in valueTypes)
                         {
-                            var member = (MemberInfo)(argument.IsProperty
-                                ? typeof(T).GetProperty(argument.Name)
-                                : typeof(T).GetField(argument.Name));
+                            var member = (MemberInfo) (argument.IsProperty
+                                ? result.GetType().GetProperty(argument.Name)
+                                : result.GetType().GetField(argument.Name));
 
                             switch (member)
                             {
@@ -93,13 +92,10 @@ namespace SharpILMixins.Processor.Utils
                     default:
                     {
                         if (parameterType(i).IsArray)
-                        {
-                            foreach (var o in FixArrayValues(parameterType, obj, i)) yield return o;
-                        }
+                            foreach (var o in FixArrayValues(parameterType, obj, i))
+                                yield return o;
                         else
-                        {
                             yield return Cast(obj, parameterType(i));
-                        }
 
                         break;
                     }
