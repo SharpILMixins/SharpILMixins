@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using dnlib.DotNet;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Parameters;

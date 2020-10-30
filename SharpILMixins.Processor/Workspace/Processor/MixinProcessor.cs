@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using dnlib;
 using dnlib.DotNet;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -102,11 +100,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
 
                 var classDeclarationSyntax = new GeneratorMixinRelation(mixinRelation).ToSyntax();
-                if (classDeclarationSyntax != null)
-                {
-                    declarationSyntaxes.Add(classDeclarationSyntax);
-                }
-                
+                if (classDeclarationSyntax != null) declarationSyntaxes.Add(classDeclarationSyntax);
+
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
             }
 

@@ -87,11 +87,11 @@ namespace SharpILMixins.Processor
         public class GenerateOptions
         {
             [Option('t', "target-dir", Required = true, HelpText = "The directory of the target assemblies")]
-            public DirectoryInfo? TargetDir { get; set; } = null;
+            public DirectoryInfo? TargetDir { get; set; }
 
             [Option('o', "output-dir",
                 HelpText = "The directory of where to place the output files processed by this tool")]
-            public DirectoryInfo? OutputDir { get; set; } = null;
+            public DirectoryInfo? OutputDir { get; set; }
 
             [Option('m', "mixins", Required = true, HelpText = "The path to the Mixin Assemblies to apply")]
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;

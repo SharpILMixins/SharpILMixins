@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using dnlib.DotNet;
+﻿using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using SharpILMixins.Annotations.Inject;
 

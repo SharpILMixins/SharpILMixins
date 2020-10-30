@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
@@ -31,11 +30,10 @@ namespace SharpILMixins.Processor.Workspace
                 .Select(LocateTarget)
                 .Select(s =>
                 {
-                    var moduleDef = ModuleDefMD.Load(s, new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true});
+                    var moduleDef = ModuleDefMD.Load(s,
+                        new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true});
                     if (moduleDef.PdbState == null)
-                    {
                         moduleDef.SetPdbState(new PdbState(moduleDef, PdbFileKind.PortablePDB));
-                    }
                     return new MixinTargetModule(new FileInfo(s),
                         moduleDef);
                 })

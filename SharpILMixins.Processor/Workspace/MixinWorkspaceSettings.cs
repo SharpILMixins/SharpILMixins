@@ -2,7 +2,8 @@
 {
     public class MixinWorkspaceSettings
     {
-        public MixinWorkspaceSettings(string outputPath, DumpTargetType dumpTargets, string mixinHandlerName = "mixin", bool experimentalInlineHandlers = false,
+        public MixinWorkspaceSettings(string outputPath, DumpTargetType dumpTargets, string mixinHandlerName = "mixin",
+            bool experimentalInlineHandlers = false,
             bool isGenerateOnly = true)
         {
             OutputPath = outputPath;

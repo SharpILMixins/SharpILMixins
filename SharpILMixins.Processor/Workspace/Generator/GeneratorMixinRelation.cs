@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dynamitey.DynamicObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -14,11 +12,8 @@ namespace SharpILMixins.Processor.Workspace.Generator
 {
     public class GeneratorMixinRelation
     {
-        public MixinRelation MixinRelation { get; }
-
-        public string SimpleTargetName { get; }
-
-        public List<GeneratorMixinAction> MixinActions { get; }
+        private readonly SyntaxTokenList _publicStaticModifiers =
+            TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
         public GeneratorMixinRelation(MixinRelation mixinRelation)
         {
@@ -31,9 +26,11 @@ namespace SharpILMixins.Processor.Workspace.Generator
             SimpleTargetName = targetName.Substring(Math.Max(0, targetName.LastIndexOf('.') + 1));
         }
 
+        public MixinRelation MixinRelation { get; }
 
-        private readonly SyntaxTokenList _publicStaticModifiers =
-            TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
+        public string SimpleTargetName { get; }
+
+        public List<GeneratorMixinAction> MixinActions { get; }
 
         public ClassDeclarationSyntax? ToSyntax()
         {

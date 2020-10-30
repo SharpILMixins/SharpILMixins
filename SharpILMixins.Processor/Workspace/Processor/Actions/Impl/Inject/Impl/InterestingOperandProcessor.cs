@@ -6,7 +6,7 @@ using SharpILMixins.Processor.Utils;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
 {
-    public abstract class InterestingOperandProcessor<T> : BaseInjectionProcessor 
+    public abstract class InterestingOperandProcessor<T> : BaseInjectionProcessor
     {
         public override IEnumerable<Instruction> GetInstructionsForAction(MixinAction action, InjectAttribute attribute,
             InjectionPoint location,

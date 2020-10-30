@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using Microsoft.CodeAnalysis;
@@ -14,9 +13,8 @@ namespace SharpILMixins.Processor.Workspace.Generator
 {
     public class GeneratorMixinAction
     {
-        public MixinAction MixinAction { get; }
-
-        public string SimpleTargetMethodName { get; set; }
+        private readonly SyntaxTokenList _publicStaticModifiers =
+            TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
         public GeneratorMixinAction(MixinAction mixinAction)
         {
@@ -26,6 +24,10 @@ namespace SharpILMixins.Processor.Workspace.Generator
             SimpleTargetMethodName = ComputeSimpleMethodName(MixinAction.TargetMethod);
         }
 
+        public MixinAction MixinAction { get; }
+
+        public string SimpleTargetMethodName { get; set; }
+
         private static string ComputeSimpleMethodName(IMethodDefOrRef targetMethod,
             bool includeDeclaringTypeName = false)
         {
@@ -34,10 +36,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
             if (count > 1)
             {
                 var strings = new List<string> {targetMethod.Name.ToString()};
-                if (includeDeclaringTypeName)
-                {
-                    strings.Insert(0, targetMethod.DeclaringType.ReflectionName);
-                }
+                if (includeDeclaringTypeName) strings.Insert(0, targetMethod.DeclaringType.ReflectionName);
 
                 return string.Join("_",
                     strings.Concat(targetMethod.GetParams()
@@ -46,9 +45,6 @@ namespace SharpILMixins.Processor.Workspace.Generator
 
             return targetMethod.Name;
         }
-        
-        private readonly SyntaxTokenList _publicStaticModifiers =
-            TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
         public IEnumerable<MemberDeclarationSyntax> ToSyntax()
         {
@@ -75,7 +71,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
                     .OfType<IField>()
                     .DistinctBy(i => i.Name.ToString())
                     .Select(i => GetStringLiteralField(i.Name, i.FullName)).ToList()
-                );
+            );
         }
 
         private void AddInvokeMembers(List<MemberDeclarationSyntax> injectMembers)
