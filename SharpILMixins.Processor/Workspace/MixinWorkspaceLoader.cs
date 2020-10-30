@@ -32,8 +32,11 @@ namespace SharpILMixins.Processor.Workspace
                 {
                     var moduleDef = ModuleDefMD.Load(s,
                         new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true});
-                    if (moduleDef.PdbState == null)
-                        moduleDef.SetPdbState(new PdbState(moduleDef, PdbFileKind.PortablePDB));
+
+                    var mixinPdbState = Workspace.MixinModule.PdbState;
+                    
+                    if (moduleDef.PdbState == null && mixinPdbState is not null)
+                        moduleDef.SetPdbState(new PdbState(moduleDef, mixinPdbState.PdbFileKind));
                     return new MixinTargetModule(new FileInfo(s),
                         moduleDef);
                 })
