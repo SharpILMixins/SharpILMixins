@@ -380,3 +380,4 @@ SampleProject-out.dll
 SampleProjectCore-out.dll
 SampleProjectFramework-out.dll
 launchSettings.json
+GeneratedTargets.cs

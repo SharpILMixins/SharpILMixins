@@ -4,7 +4,6 @@ namespace SampleProjectCore.Mixins
     {
         public static class Methods
         {
-            public const string RandomNumber = "System.Int32 SampleProject.Program::RandomNumber()";
             public const string Main = "System.Void SampleProject.Program::Main(System.String[])";
             public static class MainInjects
             {
@@ -13,6 +12,14 @@ namespace SampleProjectCore.Mixins
                 public const string BooleanOverload = "System.Boolean SampleProject.Program::BooleanOverload(System.Boolean)";
                 public const string _coolNumber = "System.Int32 SampleProject.Program::_coolNumber";
             }
+
+            public const string BooleanOverload = "System.Boolean SampleProject.Program::BooleanOverload(System.Boolean)";
+            public static class BooleanOverloadInjects
+            {
+                public const string Boolean_Equals_Boolean = "System.Boolean System.Boolean::Equals(System.Boolean)";
+            }
+
+            public const string RandomNumber = "System.Int32 SampleProject.Program::RandomNumber()";
         }
     }
 

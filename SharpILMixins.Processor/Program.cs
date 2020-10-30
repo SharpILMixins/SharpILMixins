@@ -83,8 +83,7 @@ namespace SharpILMixins.Processor
             }
         }
 
-        [Verb("generate", aliases: new[] {"g"}, HelpText = "Generate helper code to work with Mixins")]
-        public class GenerateOptions
+        public class BaseTargetOptions
         {
             [Option('t', "target-dir", Required = true, HelpText = "The directory of the target assemblies")]
             public DirectoryInfo? TargetDir { get; set; }
@@ -97,8 +96,11 @@ namespace SharpILMixins.Processor
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
         }
 
+        [Verb("generate", aliases: new[] {"g"}, HelpText = "Generate helper code to work with Mixins")]
+        public class GenerateOptions : BaseTargetOptions{}
+
         [Verb("process", true, new[] {"p"}, HelpText = "Offline process Mixins")]
-        public class ProcessOptions : GenerateOptions
+        public class ProcessOptions : BaseTargetOptions
         {
             [Option('d', "dump-targets", HelpText = "Whether or not dump the targets to the console output")]
             public DumpTargetType DumpTargets { get; set; } = DumpTargetType.None;
