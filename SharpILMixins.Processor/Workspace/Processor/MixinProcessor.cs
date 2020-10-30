@@ -1,13 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using dnlib;
 using dnlib.DotNet;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NLog;
 using SharpILMixins.Processor.Utils;
+using SharpILMixins.Processor.Workspace.Generator;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace SharpILMixins.Processor.Workspace.Processor
 {
@@ -30,6 +38,12 @@ namespace SharpILMixins.Processor.Workspace.Processor
         public void Process(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
             DumpRequestedTargets(mixinRelations, Workspace.Settings.DumpTargets);
+
+            if (Workspace.Settings.IsGenerateOnly)
+            {
+                GenerateHelperCode(mixinRelations, targetModule);
+                return;
+            }
 
             CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef);
             foreach (var mixinRelation in mixinRelations)
@@ -77,6 +91,34 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
             }
+        }
+
+        private void GenerateHelperCode(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
+        {
+            List<ClassDeclarationSyntax> declarationSyntaxes = new List<ClassDeclarationSyntax>();
+
+            foreach (var mixinRelation in mixinRelations)
+            {
+                Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
+
+                var classDeclarationSyntax = new GeneratorMixinRelation(mixinRelation).ToSyntax();
+                if (classDeclarationSyntax != null)
+                {
+                    declarationSyntaxes.Add(classDeclarationSyntax);
+                }
+                
+                Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
+            }
+
+            var namespaceDeclarationSyntax = NamespaceDeclaration(
+                    IdentifierName(Workspace.Configuration.BaseNamespace ?? "SharpILMixins"))
+                .WithNamespaceKeyword(
+                    Token(SyntaxKind.NamespaceKeyword))
+                .WithMembers(new SyntaxList<MemberDeclarationSyntax>(declarationSyntaxes));
+
+            var code = namespaceDeclarationSyntax.NormalizeWhitespace().ToFullString();
+
+            File.WriteAllText(Path.Combine(Workspace.Settings.OutputPath, "GeneratedTargets.cs"), code);
         }
 
         private void DumpRequestedTargets(List<MixinRelation> mixinRelations, DumpTargetType dumpTargets)
@@ -138,7 +180,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
         private bool ShouldDump(MixinRelation relation, DumpTargetType dumpTargets)
         {
-            return !dumpTargets.HasFlagFast(DumpTargetType.None);
+            return dumpTargets != DumpTargetType.None;
         }
     }
 }

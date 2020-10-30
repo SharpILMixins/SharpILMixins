@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>SampleProjectCore.Mixins</RootNamespace>
+    <LangVersion>preview</LangVersion>
+    <UnoSourceGeneratorCaptureGenerationHostOutput>true</UnoSourceGeneratorCaptureGenerationHostOutput>
+    <UnoSourceGeneratorUnsecureBinLogEnabled>true</UnoSourceGeneratorUnsecureBinLogEnabled>
+    <UnoSourceGeneration_FixIntellisense>true</UnoSourceGeneration_FixIntellisense>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +26,10 @@
     <ProjectReference Include="..\SampleProjectCore\SampleProjectCore.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties />
+    </VisualStudio>
+  </ProjectExtensions>
 
 </Project>

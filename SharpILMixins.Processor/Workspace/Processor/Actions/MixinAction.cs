@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using dnlib.DotNet;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Parameters;
@@ -46,6 +47,19 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             if (MixinMethod.ParamDefs.Count(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null) > 1)
                 throw new MixinApplyException(
                     "The mixin method contains multiple parameters with the [InjectCancelParam] Attribute.");
+        }
+
+        public bool GetIsValid()
+        {
+            try
+            {
+                CheckIsValid();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void CheckStaticMismatch()

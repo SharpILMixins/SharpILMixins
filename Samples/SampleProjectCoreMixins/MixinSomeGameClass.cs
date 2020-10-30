@@ -16,7 +16,7 @@ public class MixinSomeGameClass
 
 
     //Method name can be anything you want
-    [Inject(At = AtLocation.Head, Target = "DoSomething")]
+    [Inject(At = AtLocation.Head, Method = "DoSomething")]
     private int PrefixDoSomething([InjectCancelParam] out bool cancel)
     {
         isRunning = true;
