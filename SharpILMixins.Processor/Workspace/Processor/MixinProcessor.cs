@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NLog;
+using SharpILMixins.LoggerAbstraction;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Generator;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
@@ -25,7 +26,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
             CopyScaffoldingHandler = new CopyScaffoldingHandler(workspace);
         }
 
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinProcessor));
+        public NLog.Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinProcessor));
 
         public MixinWorkspace Workspace { get; }
 

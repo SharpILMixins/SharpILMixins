@@ -7,10 +7,12 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using NLog;
 using SharpILMixins.Annotations;
+using SharpILMixins.LoggerAbstraction;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
+using Utilities = SharpILMixins.Processor.Utils.Utilities;
 
 namespace SharpILMixins.Processor.Workspace
 {
@@ -35,7 +37,7 @@ namespace SharpILMixins.Processor.Workspace
 
         public MixinWorkspaceSettings Settings { get; }
 
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspace));
+        public NLog.Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(MixinWorkspace));
 
         public DirectoryInfo TargetDir { get; }
 

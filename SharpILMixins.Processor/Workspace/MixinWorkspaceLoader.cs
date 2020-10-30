@@ -5,6 +5,7 @@ using dnlib.DotNet;
 using dnlib.DotNet.Pdb;
 using NLog;
 using SharpILMixins.Annotations;
+using SharpILMixins.LoggerAbstraction;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor;
 

@@ -3,7 +3,7 @@ using NLog.Config;
 using NLog.Layouts;
 using NLog.Targets;
 
-namespace SharpILMixins.Processor.Utils
+namespace SharpILMixins.LoggerAbstraction
 {
     public static class LoggerUtils
     {

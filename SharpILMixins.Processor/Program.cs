@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using CommandLine;
 using NLog;
+using SharpILMixins.LoggerAbstraction;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace;
+using Utilities = SharpILMixins.LoggerAbstraction.Utilities;
 
 namespace SharpILMixins.Processor
 {

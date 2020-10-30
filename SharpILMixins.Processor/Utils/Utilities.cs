@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,15 +10,6 @@ namespace SharpILMixins.Processor.Utils
 {
     public static class Utilities
     {
-        public static bool DebugMode { get; set; } =
-
-#if DEBUG
-            true
-#else
-            false
-#endif
-            ;
-
         public static IEnumerable<TSource> DistinctBy<TSource, TKey>
             (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {

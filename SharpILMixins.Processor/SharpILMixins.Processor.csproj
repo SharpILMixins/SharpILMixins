@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
+    <ProjectReference Include="..\SharpILMixins.LoggerAbstraction\SharpILMixins.LoggerAbstraction.csproj" />
   </ItemGroup>
 
 </Project>
