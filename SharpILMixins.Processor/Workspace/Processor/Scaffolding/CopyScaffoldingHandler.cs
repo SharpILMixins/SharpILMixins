@@ -177,10 +177,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             //Either inline all methods (requested by user)
             //or because the mixin creator asked to inline their method
             //or, if nothing else was specified, only inline if it's an overwrite handler
-            return !method.GetParams().Any(p => p.IsByRef) && (Workspace.Settings.ExperimentalInlineHandlers ||
-                                                               inlineOptionAttribute?.Setting ==
-                                                               InlineSetting.DoInline ||
-                                                               method.GetCustomAttribute<OverwriteAttribute>() != null);
+            var methodDoesNotHaveByRefParams = !method.GetParams().Any(p => p.IsByRef);
+            var forceInlineHandlers = Workspace.Settings.ExperimentalInlineHandlers;
+            var userRequestedInline = inlineOptionAttribute?.Setting ==
+                    InlineSetting.DoInline;
+            var isOverwriteAndUserWantsInline = inlineOptionAttribute?.Setting ==
+                InlineSetting.NoInline && method.GetCustomAttribute<OverwriteAttribute>() != null;
+            
+            return methodDoesNotHaveByRefParams && (forceInlineHandlers ||
+                                                    userRequestedInline ||
+                                                    isOverwriteAndUserWantsInline);
         }
 
         private MethodDefUser CreateNewMethodCopy(TypeDef targetType, MethodDef method)
