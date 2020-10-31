@@ -110,10 +110,15 @@ namespace SharpILMixins.Processor.Workspace
                 var finalPath = Path.Combine(Settings.OutputPath,
                     Path.GetFileNameWithoutExtension(filePathFullName) + "-out" + Path.GetExtension(filePathFullName));
 
-                WriteFinalModule(targetModuleModuleDef, finalPath);
+                if (!Settings.IsGenerateOnly)
+                {
+                    WriteFinalModule(targetModuleModuleDef, finalPath);
+                }
+
                 targetModuleModuleDef.Dispose();
-                Logger.Debug(
-                    $"Finished to process {targetAssembly.FullName} with output named {Path.GetFileName(finalPath)}");
+                var withOutput = $" with output named {Path.GetFileName(finalPath)}";
+                if (Settings.IsGenerateOnly) withOutput = "";
+                Logger.Debug($"Finished to process {targetAssembly.FullName}" + withOutput);
             }
         }
 
