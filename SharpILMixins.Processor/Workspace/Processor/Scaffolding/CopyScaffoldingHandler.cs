@@ -120,8 +120,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         private static TypeDef? FindNewDeclaringType(TypeDef typeDef, ModuleDefMD targetModule)
         {
             var mixinAttribute = typeDef.DeclaringType?.GetCustomAttribute<MixinAttribute>();
-            if (mixinAttribute == null) return null;
-            var ownerType = targetModule.Find(mixinAttribute.Target, false);
+            var ownerType = targetModule.Find(mixinAttribute?.Target, false) ?? typeDef.DeclaringType;
             return ownerType;
         }
 
