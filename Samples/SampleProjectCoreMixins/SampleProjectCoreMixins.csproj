@@ -5,9 +5,6 @@
     <OutputType>Library</OutputType>
     <RootNamespace>SampleProjectCore.Mixins</RootNamespace>
     <LangVersion>preview</LangVersion>
-    <UnoSourceGeneratorCaptureGenerationHostOutput>true</UnoSourceGeneratorCaptureGenerationHostOutput>
-    <UnoSourceGeneratorUnsecureBinLogEnabled>true</UnoSourceGeneratorUnsecureBinLogEnabled>
-    <UnoSourceGeneration_FixIntellisense>true</UnoSourceGeneration_FixIntellisense>
   </PropertyGroup>
 
   <ItemGroup>
