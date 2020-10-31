@@ -3,9 +3,11 @@ using System.Linq;
 using dnlib.DotNet;
 using NLog;
 using SharpILMixins.Annotations;
+using SharpILMixins.LoggerAbstraction;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
+using Utilities = SharpILMixins.Processor.Utils.Utilities;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 {
@@ -17,7 +19,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             RedirectManager = new RedirectManager(this);
         }
 
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
+        public NLog.Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(CopyScaffoldingHandler));
 
         public MixinWorkspace Workspace { get; }
 

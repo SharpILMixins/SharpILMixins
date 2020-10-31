@@ -4,6 +4,7 @@ using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using NLog;
 using SharpILMixins.Annotations;
+using SharpILMixins.LoggerAbstraction;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
 
@@ -18,7 +19,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             SigComparer = new SigComparer();
         }
 
-        public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
+        public NLog.Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
 
         public CopyScaffoldingHandler CopyScaffoldingHandler { get; }
 
