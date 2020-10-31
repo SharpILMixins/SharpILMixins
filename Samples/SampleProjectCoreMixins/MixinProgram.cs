@@ -18,6 +18,7 @@ namespace SampleProjectCore.Mixins
         private static string _ourString = "";
 
         [Overwrite]
+        [NoInline]
         [MethodTarget(typeof(int), "RandomNumber")]
         public static int RandomNumber()
         {
