@@ -1,10 +1,17 @@
 ﻿using System;
+using CommandLine;
 
 namespace SharpILMixins.Bootstrapper
 {
-    class Program
+    [Verb("bootstrap", true, HelpText = "Bootstrap an assembly")]
+    internal class BootstrapperOptions
     {
-        static void Main(string[] args)
+        
+    }
+    
+    internal static class Program
+    {
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
         }

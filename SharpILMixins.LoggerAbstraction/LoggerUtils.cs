@@ -7,7 +7,7 @@ namespace SharpILMixins.LoggerAbstraction
 {
     public static class LoggerUtils
     {
-        public static LogFactory LogFactory { get; set; } = new LogFactory(CreateLoggingConfiguration());
+        public static LogFactory LogFactory { get; } = new LogFactory(CreateLoggingConfiguration());
 
         internal static LoggingConfiguration CreateLoggingConfiguration()
         {
