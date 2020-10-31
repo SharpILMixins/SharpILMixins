@@ -80,7 +80,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     if (action.TargetMethod.Body != null)
                     {
                         action.TargetMethod.Body.UpdateInstructionOffsets();
-
+                        FixPdbStateIfNeeded(action.TargetMethod);
                         RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);
                     }
 
@@ -89,6 +89,24 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
             }
+        }
+
+        private static void FixPdbStateIfNeeded(MethodDef method)
+        {
+            var body = method.Body;
+            if (body == null || !body.HasPdbMethod)
+                return;
+            var pdbMethod = body.PdbMethod;
+            var pdbMethodScope = pdbMethod.Scope;
+            if (pdbMethodScope == null)
+                return;
+            
+            //Fix start
+            if (!body.Instructions.Contains(pdbMethodScope.Start))
+                pdbMethodScope.Start = body.Instructions.FirstOrDefault(i => i.SequencePoint != null);
+            //Fix start
+            if (!body.Instructions.Contains(pdbMethodScope.End))
+                pdbMethodScope.End = body.Instructions.FirstOrDefault(i => i.SequencePoint != null);
         }
 
         private void GenerateHelperCode(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
