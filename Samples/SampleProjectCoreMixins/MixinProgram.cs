@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using SampleProject;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Annotations.Parameters;
 
 namespace SampleProjectCore.Mixins
 {
-    [Mixin(typeof(Program))]
+    [Mixin("SampleProject.Program")]
     public class MixinProgram
     {
         [Shadow] private static int _coolNumber;

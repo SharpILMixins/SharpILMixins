@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SharpILMixins.Analyzer" Version="1.0.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
     <ProjectReference Include="..\SampleProjectCore\SampleProjectCore.csproj" />
   </ItemGroup>
