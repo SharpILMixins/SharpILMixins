@@ -14,13 +14,12 @@ namespace SharpILMixins.Analyzer.Utils
     public static class CustomAttributesHelper
     {
         [DebuggerStepThrough]
-        [CanBeNull]
-        public static T GetCustomAttribute<T>(this ISymbol provider) where T : class
+        public static T? GetCustomAttribute<T>(this ISymbol provider) where T : class
         {
             return GetCustomAttributes<T>(provider).FirstOrDefault();
         }
 
-        public static T[] GetCustomAttributes<T>(this ISymbol provider) where T : class
+        public static T?[] GetCustomAttributes<T>(this ISymbol provider) where T : class
         {
             return provider.GetAttributes().Where(attr =>
             {
@@ -31,12 +30,12 @@ namespace SharpILMixins.Analyzer.Utils
         }
 
 
-        public static AttributeData GetCustomAttributeRaw<T>(this ISymbol provider) where T : class
+        public static AttributeData? GetCustomAttributeRaw<T>(this ISymbol provider) where T : class
         {
             return GetCustomAttributesRaw<T>(provider).FirstOrDefault();
         }
 
-        public static AttributeData[] GetCustomAttributesRaw<T>(this ISymbol provider) where T : class
+        public static AttributeData?[] GetCustomAttributesRaw<T>(this ISymbol provider) where T : class
         {
             return provider.GetAttributes().Where(attr =>
             {

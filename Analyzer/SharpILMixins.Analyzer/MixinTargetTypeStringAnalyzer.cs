@@ -15,15 +15,15 @@ namespace SharpILMixins.Analyzer
     {
         public static readonly string DiagnosticId = Utilities.GetMixinCode(1);
 
-        private const string Category = "Mixin";
         private const string Title = "Targeting Type with a string constant instead of Type constant";
-        private const string Message = Title;
+        private const string Message = "Using String constant to target type \"{0}\" instead of using a Type Reference constant.";
+
         private const string Description =
-            "Using String constant for target type instead of Type constant.\n" +
-            "Consider using a Type Reference of the Target Type or making an Accessor instead of targeting \"{0}\" with a String.";
+            "Using a String constant to target a Type on Mixins is discouraged because the type can change at any point, breaking your code and causing issues.\n" +
+            "Consider using a Type Reference of the Target Type or making an Accessor instead of targeting it with a String.";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId,
-            Title, Message, Category, DiagnosticSeverity.Warning, true, Description);
+            Title, Message, Utilities.Category, DiagnosticSeverity.Warning, true, Description);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -36,21 +36,22 @@ namespace SharpILMixins.Analyzer
 
         private static void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
         {
-            var declaration = context.Node as ClassDeclarationSyntax;
-            Debug.Assert(declaration != null, nameof(declaration) + " != null");
+            var cancellationToken = context.CancellationToken;
+            var declaration = (ClassDeclarationSyntax) context.Node;
             var declaredSymbol = context.SemanticModel.GetDeclaredSymbol(declaration);
 
             var mixinAttributeRaw = declaredSymbol.GetCustomAttributeRaw<MixinAttribute>();
-            var mixinAttribute = declaredSymbol.GetCustomAttribute<MixinAttribute>();
 
-            if (mixinAttributeRaw == null || mixinAttribute == null) return;
+            if (mixinAttributeRaw == null) return;
+
+            var argumentList =
+                (mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax(cancellationToken) as AttributeSyntax)?.ArgumentList;
 
             var firstArgument = mixinAttributeRaw.ConstructorArguments.FirstOrDefault();
-            if (firstArgument.Kind != TypedConstantKind.Type)
+            if (argumentList != null && firstArgument.Kind == TypedConstantKind.Primitive)
             {
-                Debugger.Launch();
                 context.ReportDiagnostic(Diagnostic.Create(Rule,
-                    mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax().GetLocation(), mixinAttribute.Target));
+                    (argumentList.Arguments.FirstOrDefault() ?? mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax()).GetLocation(), firstArgument.Value));
             }
         }
     }

@@ -1,15 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>    
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>SharpILMixins.Analyzer</PackageId>
-    <PackageVersion>1.0.0.2</PackageVersion>
+    <PackageVersion>1.0.0.7</PackageVersion>
     <Authors>NickAc</Authors>
     <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
     <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
@@ -26,6 +27,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SharpILMixins.Analyzer.CodeFixes\SharpILMixins.Analyzer.CodeFixes.csproj" />
     <ProjectReference Include="..\SharpILMixins.Analyzer\SharpILMixins.Analyzer.csproj" />
   </ItemGroup>
@@ -36,6 +41,7 @@
 
   <Target Name="_AddAnalyzersToOutput">
     <ItemGroup>
+      <TfmSpecificPackageFile Include="$(OutputPath)\Newtonsoft.Json.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(OutputPath)\SharpILMixins.Analyzer.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(OutputPath)\SharpILMixins.Analyzer.CodeFixes.dll" PackagePath="analyzers/dotnet/cs" />
     </ItemGroup>

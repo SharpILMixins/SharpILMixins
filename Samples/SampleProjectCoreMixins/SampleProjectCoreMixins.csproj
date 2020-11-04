@@ -22,6 +22,11 @@
     <PackageReference Include="SharpILMixins.Analyzer" Version="1.0.0.1" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
+  </PropertyGroup>
+
+
   <ItemGroup>
     <ProjectReference Include="..\..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
     <ProjectReference Include="..\SampleProjectCore\SampleProjectCore.csproj" />

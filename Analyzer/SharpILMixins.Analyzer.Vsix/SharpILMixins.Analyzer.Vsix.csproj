@@ -25,7 +25,7 @@
   <PropertyGroup>
     <StartAction>Program</StartAction>
     <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
-    <StartArguments>/rootsuffix $(VSSDKTargetPlatformRegRootSuffix)</StartArguments>
+    <StartArguments>/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log</StartArguments>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
@@ -36,6 +36,13 @@
     <ProjectReference Include="..\SharpILMixins.Analyzer.CodeFixes\SharpILMixins.Analyzer.CodeFixes.csproj" />
     <ProjectReference Include="..\SharpILMixins.Analyzer\SharpILMixins.Analyzer.csproj" />
   </ItemGroup>
+
+  <Target Name="IncludeNuGetPackageReferences" AfterTargets="GetVsixSourceItems">
+    <ItemGroup>
+      <VSIXSourceItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'Newtonsoft.Json'" />
+    </ItemGroup>
+  </Target>
+
 
   <ItemGroup>
     <!-- https://github.com/dotnet/sdk/issues/433 -->
