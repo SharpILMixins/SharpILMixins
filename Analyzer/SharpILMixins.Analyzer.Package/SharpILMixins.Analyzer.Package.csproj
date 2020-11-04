@@ -44,7 +44,6 @@
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)\SharpILMixins.Analyzer.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(OutputPath)\SharpILMixins.Analyzer.CodeFixes.dll" PackagePath="analyzers/dotnet/cs" />
-      <TfmSpecificPackageFile Include="$(OutputPath)\SharpILMixins.Analyzer.CodeFixes.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" PackagePath="analyzers/dotnet/cs" />
       <TfmSpecificPackageFile Include="$(PkgJetBrains_Annotations)\lib\netstandard2.0\JetBrains.Annotations.dll" PackagePath="analyzers/dotnet/cs" />
     </ItemGroup>
