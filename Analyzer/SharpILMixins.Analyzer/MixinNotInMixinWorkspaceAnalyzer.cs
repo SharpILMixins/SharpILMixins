@@ -12,15 +12,13 @@ namespace SharpILMixins.Analyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MixinNotInMixinWorkspaceAnalyzer : DiagnosticAnalyzer
     {
-        public static readonly string DiagnosticId = Utilities.GetMixinCode(2);
-
         private const string Title = "Mixin Type not registered on the Mixin Workspace";
         private const string Message = "Mixin Type \"{0}\" needs to be registered on the Mixin Workspace.";
 
         private const string Description =
             "In order for this Type to be processed properly, it needs to be registered on the Mixin Workspace (mixins.json)";
         
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId,
+        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(Utilities.GetMixinCode(2),
             Title, Message, Utilities.Category, DiagnosticSeverity.Error, true, Description);
 
         public override void Initialize(AnalysisContext analysisContext)
@@ -46,9 +44,10 @@ namespace SharpILMixins.Analyzer
             var isMixinType = declaredSymbol.GetCustomAttributeRaw<MixinAttribute>() != null ||
                               declaredSymbol.GetCustomAttributeRaw<AccessorAttribute>() != null;
             if (!isMixinType) return;
+            //Debugger.Launch();
 
             var configuration = Utilities.GetMixinConfiguration(additionalFiles, context.CancellationToken);
-            if (configuration?.IsMixinIncludedInWorkspace(declaredSymbol.MetadataName) != true)
+            if (configuration?.IsMixinIncludedInWorkspace(declaredSymbol.ToDisplayString()) != true)
             {
                 context.ReportDiagnostic(Diagnostic.Create(Rule, declaration.Identifier.GetLocation(), declaration.Identifier.Value));
             }

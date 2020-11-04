@@ -1,12 +1,13 @@
-﻿using System.Collections;
+﻿using JetBrains.Annotations;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Newtonsoft.Json;
+using SharpILMixins.Processor.Workspace;
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using JetBrains.Annotations;
-using Microsoft.CodeAnalysis;
-using Newtonsoft.Json;
-using SharpILMixins.Processor.Workspace;
 
 namespace SharpILMixins.Analyzer.Utils
 {
@@ -33,9 +34,22 @@ namespace SharpILMixins.Analyzer.Utils
         public static MixinConfiguration? GetMixinConfiguration(ImmutableArray<AdditionalText> additionalFiles,
             CancellationToken cancellation)
         {
-            var firstOrDefault = additionalFiles.FirstOrDefault(t => Path.GetFileName(t.Path).Equals("mixins.json"));
-            var sourceText = firstOrDefault?.GetText(cancellation);
+            SourceText? sourceText;
+            try
+            {
+                var firstOrDefault = additionalFiles.FirstOrDefault(t => Path.GetFileName(t.Path).Equals("mixins.json"));
+                sourceText = firstOrDefault?.GetText(cancellation);
+            }
+            catch
+            {
+                sourceText = null;
+            }
             return sourceText == null ? null : JsonConvert.DeserializeObject<MixinConfiguration>(sourceText.ToString());
+        }
+
+        public static DiagnosticDescriptor ProcessRuleForRider(DiagnosticDescriptor diagnosticDescriptor)
+        {
+            return diagnosticDescriptor;
         }
     }
 }

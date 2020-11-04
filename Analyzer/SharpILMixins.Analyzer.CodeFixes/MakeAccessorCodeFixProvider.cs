@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
+using System.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +14,7 @@ using SharpILMixins.Annotations;
 
 namespace SharpILMixins.Analyzer
 {
-    //[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeAccessorCodeFixProvider)), Shared]
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeAccessorCodeFixProvider)), Shared]
     public class MakeAccessorCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
@@ -23,7 +25,7 @@ namespace SharpILMixins.Analyzer
             return WellKnownFixAllProviders.BatchFixer;
         }
 
-        public const string Title = "";
+        public const string Title = "Hey";
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {

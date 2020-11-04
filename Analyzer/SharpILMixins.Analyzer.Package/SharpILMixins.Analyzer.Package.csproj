@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <PackageId>SharpILMixins.Analyzer</PackageId>
-    <PackageVersion>1.0.0.7</PackageVersion>
+    <PackageVersion>1.0.0.10</PackageVersion>
     <Authors>NickAc</Authors>
     <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>
     <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
   <ItemGroup>

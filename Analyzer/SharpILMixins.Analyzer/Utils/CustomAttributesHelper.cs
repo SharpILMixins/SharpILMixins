@@ -45,8 +45,7 @@ namespace SharpILMixins.Analyzer.Utils
             }).Where(c => c != null).ToArray();
         }
 
-        [CanBeNull]
-        private static T GetCustomAttributeFromMetadata<T>(AttributeData attribute) where T : class
+        private static T? GetCustomAttributeFromMetadata<T>(AttributeData attribute) where T : class
         {
             var type = typeof(T).Assembly.GetType(attribute.AttributeClass.ToDisplayString());
             var constructorInfos = type?.GetConstructors();

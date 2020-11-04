@@ -15,15 +15,15 @@ namespace SharpILMixins.Analyzer
     {
         public static readonly string DiagnosticId = Utilities.GetMixinCode(1);
 
-        private const string Title = "Targeting Type with a string constant instead of Type constant";
+        private const string Title = "Targeting Type with a string constant instead of Type constant 2";
         private const string Message = "Using String constant to target type \"{0}\" instead of using a Type Reference constant.";
 
         private const string Description =
             "Using a String constant to target a Type on Mixins is discouraged because the type can change at any point, breaking your code and causing issues.\n" +
             "Consider using a Type Reference of the Target Type or making an Accessor instead of targeting it with a String.";
 
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId,
-            Title, Message, Utilities.Category, DiagnosticSeverity.Warning, true, Description);
+        private static readonly DiagnosticDescriptor Rule = Utilities.ProcessRuleForRider(new DiagnosticDescriptor(DiagnosticId,
+            Title, Message, Utilities.Category, DiagnosticSeverity.Warning, true, Description));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -36,6 +36,7 @@ namespace SharpILMixins.Analyzer
 
         private static void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
         {
+            Debugger.Launch();
             var cancellationToken = context.CancellationToken;
             var declaration = (ClassDeclarationSyntax) context.Node;
             var declaredSymbol = context.SemanticModel.GetDeclaredSymbol(declaration);

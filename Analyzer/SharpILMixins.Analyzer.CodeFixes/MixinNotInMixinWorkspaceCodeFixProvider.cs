@@ -14,17 +14,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SharpILMixins.Analyzer.Utils;
 
 namespace SharpILMixins.Analyzer
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MixinNotInMixinWorkspaceCodeFixProvider)), Shared]
     public class MixinNotInMixinWorkspaceCodeFixProvider : CodeFixProvider
     {
-        public MixinNotInMixinWorkspaceCodeFixProvider()
-        {
-            Debugger.Launch();
-        }
-
         public const string Title = "Add Mixin Type to Mixin Workspace ";
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -44,15 +40,31 @@ namespace SharpILMixins.Analyzer
                 var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf()
                     .OfType<TypeDeclarationSyntax>().First();
 
-                RegisterCodeFix("(At the beginning)",
+                bool IsVisible(MixinConfiguration c) => c.Targets.Length > 0;
+
+                RegisterCodeFix("(At the beginning)", IsVisible,
                     (c, type) => { c.Mixins = new[] {type}.Concat(c.Mixins).ToArray(); }, context,
                     semanticModel.GetDeclaredSymbol(declaration), diagnostic);
-                RegisterCodeFix("(At the end)", (c, type) => { c.Mixins = c.Mixins.Concat(new[] {type}).ToArray(); }, context, semanticModel.GetDeclaredSymbol(declaration),
+
+                void ModifyAddToEnd(MixinConfiguration c, string type)
+                {
+                    c.Mixins = c.Mixins.Concat(new[] {type}).ToArray();
+                }
+
+                RegisterCodeFix("(At the end)", IsVisible,
+                    ModifyAddToEnd, context,
+                    semanticModel.GetDeclaredSymbol(declaration),
+                    diagnostic);
+
+                RegisterCodeFix("", c => !IsVisible(c),
+                    ModifyAddToEnd, context,
+                    semanticModel.GetDeclaredSymbol(declaration),
                     diagnostic);
             }
         }
 
-        private static void RegisterCodeFix(string suffix, Action<MixinConfiguration, string> modifyMixins,
+        private static void RegisterCodeFix(string suffix, Func<MixinConfiguration, bool> isVisibleFunc,
+            Action<MixinConfiguration, string> modifyMixins,
             CodeFixContext context,
             ISymbol declaration, Diagnostic diagnostic)
         {
@@ -70,7 +82,7 @@ namespace SharpILMixins.Analyzer
                 GetMixinConfiguration(context.Document.Project.AdditionalDocuments);
             if (configurationDocument != null && existingConfiguration != null)
             {
-                modifyMixins.Invoke(existingConfiguration, declaration.MetadataName);
+                modifyMixins.Invoke(existingConfiguration, declaration.ToDisplayString());
 
                 return context.Document.Project.Solution
                     .WithAdditionalDocumentText(
@@ -95,6 +107,6 @@ namespace SharpILMixins.Analyzer
         }
 
         public override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(MixinNotInMixinWorkspaceAnalyzer.DiagnosticId);
+            ImmutableArray.Create(Utilities.GetMixinCode(2));
     }
 }
