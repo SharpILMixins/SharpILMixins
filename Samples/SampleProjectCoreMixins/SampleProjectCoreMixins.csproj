@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpILMixins.Analyzer" Version="1.0.0.1" />
+    <ProjectReference Include="..\..\Analyzer\SharpILMixins.Analyzer\SharpILMixins.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Analyzer\SharpILMixins.Analyzer.CodeFixes\SharpILMixins.Analyzer.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -36,7 +36,6 @@ namespace SharpILMixins.Analyzer
 
         private static void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
         {
-            Debugger.Launch();
             var cancellationToken = context.CancellationToken;
             var declaration = (ClassDeclarationSyntax) context.Node;
             var declaredSymbol = context.SemanticModel.GetDeclaredSymbol(declaration);

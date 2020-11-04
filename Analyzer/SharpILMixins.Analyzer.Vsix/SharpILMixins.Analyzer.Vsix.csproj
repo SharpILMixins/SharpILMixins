@@ -40,6 +40,7 @@
   <Target Name="IncludeNuGetPackageReferences" AfterTargets="GetVsixSourceItems">
     <ItemGroup>
       <VSIXSourceItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'Newtonsoft.Json'" />
+      <VSIXSourceItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'JetBrains.Annotations'" />
     </ItemGroup>
   </Target>
 
