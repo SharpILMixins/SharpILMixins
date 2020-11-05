@@ -21,11 +21,11 @@ namespace SharpILMixins.Analyzer
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MixinNotInMixinWorkspaceCodeFixProvider)), Shared]
     public class MixinNotInMixinWorkspaceCodeFixProvider : CodeFixProvider
     {
-        public const string Title = "Add Mixin Type to Mixin Workspace ";
+        public const string Title = "Register Mixin Type to Mixin Workspace ";
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            return WellKnownFixAllProviders.BatchFixer;
+            return null;
         }
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
@@ -34,6 +34,8 @@ namespace SharpILMixins.Analyzer
 
             foreach (var diagnostic in context.Diagnostics)
             {
+                if (!FixableDiagnosticIds.Contains(diagnostic.Id)) continue;
+
                 var diagnosticSpan = diagnostic.Location.SourceSpan;
                 var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
 
@@ -43,12 +45,12 @@ namespace SharpILMixins.Analyzer
                 bool IsVisible(MixinConfiguration c) => c.Targets.Length > 0;
 
                 RegisterCodeFix("(At the beginning)", IsVisible,
-                    (c, type) => { c.Mixins = new[] {type}.Concat(c.Mixins).ToArray(); }, context,
+                    (c, type) => { MixinWorkspaceHelper.AddMixin(ref c, type, true); }, context,
                     semanticModel.GetDeclaredSymbol(declaration), diagnostic);
 
                 void ModifyAddToEnd(MixinConfiguration c, string type)
                 {
-                    c.Mixins = c.Mixins.Concat(new[] {type}).ToArray();
+                    MixinWorkspaceHelper.AddMixin(ref c, type, false);
                 }
 
                 RegisterCodeFix("(At the end)", IsVisible,
@@ -68,42 +70,24 @@ namespace SharpILMixins.Analyzer
             CodeFixContext context,
             ISymbol declaration, Diagnostic diagnostic)
         {
-            context.RegisterCodeFix(
-                CodeAction.Create(Title + suffix, c => DoMixinWorkspaceFix(modifyMixins, declaration, context),
-                    nameof(MixinNotInMixinWorkspaceCodeFixProvider) + suffix), diagnostic);
+            var (configurationDocument, existingConfiguration) =
+                Utilities.GetMixinConfiguration(context.Document.Project.AdditionalDocuments);
+
+            if (configurationDocument == null || existingConfiguration == null) return;
+
+            if (isVisibleFunc(existingConfiguration))
+                context.RegisterCodeFix(
+                    CodeAction.Create(Title + suffix,
+                        c => DoMixinWorkspaceFix(modifyMixins, declaration, context),
+                        nameof(MixinNotInMixinWorkspaceCodeFixProvider) + suffix), diagnostic);
         }
 
         private static async Task<Solution> DoMixinWorkspaceFix(Action<MixinConfiguration, string> modifyMixins,
-            ISymbol declaration,
-            CodeFixContext context)
+            ISymbol declaration, CodeFixContext context)
         {
-            await Task.Yield();
-            var (configurationDocument, existingConfiguration) =
-                GetMixinConfiguration(context.Document.Project.AdditionalDocuments);
-            if (configurationDocument != null && existingConfiguration != null)
-            {
-                modifyMixins.Invoke(existingConfiguration, declaration.ToDisplayString());
-
-                return context.Document.Project.Solution
-                    .WithAdditionalDocumentText(
-                        configurationDocument.Id,
-                        SourceText.From(JsonConvert.SerializeObject(existingConfiguration, Formatting.Indented))
-                    );
-            }
-
-            return context.Document.Project.Solution;
-        }
-
-        public static (TextDocument, MixinConfiguration) GetMixinConfiguration(
-            IEnumerable<TextDocument> additionalFiles)
-        {
-            var firstOrDefault =
-                additionalFiles.FirstOrDefault(t => Path.GetFileName(t.FilePath).Equals("mixins.json"));
-            SourceText sourceText = null;
-            firstOrDefault?.TryGetText(out sourceText);
-            return sourceText == null
-                ? (null, null)
-                : (firstOrDefault, JsonConvert.DeserializeObject<MixinConfiguration>(sourceText.ToString()));
+            return await Utilities.ModifyMixinWorkspace(c => { modifyMixins.Invoke(c, declaration.ToDisplayString()); },
+                context.Document.Project.Solution,
+                context.Document.Project.AdditionalDocuments);
         }
 
         public override ImmutableArray<string> FixableDiagnosticIds =>

@@ -8,40 +8,61 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SharpILMixins.Analyzer.Utils
 {
     public static class CustomAttributesHelper
     {
         [DebuggerStepThrough]
-        public static T? GetCustomAttribute<T>(this ISymbol provider) where T : class
+        public static T? GetCustomAttribute<T>(this ISymbol provider, bool ignoreSuperClasses = false) where T : class
         {
-            return GetCustomAttributes<T>(provider).FirstOrDefault();
+            return GetCustomAttributes<T>(provider, ignoreSuperClasses).FirstOrDefault();
         }
 
-        public static T?[] GetCustomAttributes<T>(this ISymbol provider) where T : class
+        public static T?[] GetCustomAttributes<T>(this ISymbol provider, bool ignoreSuperClasses = false)
+            where T : class
         {
             return provider.GetAttributes().Where(attr =>
             {
                 var definition = attr.AttributeClass;
-                return definition.ToDisplayString() == typeof(T).FullName || definition?.BaseType != null &&
-                    definition.BaseType.ToDisplayString() == typeof(T).FullName;
+                return definition.ToDisplayString() == typeof(T).FullName ||
+                       (!ignoreSuperClasses && definition?.BaseType != null &&
+                        definition.BaseType.ToDisplayString() ==
+                        typeof(T).FullName);
             }).Select(GetCustomAttributeFromMetadata<T>).Where(c => c != null).ToArray();
         }
 
 
-        public static AttributeData? GetCustomAttributeRaw<T>(this ISymbol provider) where T : class
+        public static AttributeData? GetCustomAttributeRaw<T>(this ISymbol provider, bool ignoreSuperClasses = false)
+            where T : class
         {
-            return GetCustomAttributesRaw<T>(provider).FirstOrDefault();
+            return GetCustomAttributesRaw<T>(provider, ignoreSuperClasses).FirstOrDefault();
         }
 
-        public static AttributeData?[] GetCustomAttributesRaw<T>(this ISymbol provider) where T : class
+        public static AttributeData?[] GetCustomAttributesRaw<T>(this ISymbol provider, bool ignoreSuperClasses = false)
+            where T : class
         {
             return provider.GetAttributes().Where(attr =>
             {
                 var definition = attr.AttributeClass;
-                return definition.ToDisplayString() == typeof(T).FullName || definition?.BaseType != null &&
-                    definition.BaseType.ToDisplayString() == typeof(T).FullName;
+                return definition.ToDisplayString() == typeof(T).FullName ||
+                       (!ignoreSuperClasses && definition?.BaseType != null &&
+                        definition.BaseType.ToDisplayString() ==
+                        typeof(T).FullName);
+            }).Where(c => c != null).ToArray();
+        }
+        public static AttributeSyntax?[] GetCustomAttributesSyntax<T>(this BaseTypeDeclarationSyntax provider, SemanticModel model, bool ignoreSuperClasses = false)
+            where T : class
+        {
+            return provider.AttributeLists.SelectMany(l => l.Attributes).Where(attr =>
+            {
+                var definition = model.GetTypeInfo(attr).Type;
+                return definition.ToDisplayString() == typeof(T).FullName ||
+                       (!ignoreSuperClasses && definition?.BaseType != null &&
+                        definition.BaseType.ToDisplayString() ==
+                        typeof(T).FullName);
             }).Where(c => c != null).ToArray();
         }
 
@@ -67,7 +88,8 @@ namespace SharpILMixins.Analyzer.Utils
 
                         foreach (var (argument, value) in valueTypes)
                         {
-                            var member = (MemberInfo) result.GetType().GetProperty(argument.Key) ?? result.GetType().GetField(argument.Key);
+                            var member = (MemberInfo) result.GetType().GetProperty(argument.Key) ??
+                                         result.GetType().GetField(argument.Key);
 
                             switch (member)
                             {
@@ -114,9 +136,9 @@ namespace SharpILMixins.Analyzer.Utils
             }
         }
 
-        private static IEnumerable<object> FixArrayValues(Func<int, Type> parameterType, ImmutableArray<TypedConstant> iList, int i)
+        private static IEnumerable<object> FixArrayValues(Func<int, Type> parameterType,
+            ImmutableArray<TypedConstant> iList, int i)
         {
-
             var elementType = parameterType(i).GetElementType();
             var array = Array.CreateInstance(elementType, iList.Length);
             var fixedValues = FixValues(iList, _ => elementType).ToArray();
@@ -135,6 +157,5 @@ namespace SharpILMixins.Analyzer.Utils
             var ret = compile.DynamicInvoke(data);
             return ret;
         }
-    
     }
 }

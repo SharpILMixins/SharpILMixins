@@ -4,10 +4,12 @@ using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json;
 using SharpILMixins.Processor.Workspace;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SharpILMixins.Analyzer.Utils
 {
@@ -50,6 +52,37 @@ namespace SharpILMixins.Analyzer.Utils
         public static DiagnosticDescriptor ProcessRuleForRider(DiagnosticDescriptor diagnosticDescriptor)
         {
             return diagnosticDescriptor;
+        }
+
+        public static (TextDocument? firstOrDefault, MixinConfiguration?) GetMixinConfiguration(
+            IEnumerable<TextDocument> additionalFiles)
+        {
+            var firstOrDefault =
+                additionalFiles.FirstOrDefault(t => Path.GetFileName(t.FilePath).Equals("mixins.json"));
+            SourceText? sourceText = null;
+            firstOrDefault?.TryGetText(out sourceText);
+            return sourceText == null
+                ? (null, null)
+                : (firstOrDefault, JsonConvert.DeserializeObject<MixinConfiguration>(sourceText.ToString()));
+        }
+
+        public static async Task<Solution> ModifyMixinWorkspace(Action<MixinConfiguration> modifyMixins,
+            Solution solution, IEnumerable<TextDocument> additionalDocuments)
+        {
+            await Task.Yield();
+
+            var (configurationDocument, existingConfiguration) =
+                GetMixinConfiguration(additionalDocuments);
+
+            if (configurationDocument == null || existingConfiguration == null) return solution;
+
+            modifyMixins(existingConfiguration);
+
+            return solution
+                .WithAdditionalDocumentText(
+                    configurationDocument.Id,
+                    SourceText.From(JsonConvert.SerializeObject(existingConfiguration, Formatting.Indented))
+                );
         }
     }
 }

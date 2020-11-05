@@ -40,7 +40,7 @@ namespace SharpILMixins.Analyzer
             var declaration = (ClassDeclarationSyntax) context.Node;
             var declaredSymbol = context.SemanticModel.GetDeclaredSymbol(declaration);
 
-            var mixinAttributeRaw = declaredSymbol.GetCustomAttributeRaw<MixinAttribute>();
+            var mixinAttributeRaw = declaredSymbol.GetCustomAttributeRaw<MixinAttribute>(true);
 
             if (mixinAttributeRaw == null) return;
 

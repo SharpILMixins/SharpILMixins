@@ -44,7 +44,6 @@ namespace SharpILMixins.Analyzer
             var isMixinType = declaredSymbol.GetCustomAttributeRaw<MixinAttribute>() != null ||
                               declaredSymbol.GetCustomAttributeRaw<AccessorAttribute>() != null;
             if (!isMixinType) return;
-            //Debugger.Launch();
 
             var configuration = Utilities.GetMixinConfiguration(additionalFiles, context.CancellationToken);
             if (configuration?.IsMixinIncludedInWorkspace(declaredSymbol.ToDisplayString()) != true)

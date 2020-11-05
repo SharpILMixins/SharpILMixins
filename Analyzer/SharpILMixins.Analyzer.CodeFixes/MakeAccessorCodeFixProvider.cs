@@ -9,8 +9,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Editing;
 using SharpILMixins.Analyzer.Utils;
 using SharpILMixins.Annotations;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace SharpILMixins.Analyzer
 {
@@ -25,7 +27,8 @@ namespace SharpILMixins.Analyzer
             return WellKnownFixAllProviders.BatchFixer;
         }
 
-        public const string Title = "Hey";
+        public const string CreateAccessorTitle = "Create Accessor for this Type and replace with Reference";
+        public const string UseTypeReferenceTitle = "Convert into Type Reference";
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -39,29 +42,98 @@ namespace SharpILMixins.Analyzer
                 var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf()
                     .OfType<TypeDeclarationSyntax>().First();
 
-                // Register a code action that will invoke the fix.
-                context.RegisterCodeFix(
-                    CodeAction.Create(Title, c => MakeUppercaseAsync(context.Document, declaration, c),
-                        nameof(MakeAccessorCodeFixProvider)), diagnostic);
+                var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
+                var declaredSymbol = semanticModel.GetDeclaredSymbol(declaration);
+                var compilation = await context.Document.Project.GetCompilationAsync();
+                if (compilation == null) return;
+
+                var attribute = declaredSymbol.GetCustomAttribute<MixinAttribute>();
+                if (attribute == null) return;
+
+                var typeInfo = compilation.GetTypeByMetadataName(attribute.Target);
+                var document = context.Document;
+
+                var requiresAccessor = typeInfo == null;
+                if (requiresAccessor)
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(CreateAccessorTitle,
+                            c => MakeAccessorAsync(document, declaration, semanticModel, declaredSymbol),
+                            nameof(MakeAccessorCodeFixProvider)), diagnostic);
+                }
+                else
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(UseTypeReferenceTitle,
+                            c => ReplaceWithTypeReferenceAsync(document, declaration, semanticModel, typeInfo),
+                            nameof(MakeAccessorCodeFixProvider)), diagnostic);
+                }
             }
         }
 
-        private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl,
-            CancellationToken cancellationToken)
+        private async Task<Document> ReplaceWithTypeReferenceAsync(Document document, TypeDeclarationSyntax typeDecl,
+            SemanticModel semanticModel, INamedTypeSymbol targetType)
+        {
+            await Task.Yield();
+
+            //Modify the attribute
+            var attributeSyntax =
+                typeDecl.GetCustomAttributesSyntax<MixinAttribute>(semanticModel).FirstOrDefault();
+
+            if (attributeSyntax == null || !document.TryGetSyntaxRoot(out var root))
+                return document;
+
+            var argumentList = attributeSyntax.ArgumentList;
+            var firstArgument = argumentList.Arguments.First();
+            var newArgument = AttributeArgument(TypeOfExpression(IdentifierName(targetType.ToDisplayString())));
+            var newRoot = root.ReplaceNode(attributeSyntax,
+                attributeSyntax.WithArgumentList(argumentList.ReplaceNode(
+                    firstArgument, newArgument)));
+
+            return document.WithSyntaxRoot(newRoot);
+        }
+
+        private async Task<Solution> MakeAccessorAsync(Document document, TypeDeclarationSyntax typeDecl,
+            SemanticModel semanticModel, INamedTypeSymbol declaredSymbol)
         {
             var originalSolution = document.Project.Solution;
 
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-            var declaredSymbol = semanticModel.GetDeclaredSymbol(typeDecl);
+            var attributeRaw = declaredSymbol.GetCustomAttributeRaw<MixinAttribute>();
             var attribute = declaredSymbol.GetCustomAttribute<MixinAttribute>();
-            if (attribute == null)
+            if (attributeRaw == null || attribute == null)
                 return originalSolution;
 
             var fullName = attribute.Target;
-            fullName = fullName.Substring(fullName.LastIndexOfAny(new[] {'.', '/'}));
-            
-            //originalSolution.WithAdditionalDocumentText(DocumentId.CreateNewId(document.Project), SourceText.From(), )
-            return originalSolution;
+
+            //Create accessor type
+            var accessorForTarget = AccessorCreator.CreateAccessorForTarget(fullName, document.Project.DefaultNamespace,
+                out var _, out var targetFileName, out var fullAccessorName);
+            var solution = originalSolution.AddDocument(DocumentId.CreateNewId(document.Project.Id),
+                targetFileName + ".cs",
+                accessorForTarget);
+
+            //Modify the Mixin workspace
+            solution = await Utilities.ModifyMixinWorkspace(
+                c => { MixinWorkspaceHelper.AddMixin(ref c, fullAccessorName, true); }, solution,
+                document.Project.AdditionalDocuments);
+
+            //Modify the attribute
+            var attributeSyntax =
+                typeDecl.GetCustomAttributesSyntax<MixinAttribute>(semanticModel).FirstOrDefault();
+
+            if (attributeSyntax == null || !document.TryGetSyntaxRoot(out var root))
+                return originalSolution;
+
+            var argumentList = attributeSyntax.ArgumentList;
+            var firstArgument = argumentList.Arguments.First();
+            var newArgument = AttributeArgument(TypeOfExpression(IdentifierName(fullAccessorName)));
+            var newRoot = root.ReplaceNode(attributeSyntax,
+                attributeSyntax.WithArgumentList(argumentList.ReplaceNode(
+                    firstArgument, newArgument)));
+
+            solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+
+            return solution;
         }
     }
 }
