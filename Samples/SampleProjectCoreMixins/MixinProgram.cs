@@ -22,7 +22,7 @@ namespace SampleProjectCore.Mixins
             return 42;
         }
 
-        [Inject(Method = "Main", At = AtLocation.Head)]
+        //[Inject(Method = "Main", At = AtLocation.Head)]
         public static void BeforeMain(string[] args, [InjectCancelParam] out bool isCancelled)
         {
             AppDomain.CurrentDomain.AssemblyResolve += (_, __) => null;

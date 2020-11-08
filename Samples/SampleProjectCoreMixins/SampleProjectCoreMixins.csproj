@@ -18,10 +18,10 @@
     <EmbeddedResource Include="mixins.json" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <ProjectReference Include="..\..\Analyzer\SharpILMixins.Analyzer\SharpILMixins.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\Analyzer\SharpILMixins.Analyzer.CodeFixes\SharpILMixins.Analyzer.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <PropertyGroup>
     <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>

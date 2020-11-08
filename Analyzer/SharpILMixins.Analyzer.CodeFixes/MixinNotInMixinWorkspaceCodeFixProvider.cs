@@ -1,17 +1,11 @@
-﻿using JetBrains.Annotations;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
-using Newtonsoft.Json;
 using SharpILMixins.Processor.Workspace;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using SharpILMixins.Analyzer.Utils;
@@ -91,6 +85,6 @@ namespace SharpILMixins.Analyzer
         }
 
         public override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(Utilities.GetMixinCode(2));
+            ImmutableArray.Create(MixinNotInMixinWorkspaceAnalyzer.DiagnosticId);
     }
 }
