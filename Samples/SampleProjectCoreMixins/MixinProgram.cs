@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 using SampleProject;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
@@ -14,8 +12,7 @@ namespace SampleProjectCore.Mixins
     {
         [Shadow] private static int _coolNumber;
 
-        [Unique]
-        private static string _ourString = "";
+        [Unique] private static string _ourString = "";
 
         [Overwrite]
         [NoInline]
@@ -38,14 +35,14 @@ namespace SampleProjectCore.Mixins
             _ourString = "Mixins on C# are cool!";
         }
 
-        [Inject("System.Void SampleProject.Program::Main(System.String[])", AtLocation.Head, 5000)]
+        [Inject(ProgramBruhTargets.Methods.Main, AtLocation.Head, 5000)]
         public static void BeforeMainFirst(ref string[] args)
         {
             args[0] = "Bruh";
             Console.WriteLine($"Hello World from Mixins! This mixin has 5000 priority, so it comes first.");
         }
 
-        [Inject("System.Void SampleProject.Program::Main(System.String[])", AtLocation.Return)]
+        [Inject(ProgramBruhTargets.Methods.Main, AtLocation.Return)]
         public static void AfterMain(string[] args)
         {
             Console.WriteLine($"Goodbye World from Mixins!");
@@ -53,7 +50,6 @@ namespace SampleProjectCore.Mixins
             Console.WriteLine($"Truth: \"{_ourString}\"");
             Console.WriteLine("");
             Console.WriteLine($"Also, here are the args from the Main method: {args}");
-
         }
     }
 }

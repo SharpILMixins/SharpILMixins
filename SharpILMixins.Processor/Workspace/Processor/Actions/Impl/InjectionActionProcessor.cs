@@ -9,7 +9,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
 {
     public class InjectionActionProcessor : BaseMixinActionProcessor<InjectAttribute>
     {
-        public InjectionActionProcessor([NotNull] MixinWorkspace workspace) : base(workspace)
+        public InjectionActionProcessor(MixinWorkspace workspace) : base(workspace)
         {
         }
 

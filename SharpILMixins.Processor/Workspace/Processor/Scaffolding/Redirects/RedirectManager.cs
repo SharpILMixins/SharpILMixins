@@ -5,6 +5,7 @@ using dnlib.DotNet.Emit;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
+using SharpILMixins.Processor.Workspace.Obfuscation;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
@@ -16,6 +17,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             CopyScaffoldingHandler = copyScaffoldingHandler;
             Workspace = copyScaffoldingHandler.Workspace;
             SigComparer = new SigComparer();
+            ObfuscationMapManager = new ObfuscationMapManager(Workspace, this);
         }
 
         public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
@@ -25,6 +27,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public MixinWorkspace Workspace { get; }
 
         public SigComparer SigComparer { get; }
+
+        public ObfuscationMapManager ObfuscationMapManager { get; }
 
         public Dictionary<IMemberRef, IMemberRef> Dictionary { get; } = new Dictionary<IMemberRef, IMemberRef>();
         public Dictionary<string, TypeDef> TypeRedirectDictionary { get; } = new Dictionary<string, TypeDef>();
