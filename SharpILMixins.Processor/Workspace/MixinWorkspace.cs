@@ -112,8 +112,11 @@ namespace SharpILMixins.Processor.Workspace
                 MixinProcessor.Process(mixinRelations, targetModule);
 
                 var filePathFullName = targetModule.FilePath.FullName;
-                var finalPath = Path.Combine(Settings.OutputPath,
-                    Path.GetFileNameWithoutExtension(filePathFullName) + "-out" + Path.GetExtension(filePathFullName));
+                var finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix);
+                if (targetModule.FilePath.FullName.Equals(finalPath))
+                {
+                    finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix + "-out");
+                }
 
                 if (!Settings.IsGenerateOnly)
                 {
@@ -125,6 +128,12 @@ namespace SharpILMixins.Processor.Workspace
                 if (Settings.IsGenerateOnly) withOutput = "";
                 Logger.Debug($"Finished to process {targetAssembly.FullName}" + withOutput);
             }
+        }
+
+        private string ComputeFinalPath(string filePathFullName, string suffix)
+        {
+            return Path.Combine(Settings.OutputPath,
+                Path.GetFileNameWithoutExtension(filePathFullName) + suffix + Path.GetExtension(filePathFullName));
         }
 
         public ModuleDefMD? CurrentTargetModule{ get; set; }
