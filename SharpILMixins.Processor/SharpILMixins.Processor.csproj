@@ -17,10 +17,12 @@
 
   <ItemGroup>
     <None Remove="mixin.config.schema.json" />
+    <None Remove="obfuscation-map.schema.json" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="mixin.config.schema.json" />
+    <EmbeddedResource Include="obfuscation-map.schema.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,5 +38,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties obfuscation-map_1schema_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

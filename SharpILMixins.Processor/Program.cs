@@ -20,6 +20,7 @@ namespace SharpILMixins.Processor
                     MixinsToApply = o.MixinsToApply,
                     OutputDir = o.OutputDir,
                     TargetDir = o.TargetDir,
+                    DeObfuscationMapsToApply = o.DeObfuscationMapsToApply,
                     IsGenerateOnly = true
                 }))
                 .WithParsed<ProcessOptions>(Execute);
@@ -72,6 +73,12 @@ namespace SharpILMixins.Processor
                         new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets,
                             o.MixinHandlerName, o.ExperimentalInlineMethods, o.IsGenerateOnly));
 
+                    
+                    foreach (var fileInfo in o.DeObfuscationMapsToApply)
+                    {
+                        workspace.AddDeObfuscationMap(fileInfo);
+                    }
+
                     workspace.Apply();
                 }
                 catch (Exception e)
@@ -94,10 +101,15 @@ namespace SharpILMixins.Processor
 
             [Option('m', "mixins", Required = true, HelpText = "The path to the Mixin Assemblies to apply")]
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
+
+            [Option("obf-map", Required = true, HelpText = "The de-obfuscation maps to apply while applying the Mixins")]
+            public IEnumerable<FileInfo> DeObfuscationMapsToApply { get; set; } = null!;
         }
 
         [Verb("generate", aliases: new[] {"g"}, HelpText = "Generate helper code to work with Mixins")]
-        public class GenerateOptions : BaseTargetOptions{}
+        public class GenerateOptions : BaseTargetOptions
+        {
+        }
 
         [Verb("process", true, new[] {"p"}, HelpText = "Offline process Mixins")]
         public class ProcessOptions : BaseTargetOptions

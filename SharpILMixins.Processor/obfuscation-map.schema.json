@@ -1,0 +1,44 @@
+{
+  "definitions": {
+    "ObfuscationMapEntry": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": [
+            "Property",
+            "Method",
+            "Field",
+            "Type"
+          ]
+        },
+        "TargetMember": {
+          "type": "string"
+        },
+        "DeObfuscatedName": {
+          "type": "string"
+        },
+        "ParentMember": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "Type",
+        "TargetMember",
+        "DeObfuscatedName"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "Entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ObfuscationMapEntry"
+      }
+    }
+  },
+  "required": [
+    "Entries"
+  ]
+}
