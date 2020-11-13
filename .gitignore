@@ -381,3 +381,4 @@ SampleProjectCore-out.dll
 SampleProjectFramework-out.dll
 launchSettings.json
 GeneratedTargets.cs
+/Samples/SampleProjectCoreMixins/SampleProjectCore.dll
