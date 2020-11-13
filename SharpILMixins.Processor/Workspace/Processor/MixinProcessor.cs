@@ -58,6 +58,10 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     continue;
                 }
 
+                //Redirect Mixin type to target type since it doesn't exist on the target module.
+                RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+                RedirectManager.RegisterRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+
                 CopyScaffoldingHandler.ProcessType(mixinRelation.TargetType, mixinRelation.MixinType);
 
                 foreach (var action in mixinRelation.MixinActions.OrderBy(a => a.Priority))

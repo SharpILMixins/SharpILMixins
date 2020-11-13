@@ -98,6 +98,7 @@ namespace SharpILMixins.Processor.Utils
             Instruction? nextInstruction)
         {
             //action.TargetMethod.Body.KeepOldMaxStack = true;
+            var methodSigParam = action.MixinMethod.MethodSig.Params[index];
             var attribute = action.MixinMethod.ParamDefs[index].GetCustomAttribute<BaseParameterAttribute>();
             if (attribute != null)
                 switch (attribute)
@@ -105,6 +106,15 @@ namespace SharpILMixins.Processor.Utils
                     case InjectCancelParamAttribute injectCancelParamAttribute:
                         HandleInjectCancelParameterAttribute(action, out instruction, afterCallInstructions,
                             nextInstruction);
+                        break;
+                    case InjectLocalAttribute injectLocalAttribute:
+                        instruction = new[]
+                        {
+                            Instruction.Create(methodSigParam.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc,
+                                action.TargetMethod.Body.Variables.ElementAtOrDefault(injectLocalAttribute.Ordinal) ??
+                                throw new MixinApplyException(
+                                    $"Unable to find a local in {action.TargetMethod} with ordinal {injectLocalAttribute.Ordinal}")),
+                        };
                         break;
                     default:
                         throw new MixinApplyException(
