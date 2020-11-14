@@ -1,4 +1,4 @@
-﻿namespace SharpILMixins.Annotations
+﻿namespace SharpILMixins.Annotations.Inline
 {
     public enum InlineSetting
     {
