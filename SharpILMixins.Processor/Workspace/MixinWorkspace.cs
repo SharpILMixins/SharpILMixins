@@ -113,7 +113,7 @@ namespace SharpILMixins.Processor.Workspace
 
                 var filePathFullName = targetModule.FilePath.FullName;
                 var finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix);
-                if (targetModule.FilePath.FullName.Equals(finalPath))
+                if (targetModule.FilePath.FullName.Equals(finalPath) || File.Exists(finalPath))
                 {
                     finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix + "-out");
                 }
