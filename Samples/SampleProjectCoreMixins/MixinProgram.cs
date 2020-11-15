@@ -3,6 +3,7 @@ using System.Diagnostics;
 using SampleProject;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
+using SharpILMixins.Annotations.Inline;
 using SharpILMixins.Annotations.Parameters;
 
 namespace SampleProjectCore.Mixins

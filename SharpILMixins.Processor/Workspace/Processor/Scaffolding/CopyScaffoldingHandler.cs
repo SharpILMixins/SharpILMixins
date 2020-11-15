@@ -4,6 +4,7 @@ using System.Linq;
 using dnlib.DotNet;
 using NLog;
 using SharpILMixins.Annotations;
+using SharpILMixins.Annotations.Inline;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Generator;
 using SharpILMixins.Processor.Workspace.Obfuscation;
