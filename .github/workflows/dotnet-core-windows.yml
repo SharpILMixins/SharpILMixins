@@ -33,6 +33,12 @@ jobs:
     - name: Pack Processor
       run: dotnet pack SharpILMixins.Processor -o .
       
+    - name: Build Analyzer
+      run: dotnet build Analyzer\SharpILMixins.Analyzer.Package
+      
+    - name: Pack Analyzer
+      run: dotnet pack Analyzer\SharpILMixins.Analyzer.Package -o .
+      
     - name: NuGet Push Annotations
       if: ${{ github.event_name != 'pull_request' }}
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
