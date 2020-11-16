@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject;
@@ -9,7 +8,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
 {
     public class InjectionActionProcessor : BaseMixinActionProcessor<InjectAttribute>
     {
-        public InjectionActionProcessor([NotNull] MixinWorkspace workspace) : base(workspace)
+        public InjectionActionProcessor(MixinWorkspace workspace) : base(workspace)
         {
         }
 

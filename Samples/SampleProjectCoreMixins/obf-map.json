@@ -1,0 +1,11 @@
+{
+  "$schema":
+    "https://gist.githubusercontent.com/NickAcPT/5a2013a2e9b7f60bd997f2c3ffd355d3/raw/a5dee827fa7771eeea52790bf5fb31594d22a2fa/ObfuscationMap.schema.json",
+  "Entries": [
+    {
+      "Type": "Type",
+      "TargetMember": "SampleProject.Program",
+      "DeObfuscatedName": "ProgramBruh"
+    }
+  ]
+}

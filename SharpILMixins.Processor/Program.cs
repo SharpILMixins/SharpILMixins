@@ -20,6 +20,8 @@ namespace SharpILMixins.Processor
                     MixinsToApply = o.MixinsToApply,
                     OutputDir = o.OutputDir,
                     TargetDir = o.TargetDir,
+                    DeObfuscationMapsToApply = o.DeObfuscationMapsToApply,
+                    PauseOnExit = o.PauseOnExit,
                     IsGenerateOnly = true
                 }))
                 .WithParsed<ProcessOptions>(Execute);
@@ -33,7 +35,7 @@ namespace SharpILMixins.Processor
             }
             catch (Exception e)
             {
-                LogException(e, o);
+                LogException(e);
                 Environment.ExitCode = 1;
             }
 
@@ -42,7 +44,7 @@ namespace SharpILMixins.Processor
             Console.ReadKey();
         }
 
-        private static void LogException(Exception e, ProcessOptions processOptions, bool inner = false)
+        private static void LogException(Exception e, bool inner = false)
         {
             string? diagnosticMessage = null;
             if (e is MixinApplyException || !Utilities.DebugMode)
@@ -56,7 +58,7 @@ namespace SharpILMixins.Processor
             else
                 Logger.Fatal(e, diagnosticMessage);
 
-            if (e.InnerException != null && e.InnerException != e) LogException(e.InnerException, processOptions, true);
+            if (e.InnerException != null && e.InnerException != e) LogException(e.InnerException, true);
         }
 
         private static void ProcessMixins(ProcessOptions o)
@@ -70,7 +72,13 @@ namespace SharpILMixins.Processor
 
                     var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir ?? workDir,
                         new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets,
-                            o.MixinHandlerName, o.ExperimentalInlineMethods, o.IsGenerateOnly));
+                            o.MixinHandlerName, o.ExperimentalInlineMethods, o.OutputSuffix, o.IsGenerateOnly));
+
+                    
+                    foreach (var fileInfo in o.DeObfuscationMapsToApply)
+                    {
+                        workspace.AddDeObfuscationMap(fileInfo);
+                    }
 
                     workspace.Apply();
                 }
@@ -94,10 +102,20 @@ namespace SharpILMixins.Processor
 
             [Option('m', "mixins", Required = true, HelpText = "The path to the Mixin Assemblies to apply")]
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
+
+            [Option("obf-map", HelpText = "The de-obfuscation maps to apply while applying the Mixins")]
+            public IEnumerable<FileInfo> DeObfuscationMapsToApply { get; set; } = null!;
+            
+            [Option('p', "pause",
+                HelpText = "Whether or not to wait for the user's input after the processing is done")]
+            public bool PauseOnExit { get; set; }
+
         }
 
         [Verb("generate", aliases: new[] {"g"}, HelpText = "Generate helper code to work with Mixins")]
-        public class GenerateOptions : BaseTargetOptions{}
+        public class GenerateOptions : BaseTargetOptions
+        {
+        }
 
         [Verb("process", true, new[] {"p"}, HelpText = "Offline process Mixins")]
         public class ProcessOptions : BaseTargetOptions
@@ -111,9 +129,8 @@ namespace SharpILMixins.Processor
             [Option("mixin-handler-name", HelpText = "Prefix for the unique name of the handler methods")]
             public string MixinHandlerName { get; set; } = "mixin";
 
-            [Option('p', "pause",
-                HelpText = "Whether or not to wait for the user's input after the processing is done")]
-            public bool PauseOnExit { get; set; }
+            [Option("out-suffix", HelpText = "The output suffix of the input file.")]
+            public string OutputSuffix { get; set; } = "";
 
             public bool IsGenerateOnly { get; set; }
         }

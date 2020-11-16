@@ -35,6 +35,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
         public void Process(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
+            var deObfuscationMap = Workspace.ObfuscationMapManager.PerformNameRemapping();
+
             DumpRequestedTargets(mixinRelations, Workspace.Settings.DumpTargets);
 
             if (Workspace.Settings.IsGenerateOnly)
@@ -43,7 +45,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 return;
             }
 
-            CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef);
+            CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef, Workspace.ObfuscationMapManager.CreateUnifiedMap());
             foreach (var mixinRelation in mixinRelations)
             {
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
@@ -55,6 +57,10 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
                     continue;
                 }
+
+                //Redirect Mixin type to target type since it doesn't exist on the target module.
+                RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+                RedirectManager.RegisterRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
 
                 CopyScaffoldingHandler.ProcessType(mixinRelation.TargetType, mixinRelation.MixinType);
 
@@ -89,6 +95,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
             }
+
+            Workspace.ObfuscationMapManager.PerformNameRemapping(deObfuscationMap);
         }
 
         private static void FixPdbStateIfNeeded(MethodDef method)

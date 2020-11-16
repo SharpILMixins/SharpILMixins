@@ -7,7 +7,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
 {
     public class OverwriteActionProcessor : BaseMixinActionProcessor<OverwriteAttribute>
     {
-        public OverwriteActionProcessor([NotNull] MixinWorkspace workspace) : base(workspace)
+        public OverwriteActionProcessor(MixinWorkspace workspace) : base(workspace)
         {
         }
 

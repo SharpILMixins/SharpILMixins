@@ -8,6 +8,7 @@ using Newtonsoft.Json.Schema;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
+using SharpILMixins.Processor.Workspace.Obfuscation;
 using SharpILMixins.Processor.Workspace.Processor;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
@@ -55,6 +56,8 @@ namespace SharpILMixins.Processor.Workspace
 
         public RedirectManager RedirectManager => MixinProcessor.CopyScaffoldingHandler.RedirectManager;
 
+        public ObfuscationMapManager ObfuscationMapManager => MixinProcessor.CopyScaffoldingHandler.RedirectManager.ObfuscationMapManager;
+
         public void Dispose()
         {
             MixinModule.Dispose();
@@ -63,7 +66,7 @@ namespace SharpILMixins.Processor.Workspace
         private void SetupContext()
         {
             var moduleDefMd = ModuleDefMD.Load(typeof(BaseMixinAttribute).Assembly.Location, ModuleContext);
-            var assemblyDef = ModuleContext.AssemblyResolver.Resolve(moduleDefMd.Assembly, moduleDefMd);
+            _ = ModuleContext.AssemblyResolver.Resolve(moduleDefMd.Assembly, moduleDefMd);
         }
 
         public static MixinConfiguration TryToLoadConfiguration(AssemblyDef mixinToApply)
@@ -104,11 +107,16 @@ namespace SharpILMixins.Processor.Workspace
 
                 Logger.Debug($"Starting to process {targetAssembly.FullName}");
                 var mixinRelations = Loader.LoadMixins(MixinAssembly, targetAssembly);
+
+                MixinProcessor.Workspace.CurrentTargetModule = targetModule.ModuleDef;
                 MixinProcessor.Process(mixinRelations, targetModule);
 
                 var filePathFullName = targetModule.FilePath.FullName;
-                var finalPath = Path.Combine(Settings.OutputPath,
-                    Path.GetFileNameWithoutExtension(filePathFullName) + "-out" + Path.GetExtension(filePathFullName));
+                var finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix);
+                if (targetModule.FilePath.FullName.Equals(finalPath) || File.Exists(finalPath))
+                {
+                    finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix + "-out");
+                }
 
                 if (!Settings.IsGenerateOnly)
                 {
@@ -122,6 +130,15 @@ namespace SharpILMixins.Processor.Workspace
             }
         }
 
+        private string ComputeFinalPath(string filePathFullName, string suffix)
+        {
+            return Path.Combine(Settings.OutputPath,
+                Path.GetFileNameWithoutExtension(filePathFullName) + suffix + Path.GetExtension(filePathFullName));
+        }
+
+        public ModuleDefMD? CurrentTargetModule{ get; set; }
+
+
         private static void WriteFinalModule(ModuleDefMD targetModuleModuleDef, string path)
         {
             if (targetModuleModuleDef.IsILOnly)
@@ -131,6 +148,20 @@ namespace SharpILMixins.Processor.Workspace
                 });
             else
                 targetModuleModuleDef.NativeWrite(path);
+        }
+
+        public void AddDeObfuscationMap(FileInfo fileInfo)
+        {
+            var jSchema = JSchema.Parse(Utilities.ReadResource("obfuscation-map.schema.json"));
+            var json = File.ReadAllText(fileInfo.FullName);
+
+            if (!(JsonConvert.DeserializeObject(json) is JObject jObject) || !jObject.IsValid(jSchema))
+                throw new MixinApplyException($"Invalid Deobfuscation Map provided: {Path.GetFileName(fileInfo.FullName)}.");
+
+            var map = jObject.ToObject<ObfuscationMap>() ??
+                      throw new MixinApplyException("Unable to load Mixin Configuration correctly.");
+
+            ObfuscationMapManager.LoadObfuscationMap(map);
         }
     }
 }

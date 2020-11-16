@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using Microsoft.CodeAnalysis;
@@ -14,22 +16,28 @@ namespace SharpILMixins.Processor.Workspace.Generator
     public class GeneratorMixinAction
     {
         public MethodDef TargetMethod { get; }
+        public TypeDef TargetType { get; }
 
         private readonly SyntaxTokenList _publicStaticModifiers =
             TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
-        public GeneratorMixinAction(MethodDef targetMethod)
+        public GeneratorMixinAction(MethodDef targetMethod, TypeDef targetType)
         {
             TargetMethod = targetMethod;
-            SimpleTargetMethodName = ComputeSimpleMethodName(TargetMethod);
+            TargetType = targetType;
+            SimpleTargetMethodName = ComputeSimpleMethodName(TargetMethod, TargetType);
         }
 
         public string SimpleTargetMethodName { get; set; }
 
-        private static string ComputeSimpleMethodName(IMethodDefOrRef targetMethod,
+        private static string ComputeSimpleMethodName(IMethodDefOrRef? targetMethod, TypeDef? targetType,
             bool includeDeclaringTypeName = false)
         {
-            var count = targetMethod.DeclaringType.ResolveTypeDef().Methods
+            Debug.Assert(targetMethod != null, nameof(targetMethod) + " != null");
+            var resolveTypeDef = targetType ??
+                                 throw new MixinApplyException(
+                                     $"Unable to resolve type definition for {targetMethod.DeclaringType}");
+            var count = resolveTypeDef.Methods
                 .Count(m => m.Name.ToString().Equals(targetMethod.Name));
             if (count > 1)
             {
@@ -84,8 +92,8 @@ namespace SharpILMixins.Processor.Workspace.Generator
                 .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
                 .Select(i => i.Operand)
                 .OfType<IMethodDefOrRef>()
-                .DistinctBy(i => ComputeSimpleMethodName(i, true))
-                .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, true), i.FullName))
+                .DistinctBy(i => ComputeSimpleMethodName(i, TargetType, true))
+                .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, TargetType, true), i.FullName))
                 .Where(i => i is not null)
                 .Select(i => i!)
                 .Distinct().ToList());

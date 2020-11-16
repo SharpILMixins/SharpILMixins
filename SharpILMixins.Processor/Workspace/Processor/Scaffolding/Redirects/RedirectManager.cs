@@ -5,6 +5,7 @@ using dnlib.DotNet.Emit;
 using NLog;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
+using SharpILMixins.Processor.Workspace.Obfuscation;
 using SharpILMixins.Processor.Workspace.Processor.Actions;
 
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
@@ -16,6 +17,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             CopyScaffoldingHandler = copyScaffoldingHandler;
             Workspace = copyScaffoldingHandler.Workspace;
             SigComparer = new SigComparer();
+            ObfuscationMapManager = new ObfuscationMapManager(Workspace, this);
         }
 
         public Logger Logger { get; } = LoggerUtils.LogFactory.GetLogger(nameof(RedirectManager));
@@ -26,13 +28,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
         public SigComparer SigComparer { get; }
 
-        public Dictionary<IMemberRef, IMemberRef> Dictionary { get; } = new Dictionary<IMemberRef, IMemberRef>();
+        public ObfuscationMapManager ObfuscationMapManager { get; }
+
+        public Dictionary<IMemberRef, IMemberRef> MemberRedirectDictionary { get; } = new Dictionary<IMemberRef, IMemberRef>();
+
         public Dictionary<string, TypeDef> TypeRedirectDictionary { get; } = new Dictionary<string, TypeDef>();
 
         public void RegisterRedirect(IMemberRef originalMember, IMemberRef newMember)
         {
-            Dictionary.Remove(originalMember);
-            Dictionary.Add(originalMember, newMember);
+            MemberRedirectDictionary.Remove(originalMember);
+            MemberRedirectDictionary.Add(originalMember, newMember);
         }
 
         public void RegisterTypeRedirect(TypeDef originalMember, TypeDef newMember)
@@ -66,6 +71,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
         public void ProcessRedirects(MethodDef method, CilBody body)
         {
+            if (!method.HasBody) return;
+
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
@@ -75,17 +82,33 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             {
                 if (instruction.Operand is IMemberRef memberRef)
                 {
-                    var operandReplacement = Dictionary.FirstOrDefault(m => m.Key.FullName.Equals(memberRef.FullName));
-                    if (!operandReplacement.IsDefault())
+                    var operandReplacement = ProcessMemberRedirect(memberRef, out var modified);
+                    if (modified)
                     {
-                        Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement.Value}");
-                        instruction.Operand = operandReplacement.Value;
+                        Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement}");
+                        instruction.Operand = operandReplacement;
                     }
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
                     instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
             }
+        }
+
+        public T ProcessMemberRedirect<T>(T memberRef) where T: IMemberRef
+        {
+            return (T) ProcessMemberRedirect(memberRef, out _);
+        }
+
+        public IMemberRef ProcessMemberRedirect(IMemberRef memberRef, out bool modified)
+        {
+            modified = false;
+            var result = MemberRedirectDictionary.FirstOrDefault(m => m.Key.FullName.Equals(memberRef.FullName));
+            if (result.IsDefault()) return memberRef;
+
+            modified = true;
+            return result.Value;
+
         }
 
         public string RedirectType(string type)

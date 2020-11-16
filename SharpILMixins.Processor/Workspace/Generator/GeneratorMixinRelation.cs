@@ -22,7 +22,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
             MixinRelation = mixinRelation;
             MixinActions = mixinRelation.TargetType.Methods
                 .Where(a => a.HasBody)
-                .Select(a => new GeneratorMixinAction(a))
+                .Select(a => new GeneratorMixinAction(a, mixinRelation.TargetType))
                 .Where(a => SyntaxFacts.IsValidIdentifier(a.SimpleTargetMethodName))
                 .DistinctBy(a => a.SimpleTargetMethodName).ToList();
             var targetName = mixinRelation.GetTargetName();

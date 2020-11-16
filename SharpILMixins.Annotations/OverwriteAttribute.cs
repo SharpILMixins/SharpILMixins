@@ -5,6 +5,10 @@ namespace SharpILMixins.Annotations
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public class OverwriteAttribute : BaseMixinAttribute
     {
+        public OverwriteAttribute() : this(1000)
+        {
+        }
+
         public OverwriteAttribute(int priority = 1000) : this(string.Empty, priority)
         {
         }
