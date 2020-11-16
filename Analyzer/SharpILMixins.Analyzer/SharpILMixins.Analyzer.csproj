@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\SharpILMixins.Annotations\*.cs" Link="Annotations\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Compile Include="..\..\SharpILMixins.Annotations\Inline\*.cs" Link="Annotations\%(RecursiveDir)Inline\%(FileName)%(Extension)" />
     <Compile Include="..\..\SharpILMixins.Annotations\Inject\*.cs" Link="Annotations\%(RecursiveDir)Inject\%(FileName)%(Extension)" />
     <Compile Include="..\..\SharpILMixins.Annotations\Parameters\*.cs" Link="Annotations\%(RecursiveDir)Parameters\%(FileName)%(Extension)" />
   </ItemGroup>

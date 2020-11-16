@@ -1,13 +1,11 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using SharpILMixins.Analyzer.Utils;
-using SharpILMixins.Annotations;
+using SharpILMixins.Annotations.Inline;
 using AttributeListSyntax = Microsoft.CodeAnalysis.CSharp.Syntax.AttributeListSyntax;
 
 namespace SharpILMixins.Analyzer
@@ -46,30 +44,28 @@ namespace SharpILMixins.Analyzer
             var inlineOptionRaw = declaredSymbol.GetCustomAttributeRaw<MethodInlineOptionAttribute>();
             var inlineOption = declaredSymbol.GetCustomAttribute<MethodInlineOptionAttribute>();
 
-            var isRequestingInline = inlineOptionRaw == null || inlineOption == null || inlineOption.Setting == InlineSetting.DoInline;
+            var isRequestingInline = inlineOption == null || inlineOption.Setting == InlineSetting.DoInline;
 
-            if (declaration.ParameterList.Parameters.Any(p =>
-                p.Modifiers.Any(SyntaxKind.RefKeyword) || p.Modifiers.Any(SyntaxKind.OutKeyword)))
-            {
-                var attribute = inlineOptionRaw.ApplicationSyntaxReference
-                    .GetSyntax(context.CancellationToken);
-                var parent = (AttributeListSyntax) attribute.Parent;
+            if (inlineOptionRaw == null || !declaration.ParameterList.Parameters.Any(p =>
+                p.Modifiers.Any(SyntaxKind.RefKeyword) || p.Modifiers.Any(SyntaxKind.OutKeyword))) return;
+            var attribute = inlineOptionRaw.ApplicationSyntaxReference
+                .GetSyntax(context.CancellationToken);
+            var parent = (AttributeListSyntax) attribute.Parent;
 
-                var isInvalidList = parent.Attributes.Count == 1;
+            var isInvalidList = parent.Attributes.Count == 1;
                 
-                var builder = ImmutableDictionary.CreateBuilder<string, string>();
+            var builder = ImmutableDictionary.CreateBuilder<string, string>();
 
-                builder.Add(nameof(InvalidAttributeType),
-                    (isInvalidList ? InvalidAttributeType.AttributeList : InvalidAttributeType.AttributeSyntax)
-                    .ToString());
-                builder.Add(IsRequestingInlineKey, isRequestingInline.ToString());
+            builder.Add(nameof(InvalidAttributeType),
+                (isInvalidList ? InvalidAttributeType.AttributeList : InvalidAttributeType.AttributeSyntax)
+                .ToString());
+            builder.Add(IsRequestingInlineKey, isRequestingInline.ToString());
 
-                var diagnostic = Diagnostic.Create(isRequestingInline ? InvalidRule : UselessRule,
-                    (isInvalidList ? parent : attribute).GetLocation(), builder.ToImmutable(),
-                    declaration.Identifier.ValueText);
+            var diagnostic = Diagnostic.Create(isRequestingInline ? InvalidRule : UselessRule,
+                (isInvalidList ? parent : attribute).GetLocation(), builder.ToImmutable(),
+                declaration.Identifier.ValueText);
 
-                context.ReportDiagnostic(diagnostic);
-            }
+            context.ReportDiagnostic(diagnostic);
         }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UselessRule, InvalidRule);
