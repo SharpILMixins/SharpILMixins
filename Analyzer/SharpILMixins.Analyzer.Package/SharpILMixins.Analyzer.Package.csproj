@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <PackageId>SharpILMixins.Analyzer</PackageId>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.2</PackageVersion>
     <Authors>NickAc</Authors>
     <PackageLicenseUrl>https://github.com/NickAcPT/SharpILMixins/blob/main/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/NickAcPT/SharpILMixins/</PackageProjectUrl>
