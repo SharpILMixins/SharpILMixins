@@ -30,14 +30,27 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
         public ObfuscationMapManager ObfuscationMapManager { get; }
 
-        public Dictionary<IMemberRef, IMemberRef> MemberRedirectDictionary { get; } = new();
+        public Dictionary<IMemberRef, IMemberRef> GlobalMemberRedirectDictionary { get; } = new();
+        
+        public Dictionary<IMemberDef, Dictionary<IMemberRef, IMemberRef>> LocalMemberRedirectDictionary { get; } = new();
 
         public Dictionary<string, TypeDef> TypeRedirectDictionary { get; } = new();
 
         public void RegisterRedirect(IMemberRef originalMember, IMemberRef newMember)
         {
-            MemberRedirectDictionary.Remove(originalMember);
-            MemberRedirectDictionary.Add(originalMember, newMember);
+            GlobalMemberRedirectDictionary.Remove(originalMember);
+            GlobalMemberRedirectDictionary.Add(originalMember, newMember);
+        }
+        
+        public void RegisterRedirect(IMemberDef scopeMember, IMemberRef originalMember, IMemberRef newMember)
+        {
+            var localDict =
+                LocalMemberRedirectDictionary.GetValueOrDefault(scopeMember, new Dictionary<IMemberRef, IMemberRef>());
+            
+            localDict.Remove(originalMember);
+            localDict.Add(originalMember, newMember);
+
+            LocalMemberRedirectDictionary[scopeMember] = localDict;
         }
 
         public void RegisterTypeRedirect(TypeDef originalMember, TypeDef newMember)
@@ -82,12 +95,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             {
                 if (instruction.Operand is IMemberRef memberRef)
                 {
-                    var operandReplacement = ProcessMemberRedirect(memberRef, out var modified);
-                    if (modified)
-                    {
-                        Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement}");
-                        instruction.Operand = operandReplacement;
-                    }
+                    PerformOperandReplacement(method, memberRef, instruction);
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
@@ -95,15 +103,34 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             }
         }
 
-        public T ProcessMemberRedirect<T>(T memberRef) where T : IMemberRef
+        private void PerformOperandReplacement(MethodDef method, IMemberRef memberRef, Instruction instruction)
         {
-            return (T) ProcessMemberRedirect(memberRef, out _);
+            var operandReplacement = ProcessMemberRedirect(memberRef, out var modified,
+                LocalMemberRedirectDictionary.GetValueOrDefault(method, GlobalMemberRedirectDictionary));
+            if (modified)
+            {
+                Logger.Debug($"Performed replacement of {instruction.Operand} with {operandReplacement}");
+                instruction.Operand = operandReplacement;
+            }
+
+            operandReplacement = ProcessMemberRedirect(operandReplacement, out var modifiedScoped,
+                LocalMemberRedirectDictionary.GetValueOrDefault(method, GlobalMemberRedirectDictionary));
+            if (modifiedScoped)
+            {
+                Logger.Debug($"Performed scoped replacement of {instruction.Operand} with {operandReplacement} in {method}");
+                instruction.Operand = operandReplacement;
+            }
         }
 
-        public IMemberRef ProcessMemberRedirect(IMemberRef memberRef, out bool modified)
+        public T ProcessMemberRedirect<T>(T memberRef, IDictionary<IMemberRef, IMemberRef>? memberRedirectDictionary = null) where T : IMemberRef
+        {
+            return (T) ProcessMemberRedirect(memberRef, out _, memberRedirectDictionary);
+        }
+
+        public IMemberRef ProcessMemberRedirect(IMemberRef memberRef, out bool modified, IDictionary<IMemberRef, IMemberRef>? memberRedirectDictionary = null)
         {
             modified = false;
-            var result = MemberRedirectDictionary.FirstOrDefault(m => m.Key.FullName.Equals(memberRef.FullName));
+            var result = (memberRedirectDictionary ?? GlobalMemberRedirectDictionary).FirstOrDefault(m => m.Key.FullName.Equals(memberRef.FullName));
             if (result.IsDefault()) return memberRef;
 
             modified = true;
