@@ -83,8 +83,16 @@ namespace SharpILMixins.Processor.Workspace
                             throw new MixinApplyException(
                                 $"Unable to find [Mixin]/[Accessor] Attribute in type {fullName} in \"{mixinAssembly.Name}\"");
 
-            var targetType = targetTypes.GetValueOrDefault(attribute.Target) ?? throw new MixinApplyException(
-                $"Unable to find Target Type \"{attribute.Target}\" in Target Assembly");
+            var attributeTarget = attribute.Target;
+            var mixinAccessor = mixinAssembly.Find(attributeTarget, true);
+            var accessorAttribute = mixinAccessor?.GetCustomAttribute<AccessorAttribute>();
+            if (accessorAttribute != null)
+            {
+                attributeTarget = accessorAttribute.Target;
+            }
+
+            var targetType = targetTypes.GetValueOrDefault(attributeTarget) ?? throw new MixinApplyException(
+                $"Unable to find Target Type \"{attributeTarget}\" in Target Assembly");
 
             return new MixinRelation(foundType, targetType, Workspace, attribute);
         }

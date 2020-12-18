@@ -123,6 +123,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
             foreach (var mixinRelation in mixinRelations)
             {
+                if (mixinRelation.IsAccessor) continue;
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
 
                 var classDeclarationSyntax = new GeneratorMixinRelation(mixinRelation).ToSyntax();
