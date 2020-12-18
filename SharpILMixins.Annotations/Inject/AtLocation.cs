@@ -7,6 +7,7 @@
         Invoke,
         Field,
         Constant,
+        NewObj,
         Tail
     }
 }

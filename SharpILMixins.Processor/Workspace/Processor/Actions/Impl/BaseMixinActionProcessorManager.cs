@@ -12,6 +12,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
         {
             ActionProcessors.Add(typeof(InjectAttribute), w => new InjectionActionProcessor(w));
             ActionProcessors.Add(typeof(OverwriteAttribute), w => new OverwriteActionProcessor(w));
+            ActionProcessors.Add(typeof(RedirectAttribute), w => new RedirectActionProcessor(w));
         }
 
         private static Dictionary<Type, Func<MixinWorkspace, IBaseMixinActionProcessor>> ActionProcessors { get; } =

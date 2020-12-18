@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="..\..\SharpILMixins.Annotations\RedirectAnnotation.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\SharpILMixins.Processor\Workspace\MixinConfiguration.cs" Link="Utils\MixinConfiguration.cs" />
   </ItemGroup>
 

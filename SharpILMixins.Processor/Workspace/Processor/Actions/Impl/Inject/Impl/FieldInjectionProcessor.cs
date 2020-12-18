@@ -13,6 +13,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
             return IsFieldOpCode(instruction.OpCode);
         }
 
+        public static bool IsSetFieldOpCode(OpCode opCode)
+        {
+            return opCode.Code switch
+            {
+                Code.Stfld => true,
+                Code.Stsfld => true,
+                _ => false
+            };
+        }
+        
         public static bool IsFieldOpCode(OpCode opCode)
         {
             return opCode.Code switch
@@ -21,9 +31,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
                 Code.Ldflda => true,
                 Code.Ldsfld => true,
                 Code.Ldsflda => true,
-                Code.Stfld => true,
-                Code.Stsfld => true,
-                _ => false
+                _ => IsSetFieldOpCode(opCode)
             };
         }
     }

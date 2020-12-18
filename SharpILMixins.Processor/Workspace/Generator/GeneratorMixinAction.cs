@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using dnlib.DotNet;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -37,7 +38,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
                                      $"Unable to resolve type definition for {targetMethod.DeclaringType}");
             var count = resolveTypeDef.Methods
                 .Count(m => m.Name.ToString().Equals(targetMethod.Name));
-            if (count > 1)
+            if (includeDeclaringTypeName || count > 1)
             {
                 var strings = new List<string> {targetMethod.Name.ToString()};
                 if (includeDeclaringTypeName) strings.Insert(0, targetMethod.DeclaringType.ReflectionName);
@@ -60,11 +61,26 @@ namespace SharpILMixins.Processor.Workspace.Generator
 
             AddInvokeMembers(injectMembers);
             AddFieldMembers(injectMembers);
+            AddNewObjMembers(injectMembers);
 
             if (injectMembers.Count != 0)
                 yield return ClassDeclaration($"{SimpleTargetMethodName}Injects")
                     .AddMembers(injectMembers.ToArray())
                     .WithModifiers(_publicStaticModifiers);
+        }
+
+        private void AddNewObjMembers(List<MemberDeclarationSyntax> injectMembers)
+        {
+            injectMembers.AddRange(
+                TargetMethod.Body.Instructions
+                    .Where(NewObjInjectionProcessor.IsNewObjInstruction)
+                    .Select(i => i.Operand)
+                    .OfType<IMethodDefOrRef>()
+                    .DistinctBy(i => ComputeSimpleMethodName(i, TargetType, true))
+                    .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, TargetType, true), i.FullName))
+                    .Where(i => i is not null)
+                    .Select(i => i!).ToList()
+            );
         }
 
         private void AddFieldMembers(List<MemberDeclarationSyntax> injectMembers)
@@ -94,9 +110,13 @@ namespace SharpILMixins.Processor.Workspace.Generator
                 .Distinct().ToList());
         }
 
+        private readonly Regex _multipleUnderscoreMatcher = new("_{2,}", RegexOptions.Compiled);
+        
         private MemberDeclarationSyntax? GetStringLiteralField(string name, string stringLiteral)
         {
-            if (!SyntaxFacts.IsValidIdentifier(name)) return null;
+            name = string.Join("", name.Select(c => SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_'));
+            name = _multipleUnderscoreMatcher.Replace(name, "_");
+            
             return FieldDeclaration(VariableDeclaration(
                         PredefinedType(
                             Token(SyntaxKind.StringKeyword)))

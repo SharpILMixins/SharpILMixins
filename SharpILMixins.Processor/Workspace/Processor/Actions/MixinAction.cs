@@ -63,7 +63,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 
         private void CheckStaticMismatch()
         {
-            if (TargetMethod.IsStatic != MixinMethod.IsStatic)
+            var isNotRedirect = MixinMethod.GetCustomAttribute<RedirectAttribute>() is null;
+            if (TargetMethod.IsStatic != MixinMethod.IsStatic && isNotRedirect)
             {
                 var targetIsStatic = $"is{(!TargetMethod.IsStatic ? "n't" : "")}";
                 var mixinIsStatic = $"is{(!MixinMethod.IsStatic ? "n't" : "")}";

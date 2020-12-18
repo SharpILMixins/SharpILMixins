@@ -16,6 +16,7 @@ namespace SharpILMixins.Annotations
         }
 
         public string Method { get; set; } = string.Empty;
+        
         public int Priority { get; set; } = 1000;
     }
 }

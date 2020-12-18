@@ -1,6 +1,6 @@
 namespace SampleProjectCore
 {
-    internal class StringWrapper
+    public class StringWrapper
     {
         public StringWrapper(string epic)
         {
