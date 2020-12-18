@@ -1,21 +1,25 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using System.Composition;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
-using System.Composition;
-using System.Linq;
-using System.Threading.Tasks;
 using SharpILMixins.Analyzer.Utils;
 using SharpILMixins.Annotations;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace SharpILMixins.Analyzer
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeAccessorCodeFixProvider)), Shared]
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakeAccessorCodeFixProvider))]
+    [Shared]
     public class MakeAccessorCodeFixProvider : CodeFixProvider
     {
+        public const string CreateAccessorTitle = "Create Accessor for this Type and replace with Reference";
+        public const string UseTypeReferenceTitle = "Convert into Type Reference";
+
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(MixinTargetTypeStringAnalyzer.DiagnosticId);
 
@@ -23,9 +27,6 @@ namespace SharpILMixins.Analyzer
         {
             return WellKnownFixAllProviders.BatchFixer;
         }
-
-        public const string CreateAccessorTitle = "Create Accessor for this Type and replace with Reference";
-        public const string UseTypeReferenceTitle = "Convert into Type Reference";
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -51,19 +52,15 @@ namespace SharpILMixins.Analyzer
 
                 var requiresAccessor = typeInfo == null;
                 if (requiresAccessor)
-                {
                     context.RegisterCodeFix(
                         CodeAction.Create(CreateAccessorTitle,
                             c => MakeAccessorAsync(document, declaration, semanticModel, declaredSymbol),
                             nameof(MakeAccessorCodeFixProvider)), diagnostic);
-                }
                 else
-                {
                     context.RegisterCodeFix(
                         CodeAction.Create(UseTypeReferenceTitle,
                             c => ReplaceWithTypeReferenceAsync(document, declaration, semanticModel, typeInfo),
                             nameof(MakeAccessorCodeFixProvider)), diagnostic);
-                }
             }
         }
 

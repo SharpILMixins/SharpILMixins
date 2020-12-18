@@ -74,11 +74,8 @@ namespace SharpILMixins.Processor
                         new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets,
                             o.MixinHandlerName, o.ExperimentalInlineMethods, o.OutputSuffix, o.IsGenerateOnly));
 
-                    
-                    foreach (var fileInfo in o.DeObfuscationMapsToApply)
-                    {
-                        workspace.AddDeObfuscationMap(fileInfo);
-                    }
+
+                    foreach (var fileInfo in o.DeObfuscationMapsToApply) workspace.AddDeObfuscationMap(fileInfo);
 
                     workspace.Apply();
                 }
@@ -105,11 +102,10 @@ namespace SharpILMixins.Processor
 
             [Option("obf-map", HelpText = "The de-obfuscation maps to apply while applying the Mixins")]
             public IEnumerable<FileInfo> DeObfuscationMapsToApply { get; set; } = null!;
-            
+
             [Option('p', "pause",
                 HelpText = "Whether or not to wait for the user's input after the processing is done")]
             public bool PauseOnExit { get; set; }
-
         }
 
         [Verb("generate", aliases: new[] {"g"}, HelpText = "Generate helper code to work with Mixins")]

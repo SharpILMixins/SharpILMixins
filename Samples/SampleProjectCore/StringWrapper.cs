@@ -1,11 +1,17 @@
 namespace SampleProjectCore
 {
-    class StringWrapper
+    internal class StringWrapper
     {
+        public StringWrapper(string epic)
+        {
+            Epic = epic;
+        }
+
         public string Epic { get; }
 
-        public StringWrapper(string epic) => Epic = epic;
-
-        public override string ToString() => Epic;
+        public override string ToString()
+        {
+            return Epic;
+        }
     }
 }

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Metadata;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -28,9 +27,9 @@ namespace SharpILMixins.Analyzer.Utils
             {
                 var definition = attr.AttributeClass;
                 return definition.ToDisplayString() == typeof(T).FullName ||
-                       (!ignoreSuperClasses && definition?.BaseType != null &&
-                        definition.BaseType.ToDisplayString() ==
-                        typeof(T).FullName);
+                       !ignoreSuperClasses && definition?.BaseType != null &&
+                       definition.BaseType.ToDisplayString() ==
+                       typeof(T).FullName;
             }).Select(GetCustomAttributeFromMetadata<T>).Where(c => c != null).ToArray();
         }
 
@@ -48,21 +47,23 @@ namespace SharpILMixins.Analyzer.Utils
             {
                 var definition = attr.AttributeClass;
                 return definition.ToDisplayString() == typeof(T).FullName ||
-                       (!ignoreSuperClasses && definition?.BaseType != null &&
-                        definition.BaseType.ToDisplayString() ==
-                        typeof(T).FullName);
+                       !ignoreSuperClasses && definition?.BaseType != null &&
+                       definition.BaseType.ToDisplayString() ==
+                       typeof(T).FullName;
             }).Where(c => c != null).ToArray();
         }
-        public static AttributeSyntax?[] GetCustomAttributesSyntax<T>(this BaseTypeDeclarationSyntax provider, SemanticModel model, bool ignoreSuperClasses = false)
+
+        public static AttributeSyntax?[] GetCustomAttributesSyntax<T>(this BaseTypeDeclarationSyntax provider,
+            SemanticModel model, bool ignoreSuperClasses = false)
             where T : class
         {
             return provider.AttributeLists.SelectMany(l => l.Attributes).Where(attr =>
             {
                 var definition = model.GetTypeInfo(attr).Type;
                 return definition.ToDisplayString() == typeof(T).FullName ||
-                       (!ignoreSuperClasses && definition?.BaseType != null &&
-                        definition.BaseType.ToDisplayString() ==
-                        typeof(T).FullName);
+                       !ignoreSuperClasses && definition?.BaseType != null &&
+                       definition.BaseType.ToDisplayString() ==
+                       typeof(T).FullName;
             }).Where(c => c != null).ToArray();
         }
 

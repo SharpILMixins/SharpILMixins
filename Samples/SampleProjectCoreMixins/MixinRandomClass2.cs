@@ -2,7 +2,7 @@
 
 namespace SampleProjectCore.Mixins
 {
-    [Mixin(typeof(RandomClass.RandomClass2))]
+    [Mixin(typeof(RandomClass2))]
     public class MixinRandomClass2 : RandomClass, RandomClass.IRandomInterface
     {
         public double GetDoubleValue()

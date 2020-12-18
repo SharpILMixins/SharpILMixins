@@ -30,9 +30,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
         public ObfuscationMapManager ObfuscationMapManager { get; }
 
-        public Dictionary<IMemberRef, IMemberRef> MemberRedirectDictionary { get; } = new Dictionary<IMemberRef, IMemberRef>();
+        public Dictionary<IMemberRef, IMemberRef> MemberRedirectDictionary { get; } = new();
 
-        public Dictionary<string, TypeDef> TypeRedirectDictionary { get; } = new Dictionary<string, TypeDef>();
+        public Dictionary<string, TypeDef> TypeRedirectDictionary { get; } = new();
 
         public void RegisterRedirect(IMemberRef originalMember, IMemberRef newMember)
         {
@@ -95,7 +95,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             }
         }
 
-        public T ProcessMemberRedirect<T>(T memberRef) where T: IMemberRef
+        public T ProcessMemberRedirect<T>(T memberRef) where T : IMemberRef
         {
             return (T) ProcessMemberRedirect(memberRef, out _);
         }
@@ -108,7 +108,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
             modified = true;
             return result.Value;
-
         }
 
         public string RedirectType(string type)

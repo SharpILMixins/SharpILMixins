@@ -1,15 +1,15 @@
-﻿using JetBrains.Annotations;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
-using Newtonsoft.Json;
-using SharpILMixins.Processor.Workspace;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Newtonsoft.Json;
+using SharpILMixins.Processor.Workspace;
 
 namespace SharpILMixins.Analyzer.Utils
 {
@@ -27,7 +27,7 @@ namespace SharpILMixins.Analyzer.Utils
             return configuration.Mixins.Any(m =>
             {
                 var isMixinWithNamespaceEquals = configuration.BaseNamespace != null &&
-                              (configuration.BaseNamespace + "." + m).Equals(mixinType);
+                                                 (configuration.BaseNamespace + "." + m).Equals(mixinType);
                 return m.Equals(mixinType) || isMixinWithNamespaceEquals;
             });
         }
@@ -39,13 +39,15 @@ namespace SharpILMixins.Analyzer.Utils
             SourceText? sourceText;
             try
             {
-                var firstOrDefault = additionalFiles.FirstOrDefault(t => Path.GetFileName(t.Path).Equals("mixins.json"));
+                var firstOrDefault =
+                    additionalFiles.FirstOrDefault(t => Path.GetFileName(t.Path).Equals("mixins.json"));
                 sourceText = firstOrDefault?.GetText(cancellation);
             }
             catch
             {
                 sourceText = null;
             }
+
             return sourceText == null ? null : JsonConvert.DeserializeObject<MixinConfiguration>(sourceText.ToString());
         }
 

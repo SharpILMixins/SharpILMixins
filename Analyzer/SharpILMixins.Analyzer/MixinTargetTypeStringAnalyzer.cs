@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,16 +12,19 @@ namespace SharpILMixins.Analyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MixinTargetTypeStringAnalyzer : DiagnosticAnalyzer
     {
-        public static readonly string DiagnosticId = Utilities.GetMixinCode(1);
-
         private const string Title = "Targeting Type with a string constant instead of Type constant 2";
-        private const string Message = "Using String constant to target type \"{0}\" instead of using a Type Reference constant.";
+
+        private const string Message =
+            "Using String constant to target type \"{0}\" instead of using a Type Reference constant.";
 
         private const string Description =
             "Using a String constant to target a Type on Mixins is discouraged because the type can change at any point, breaking your code and causing issues.\n" +
             "Consider using a Type Reference of the Target Type or making an Accessor instead of targeting it with a String.";
 
-        private static readonly DiagnosticDescriptor Rule = Utilities.ProcessRuleForRider(new DiagnosticDescriptor(DiagnosticId,
+        public static readonly string DiagnosticId = Utilities.GetMixinCode(1);
+
+        private static readonly DiagnosticDescriptor Rule = Utilities.ProcessRuleForRider(new DiagnosticDescriptor(
+            DiagnosticId,
             Title, Message, Utilities.Category, DiagnosticSeverity.Warning, true, Description));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -45,14 +47,14 @@ namespace SharpILMixins.Analyzer
             if (mixinAttributeRaw == null) return;
 
             var argumentList =
-                (mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax(cancellationToken) as AttributeSyntax)?.ArgumentList;
+                (mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax(cancellationToken) as AttributeSyntax)
+                ?.ArgumentList;
 
             var firstArgument = mixinAttributeRaw.ConstructorArguments.FirstOrDefault();
             if (argumentList != null && firstArgument.Kind == TypedConstantKind.Primitive)
-            {
                 context.ReportDiagnostic(Diagnostic.Create(Rule,
-                    (argumentList.Arguments.FirstOrDefault() ?? mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax()).GetLocation(), firstArgument.Value));
-            }
+                    (argumentList.Arguments.FirstOrDefault() ??
+                     mixinAttributeRaw.ApplicationSyntaxReference.GetSyntax()).GetLocation(), firstArgument.Value));
         }
     }
 }

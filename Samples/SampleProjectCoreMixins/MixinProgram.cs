@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using SampleProject;
-using System.Reflection;
-using SampleProject;
-using System.Reflection;
-using SampleProject;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Annotations.Inline;
@@ -44,13 +39,13 @@ namespace SampleProjectCore.Mixins
         public static void BeforeMainFirst(ref string[] args)
         {
             args[0] = "Bruh";
-            Console.WriteLine($"Hello World from Mixins! This mixin has 5000 priority, so it comes first.");
+            Console.WriteLine("Hello World from Mixins! This mixin has 5000 priority, so it comes first.");
         }
 
         [Inject(ProgramBruhTargets.Methods.Main, AtLocation.Return)]
         public static void AfterMain(string[] args)
         {
-            Console.WriteLine($"Goodbye World from Mixins!");
+            Console.WriteLine("Goodbye World from Mixins!");
             Console.WriteLine($"Cool number after: {_coolNumber}");
             Console.WriteLine($"Truth: \"{_ourString}\"");
             Console.WriteLine("");

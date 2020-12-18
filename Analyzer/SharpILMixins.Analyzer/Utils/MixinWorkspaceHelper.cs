@@ -8,7 +8,7 @@ namespace SharpILMixins.Analyzer.Utils
         public static void AddMixin(ref MixinConfiguration configuration, string mixinType, bool isAtTop)
         {
             var toAdd = mixinType;
-            
+
             var namespaceToAdd = configuration.BaseNamespace;
             if (namespaceToAdd != null)
                 namespaceToAdd += ".";

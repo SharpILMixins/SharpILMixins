@@ -45,7 +45,7 @@ namespace SharpILMixins.Processor.Utils
         {
             var parametersMethod = targetMethod ?? methodToInvoke;
             var paramsMethodParams = parametersMethod.Parameters.Where(p => !p.IsHiddenThisParameter).ToArray();
-            List<Instruction> arguments = new List<Instruction>();
+            List<Instruction> arguments = new();
 
             if (!methodToInvoke.IsStatic) arguments.Add(new Instruction(OpCodes.Ldarg_0)); //this instance
 
@@ -113,7 +113,7 @@ namespace SharpILMixins.Processor.Utils
                             Instruction.Create(methodSigParam.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc,
                                 action.TargetMethod.Body.Variables.ElementAtOrDefault(injectLocalAttribute.Ordinal) ??
                                 throw new MixinApplyException(
-                                    $"Unable to find a local in {action.TargetMethod} with ordinal {injectLocalAttribute.Ordinal}")),
+                                    $"Unable to find a local in {action.TargetMethod} with ordinal {injectLocalAttribute.Ordinal}"))
                         };
                         break;
                     default:

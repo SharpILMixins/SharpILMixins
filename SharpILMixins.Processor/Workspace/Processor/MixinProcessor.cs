@@ -45,7 +45,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 return;
             }
 
-            CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef, Workspace.ObfuscationMapManager.CreateUnifiedMap());
+            CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef,
+                Workspace.ObfuscationMapManager.CreateUnifiedMap());
             foreach (var mixinRelation in mixinRelations)
             {
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
@@ -108,7 +109,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
             var pdbMethodScope = pdbMethod.Scope;
             if (pdbMethodScope == null)
                 return;
-            
+
             //Fix start
             if (!body.Instructions.Contains(pdbMethodScope.Start))
                 pdbMethodScope.Start = body.Instructions.FirstOrDefault(i => i.SequencePoint != null);
@@ -119,7 +120,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
         private void GenerateHelperCode(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
-            List<ClassDeclarationSyntax> declarationSyntaxes = new List<ClassDeclarationSyntax>();
+            List<ClassDeclarationSyntax> declarationSyntaxes = new();
 
             foreach (var mixinRelation in mixinRelations)
             {

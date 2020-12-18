@@ -7,8 +7,6 @@ namespace SharpILMixins.Annotations
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class MixinAttribute : Attribute
     {
-        public string Target { get; }
-
         public MixinAttribute(Type target)
         {
             Target = target.FullName;
@@ -18,6 +16,7 @@ namespace SharpILMixins.Annotations
         {
             Target = target;
         }
-    }
 
+        public string Target { get; }
+    }
 }

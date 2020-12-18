@@ -7,7 +7,7 @@ namespace SharpILMixins.Processor.Utils
 {
     public static class LoggerUtils
     {
-        public static LogFactory LogFactory { get; set; } = new LogFactory(CreateLoggingConfiguration());
+        public static LogFactory LogFactory { get; set; } = new(CreateLoggingConfiguration());
 
         internal static LoggingConfiguration CreateLoggingConfiguration()
         {

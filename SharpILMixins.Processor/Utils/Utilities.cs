@@ -22,7 +22,7 @@ namespace SharpILMixins.Processor.Utils
         public static IEnumerable<TSource> DistinctBy<TSource, TKey>
             (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
-            HashSet<TKey> seenKeys = new HashSet<TKey>();
+            HashSet<TKey> seenKeys = new();
             foreach (var element in source)
                 if (seenKeys.Add(keySelector(element)))
                     yield return element;
@@ -40,7 +40,7 @@ namespace SharpILMixins.Processor.Utils
                 .Single(str => str.EndsWith(name));
             using Stream stream = assembly.GetManifestResourceStream(resourcePath) ??
                                   throw new InvalidOperationException($"Unable to find embedded file named {name}");
-            using StreamReader reader = new StreamReader(stream);
+            using StreamReader reader = new(stream);
 
             return reader.ReadToEnd();
         }

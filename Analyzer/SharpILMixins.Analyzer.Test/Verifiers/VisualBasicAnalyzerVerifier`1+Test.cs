@@ -9,9 +9,6 @@ namespace SharpILMixins.Analyzer.Test
     {
         public class Test : VisualBasicAnalyzerTest<TAnalyzer, MSTestVerifier>
         {
-            public Test()
-            {
-            }
         }
     }
 }

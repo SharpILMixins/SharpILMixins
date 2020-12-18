@@ -17,7 +17,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject
         }
 
         public static Dictionary<AtLocation, BaseInjectionProcessor> InjectionProcessors { get; } =
-            new Dictionary<AtLocation, BaseInjectionProcessor>();
+            new();
 
         private static void Register(BaseInjectionProcessor injectionProcessor)
         {

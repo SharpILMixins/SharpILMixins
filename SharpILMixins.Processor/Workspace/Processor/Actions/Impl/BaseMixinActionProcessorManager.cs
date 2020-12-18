@@ -15,7 +15,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
         }
 
         private static Dictionary<Type, Func<MixinWorkspace, IBaseMixinActionProcessor>> ActionProcessors { get; } =
-            new Dictionary<Type, Func<MixinWorkspace, IBaseMixinActionProcessor>>();
+            new();
 
         public static IBaseMixinActionProcessor GetProcessor(Type attributeType, MixinWorkspace workspace)
         {

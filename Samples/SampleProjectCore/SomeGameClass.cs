@@ -2,15 +2,13 @@
 {
     public class SomeGameClass
     {
-        public bool isRunning;
         public int counter;
+        public bool isRunning;
 
         private int DoSomething()
         {
-            if (isRunning)
-            {
-                counter++;
-            }
+            if (isRunning) counter++;
             return counter * 10;
         }
-    }}
+    }
+}

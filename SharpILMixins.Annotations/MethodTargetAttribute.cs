@@ -5,10 +5,6 @@ namespace SharpILMixins.Annotations
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor)]
     public sealed class MethodTargetAttribute : Attribute
     {
-        public string ReturnType { get; }
-        public string Name { get; }
-        public string[] ArgumentTypes { get; }
-
         public MethodTargetAttribute(Type returnType, string name) : this(returnType, name, new Type[] { })
         {
         }
@@ -21,12 +17,10 @@ namespace SharpILMixins.Annotations
         {
             ReturnType = returnType.FullName;
             Name = name;
-            
+
             var argumentTypesArray = new string[argumentTypes.Length];
             for (var index = 0; index < argumentTypes.Length; index++)
-            {
                 argumentTypesArray[index] = argumentTypes[index].FullName;
-            }
 
             ArgumentTypes = argumentTypesArray;
         }
@@ -37,5 +31,9 @@ namespace SharpILMixins.Annotations
             Name = name;
             ArgumentTypes = argumentTypes;
         }
+
+        public string ReturnType { get; }
+        public string Name { get; }
+        public string[] ArgumentTypes { get; }
     }
 }

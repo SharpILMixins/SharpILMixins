@@ -1,8 +1,5 @@
-﻿using System;
-using System.IO;
-using SharpILMixins.Annotations;
+﻿using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
-using SharpILMixins.Annotations.Parameters;
 
 namespace SampleProjectCore.Mixins
 {

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,14 +11,18 @@ namespace SharpILMixins.Analyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class MixinNotInMixinWorkspaceAnalyzer : DiagnosticAnalyzer
     {
-        public static readonly string DiagnosticId = Utilities.GetMixinCode(2);
         private const string Title = "Mixin Type not registered on the Mixin Workspace";
         private const string Message = "Mixin Type \"{0}\" needs to be registered on the Mixin Workspace.";
 
         private const string Description =
             "In order for this Type to be processed properly, it needs to be registered on the Mixin Workspace (mixins.json)";
-        private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId,
+
+        public static readonly string DiagnosticId = Utilities.GetMixinCode(2);
+
+        private static readonly DiagnosticDescriptor Rule = new(DiagnosticId,
             Title, Message, Utilities.Category, DiagnosticSeverity.Error, true, Description);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -28,16 +31,15 @@ namespace SharpILMixins.Analyzer
                 analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
                 analysisContext.EnableConcurrentExecution();
 
-                context.RegisterSyntaxNodeAction(c => AnalyzeType(c, context.Options.AdditionalFiles), SyntaxKind.ClassDeclaration);
-
+                context.RegisterSyntaxNodeAction(c => AnalyzeType(c, context.Options.AdditionalFiles),
+                    SyntaxKind.ClassDeclaration);
             });
-
         }
 
         private void AnalyzeType(SyntaxNodeAnalysisContext context,
             ImmutableArray<AdditionalText> additionalFiles)
         {
-            var declaration = (ClassDeclarationSyntax)context.Node;
+            var declaration = (ClassDeclarationSyntax) context.Node;
             var model = context.SemanticModel;
 
             var declaredSymbol = model.GetDeclaredSymbol(declaration);
@@ -47,11 +49,8 @@ namespace SharpILMixins.Analyzer
 
             var configuration = Utilities.GetMixinConfiguration(additionalFiles, context.CancellationToken);
             if (configuration?.IsMixinIncludedInWorkspace(declaredSymbol.ToDisplayString()) != true)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Rule, declaration.Identifier.GetLocation(), declaration.Identifier.Value));
-            }
+                context.ReportDiagnostic(Diagnostic.Create(Rule, declaration.Identifier.GetLocation(),
+                    declaration.Identifier.Value));
         }
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
     }
 }

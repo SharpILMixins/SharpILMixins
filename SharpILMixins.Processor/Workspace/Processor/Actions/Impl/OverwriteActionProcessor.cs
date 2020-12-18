@@ -1,5 +1,4 @@
 ﻿using dnlib.DotNet.Emit;
-using JetBrains.Annotations;
 using SharpILMixins.Annotations;
 using SharpILMixins.Processor.Utils;
 

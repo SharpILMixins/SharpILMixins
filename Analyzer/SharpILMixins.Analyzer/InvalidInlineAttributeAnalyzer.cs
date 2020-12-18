@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using SharpILMixins.Analyzer.Utils;
 using SharpILMixins.Annotations.Inline;
-using AttributeListSyntax = Microsoft.CodeAnalysis.CSharp.Syntax.AttributeListSyntax;
 
 namespace SharpILMixins.Analyzer
 {
@@ -14,20 +13,26 @@ namespace SharpILMixins.Analyzer
     public class InvalidInlineAttributeAnalyzer : DiagnosticAnalyzer
     {
         public const string IsRequestingInlineKey = "IsRequestingInline";
-        public static readonly string DiagnosticId = Utilities.GetMixinCode(2);
         private const string Title = "Usage of [InlineMethod] Attribute is invalid";
         private const string InvalidMessage = "Method \"{0}\" cannot be inlined because it has ref/out parameters.";
-        private const string UselessMessage = "Method \"{0}\" cannot is already not going to be inlined because it has ref/out parameters.";
+
+        private const string UselessMessage =
+            "Method \"{0}\" cannot is already not going to be inlined because it has ref/out parameters.";
 
         private const string Description =
             "This method cannot be inlined because it has a ByRef/Out parameter that requires explicit non-inlining";
 
-        private static readonly DiagnosticDescriptor InvalidRule = new DiagnosticDescriptor(DiagnosticId,
+        public static readonly string DiagnosticId = Utilities.GetMixinCode(2);
+
+        private static readonly DiagnosticDescriptor InvalidRule = new(DiagnosticId,
             Title, InvalidMessage, Utilities.Category, DiagnosticSeverity.Error, true, Description);
 
-        private static readonly DiagnosticDescriptor UselessRule = new DiagnosticDescriptor(DiagnosticId,
+        private static readonly DiagnosticDescriptor UselessRule = new(DiagnosticId,
             Title, UselessMessage, Utilities.Category, DiagnosticSeverity.Error, true, Description,
             customTags: WellKnownDiagnosticTags.Unnecessary);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+            ImmutableArray.Create(UselessRule, InvalidRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -53,7 +58,7 @@ namespace SharpILMixins.Analyzer
             var parent = (AttributeListSyntax) attribute.Parent;
 
             var isInvalidList = parent.Attributes.Count == 1;
-                
+
             var builder = ImmutableDictionary.CreateBuilder<string, string>();
 
             builder.Add(nameof(InvalidAttributeType),
@@ -67,7 +72,5 @@ namespace SharpILMixins.Analyzer
 
             context.ReportDiagnostic(diagnostic);
         }
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UselessRule, InvalidRule);
     }
 }

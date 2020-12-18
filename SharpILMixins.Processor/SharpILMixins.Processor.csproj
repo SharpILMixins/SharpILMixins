@@ -39,6 +39,10 @@
     <ProjectReference Include="..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties obfuscation-map_1schema_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties obfuscation-map_1schema_1json__JsonSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
 
 </Project>

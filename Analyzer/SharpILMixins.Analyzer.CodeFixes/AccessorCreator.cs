@@ -9,7 +9,8 @@ namespace SharpILMixins.Analyzer
 {
     public class AccessorCreator
     {
-        public static SourceText CreateAccessorForTarget(string targetType, string targetNamespace, out string targetTypeName, out string targetFileName, out string fullName)
+        public static SourceText CreateAccessorForTarget(string targetType, string targetNamespace,
+            out string targetTypeName, out string targetFileName, out string fullName)
         {
             targetTypeName = targetType;
             if (targetTypeName.LastIndexOfAny(new[] {'.', '/'}) + 1 >= 0 &&

@@ -14,7 +14,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         public MixinWorkspace Workspace { get; }
 
-        public Dictionary<string, Func<string>> Placeholders { get; set; } = new Dictionary<string, Func<string>>();
+        public Dictionary<string, Func<string>> Placeholders { get; set; } = new();
 
         public void RegisterPlaceholder(string key, string value)
         {

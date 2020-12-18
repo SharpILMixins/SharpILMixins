@@ -4,9 +4,10 @@ namespace SampleProjectCore
 {
     public class InjectClass
     {
-        private double _d = 0;
+        private double _d;
 
-        private void Example() {
+        private void Example()
+        {
             // `InjectHead` should target here
             Console.WriteLine("EPIC");
             // `InjectShifted` should target here
@@ -17,7 +18,8 @@ namespace SampleProjectCore
 
             // `InjectInvoke` should target here
             // `InjectField` should target here
-            if (Math.Abs(new Random().Next() - _d) < double.Epsilon) {
+            if (Math.Abs(new Random().Next() - _d) < double.Epsilon)
+            {
                 // `InjectReturn` should target here
                 Console.WriteLine("In");
                 // `InjectShifted` should target here

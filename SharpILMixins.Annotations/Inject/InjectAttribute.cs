@@ -8,7 +8,6 @@ namespace SharpILMixins.Annotations.Inject
     {
         public InjectAttribute()
         {
-            
         }
 
         public InjectAttribute(AtLocation at) : this(string.Empty, at)
@@ -24,7 +23,8 @@ namespace SharpILMixins.Annotations.Inject
             At = at;
         }
 
-        public InjectAttribute(string method, AtLocation at, int priority = 1000, int ordinal = -1) : base(method, priority)
+        public InjectAttribute(string method, AtLocation at, int priority = 1000, int ordinal = -1) : base(method,
+            priority)
         {
             At = at;
             Ordinal = ordinal;
@@ -39,7 +39,7 @@ namespace SharpILMixins.Annotations.Inject
             get => ShiftByAmount;
             set => ShiftByAmount = value;
         }
-        
+
         [CanBeNull] public string Target { get; set; }
 
         public Shift Shift { get; set; }

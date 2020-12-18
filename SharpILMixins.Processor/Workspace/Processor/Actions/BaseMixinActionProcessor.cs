@@ -14,7 +14,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
 
         public void ProcessAction(MixinAction action, BaseMixinAttribute attribute)
         {
-            if (attribute.GetType() == typeof(TAttribute)) ProcessAction(action, (TAttribute)attribute);
+            if (attribute.GetType() == typeof(TAttribute)) ProcessAction(action, (TAttribute) attribute);
         }
 
         public abstract void ProcessAction(MixinAction action, TAttribute attribute);

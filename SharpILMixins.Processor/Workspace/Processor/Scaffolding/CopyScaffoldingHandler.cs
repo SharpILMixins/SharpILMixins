@@ -49,49 +49,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 }
         }
 
-        #region Fields
-
-        
-
-        private void ProcessFields(TypeDef targetType, TypeDef mixinType)
-        {
-            var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
-            ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList());
-            CopyFields(targetType, fields);
-
-            //These elements might be used if the Mixin extends the class they're targeting and accesses from super
-            var superFields = targetType.BaseType.ResolveTypeDef();
-            if (superFields != null)
-            {
-                var superElements = superFields.Fields;
-                ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
-            }
-        }
-
-
-        private void CopyFields(TypeDef targetType, List<FieldDef> fields)
-        {
-            foreach (var field in fields)
-            {
-                var copyField = new FieldDefUser(field.Name, field.FieldSig, field.Attributes);
-
-                if (field.GetCustomAttribute<UniqueAttribute>() != null)
-                    copyField.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
-
-                targetType.Fields.Add(copyField);
-                RedirectManager.RegisterRedirect(field, copyField);
-            }
-        }
-
-
-        private static bool ShouldCopyField(FieldDef f)
-        {
-            //Ignore shadowed fields
-            return f.GetCustomAttribute<ShadowAttribute>() == null;
-        }
-
-        #endregion
-
 
         private bool ShouldCopyProperty(PropertyDef prop)
         {
@@ -134,12 +91,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             foreach (var def in prop.GetMethods) copyProp.GetMethods.Add(RedirectManager.ProcessMemberRedirect(def));
             foreach (var def in prop.SetMethods) copyProp.SetMethods.Add(RedirectManager.ProcessMemberRedirect(def));
-            foreach (var def in prop.OtherMethods) copyProp.OtherMethods.Add(RedirectManager.ProcessMemberRedirect(def));
+            foreach (var def in prop.OtherMethods)
+                copyProp.OtherMethods.Add(RedirectManager.ProcessMemberRedirect(def));
 
-            foreach (var methodDef in copyProp.GetMethods.Concat(copyProp.SetMethods).Concat(copyProp.OtherMethods).Where(m => m.HasBody))
-            {
-                RedirectManager.ProcessRedirects(methodDef, methodDef.Body);
-            }
+            foreach (var methodDef in copyProp.GetMethods.Concat(copyProp.SetMethods).Concat(copyProp.OtherMethods)
+                .Where(m => m.HasBody)) RedirectManager.ProcessRedirects(methodDef, methodDef.Body);
         }
 
         private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements)
@@ -210,6 +166,47 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             return fullName.Contains('.') ? fullName.Substring(0, fullName.LastIndexOf('.') + 1) : fullName;
         }
 
+        #region Fields
+
+        private void ProcessFields(TypeDef targetType, TypeDef mixinType)
+        {
+            var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
+            ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList());
+            CopyFields(targetType, fields);
+
+            //These elements might be used if the Mixin extends the class they're targeting and accesses from super
+            var superFields = targetType.BaseType.ResolveTypeDef();
+            if (superFields != null)
+            {
+                var superElements = superFields.Fields;
+                ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
+            }
+        }
+
+
+        private void CopyFields(TypeDef targetType, List<FieldDef> fields)
+        {
+            foreach (var field in fields)
+            {
+                var copyField = new FieldDefUser(field.Name, field.FieldSig, field.Attributes);
+
+                if (field.GetCustomAttribute<UniqueAttribute>() != null)
+                    copyField.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);
+
+                targetType.Fields.Add(copyField);
+                RedirectManager.RegisterRedirect(field, copyField);
+            }
+        }
+
+
+        private static bool ShouldCopyField(FieldDef f)
+        {
+            //Ignore shadowed fields
+            return f.GetCustomAttribute<ShadowAttribute>() == null;
+        }
+
+        #endregion
+
         #region Methods
 
         private void ProcessMethods(TypeDef targetType, TypeDef mixinType)
@@ -221,9 +218,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             var superType = targetType.BaseType.ResolveTypeDef();
             if (superType != null)
             {
-                var superElements = superType.Methods.Where(m => !m.IsRuntimeSpecialName);
+                var superElements = superType.Methods.Where(m => !m.IsRuntimeSpecialName).ToList();
                 ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
             }
+
             CreateMethodHandlers(targetType, mixinMethods);
         }
 

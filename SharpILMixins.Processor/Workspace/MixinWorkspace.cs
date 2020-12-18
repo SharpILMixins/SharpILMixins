@@ -56,7 +56,10 @@ namespace SharpILMixins.Processor.Workspace
 
         public RedirectManager RedirectManager => MixinProcessor.CopyScaffoldingHandler.RedirectManager;
 
-        public ObfuscationMapManager ObfuscationMapManager => MixinProcessor.CopyScaffoldingHandler.RedirectManager.ObfuscationMapManager;
+        public ObfuscationMapManager ObfuscationMapManager =>
+            MixinProcessor.CopyScaffoldingHandler.RedirectManager.ObfuscationMapManager;
+
+        public ModuleDefMD? CurrentTargetModule { get; set; }
 
         public void Dispose()
         {
@@ -79,7 +82,7 @@ namespace SharpILMixins.Processor.Workspace
                                               throw new MixinApplyException(
                                                   $"Found mixins configuration file \"{mixinConfigurationResource.Name}\", but it is not an embedded resource.");
 
-            using StreamReader reader = new StreamReader(mixinConfigEmbeddedResource.CreateReader().AsStream());
+            using StreamReader reader = new(mixinConfigEmbeddedResource.CreateReader().AsStream());
 
             var configurationString = reader.ReadToEnd();
 
@@ -114,14 +117,9 @@ namespace SharpILMixins.Processor.Workspace
                 var filePathFullName = targetModule.FilePath.FullName;
                 var finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix);
                 if (targetModule.FilePath.FullName.Equals(finalPath) || File.Exists(finalPath))
-                {
                     finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix + "-out");
-                }
 
-                if (!Settings.IsGenerateOnly)
-                {
-                    WriteFinalModule(targetModuleModuleDef, finalPath);
-                }
+                if (!Settings.IsGenerateOnly) WriteFinalModule(targetModuleModuleDef, finalPath);
 
                 targetModuleModuleDef.Dispose();
                 var withOutput = $" with output named {Path.GetFileName(finalPath)}";
@@ -135,8 +133,6 @@ namespace SharpILMixins.Processor.Workspace
             return Path.Combine(Settings.OutputPath,
                 Path.GetFileNameWithoutExtension(filePathFullName) + suffix + Path.GetExtension(filePathFullName));
         }
-
-        public ModuleDefMD? CurrentTargetModule{ get; set; }
 
 
         private static void WriteFinalModule(ModuleDefMD targetModuleModuleDef, string path)
@@ -156,7 +152,8 @@ namespace SharpILMixins.Processor.Workspace
             var json = File.ReadAllText(fileInfo.FullName);
 
             if (!(JsonConvert.DeserializeObject(json) is JObject jObject) || !jObject.IsValid(jSchema))
-                throw new MixinApplyException($"Invalid Deobfuscation Map provided: {Path.GetFileName(fileInfo.FullName)}.");
+                throw new MixinApplyException(
+                    $"Invalid Deobfuscation Map provided: {Path.GetFileName(fileInfo.FullName)}.");
 
             var map = jObject.ToObject<ObfuscationMap>() ??
                       throw new MixinApplyException("Unable to load Mixin Configuration correctly.");

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
@@ -7,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SharpILMixins.Processor.Utils;
-using SharpILMixins.Processor.Workspace.Processor.Actions;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -15,9 +13,6 @@ namespace SharpILMixins.Processor.Workspace.Generator
 {
     public class GeneratorMixinAction
     {
-        public MethodDef TargetMethod { get; }
-        public TypeDef TargetType { get; }
-
         private readonly SyntaxTokenList _publicStaticModifiers =
             TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
@@ -27,6 +22,9 @@ namespace SharpILMixins.Processor.Workspace.Generator
             TargetType = targetType;
             SimpleTargetMethodName = ComputeSimpleMethodName(TargetMethod, TargetType);
         }
+
+        public MethodDef TargetMethod { get; }
+        public TypeDef TargetType { get; }
 
         public string SimpleTargetMethodName { get; set; }
 
@@ -56,10 +54,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
         {
             var memberDeclarationSyntax = GetStringLiteralField(SimpleTargetMethodName,
                 TargetMethod.FullName);
-            if (memberDeclarationSyntax != null)
-            {
-                yield return memberDeclarationSyntax;
-            }
+            if (memberDeclarationSyntax != null) yield return memberDeclarationSyntax;
 
             var injectMembers = new List<MemberDeclarationSyntax>();
 

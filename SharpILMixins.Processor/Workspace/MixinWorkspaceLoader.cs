@@ -34,7 +34,7 @@ namespace SharpILMixins.Processor.Workspace
                         new ModuleCreationOptions(Workspace.ModuleContext) {TryToLoadPdbFromDisk = true});
 
                     var mixinPdbState = Workspace.MixinModule.PdbState;
-                    
+
                     if (moduleDef.PdbState == null && mixinPdbState is not null)
                         moduleDef.SetPdbState(new PdbState(moduleDef, mixinPdbState.PdbFileKind));
                     return new MixinTargetModule(new FileInfo(s),
@@ -86,10 +86,7 @@ namespace SharpILMixins.Processor.Workspace
             var attributeTarget = attribute.Target;
             var mixinAccessor = mixinAssembly.Find(attributeTarget, true);
             var accessorAttribute = mixinAccessor?.GetCustomAttribute<AccessorAttribute>();
-            if (accessorAttribute != null)
-            {
-                attributeTarget = accessorAttribute.Target;
-            }
+            if (accessorAttribute != null) attributeTarget = accessorAttribute.Target;
 
             var targetType = targetTypes.GetValueOrDefault(attributeTarget) ?? throw new MixinApplyException(
                 $"Unable to find Target Type \"{attributeTarget}\" in Target Assembly");

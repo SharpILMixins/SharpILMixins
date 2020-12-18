@@ -9,12 +9,13 @@ namespace SharpILMixins.Annotations.Inject
         {
         }
 
-        public Shift Shift { get; set; }
-
-        public int ByAmount { get; set; }
-
         public ShiftAttribute(int byAmount)
         {
             ByAmount = byAmount;
         }
-    }}
+
+        public Shift Shift { get; set; }
+
+        public int ByAmount { get; set; }
+    }
+}

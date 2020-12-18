@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,10 +12,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SharpILMixins.Analyzer
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(InvalidAttributeCodeFixProvider)), Shared]
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(InvalidAttributeCodeFixProvider))]
+    [Shared]
     public class InvalidAttributeCodeFixProvider : CodeFixProvider
     {
         public const string Title = "Remove {0} annotation";
+
+        public override ImmutableArray<string> FixableDiagnosticIds =>
+            ImmutableArray.Create(InvalidInlineAttributeAnalyzer.DiagnosticId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -40,7 +43,7 @@ namespace SharpILMixins.Analyzer
                 if (!enumTypeResult) return;
 
 
-                var requestingInlineResult = Boolean.TryParse(
+                var requestingInlineResult = bool.TryParse(
                     diagnostic.Properties.GetValueOrDefault(InvalidInlineAttributeAnalyzer.IsRequestingInlineKey,
                         InvalidAttributeType.AttributeList.ToString()), out var isRequestingInline);
 
@@ -52,7 +55,8 @@ namespace SharpILMixins.Analyzer
                     return;
 
                 context.RegisterCodeFix(
-                    CodeAction.Create(string.Format(Title, isRequestingInline ? "invalid" : "useless"), token => RemoveUselessAnnotation(context.Document, token, result),
+                    CodeAction.Create(string.Format(Title, isRequestingInline ? "invalid" : "useless"),
+                        token => RemoveUselessAnnotation(context.Document, token, result),
                         nameof(MixinNotInMixinWorkspaceCodeFixProvider) + ""), diagnostic);
             }
         }
@@ -84,8 +88,5 @@ namespace SharpILMixins.Analyzer
 
             return document.WithSyntaxRoot(syntaxRoot);
         }
-
-        public override ImmutableArray<string> FixableDiagnosticIds =>
-            ImmutableArray.Create(InvalidInlineAttributeAnalyzer.DiagnosticId);
     }
 }
