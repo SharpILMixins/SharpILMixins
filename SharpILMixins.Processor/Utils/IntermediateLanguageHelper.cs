@@ -103,23 +103,39 @@ namespace SharpILMixins.Processor.Utils
             if (attribute != null)
                 switch (attribute)
                 {
-                    case InjectCancelParamAttribute injectCancelParamAttribute:
+                    case InjectCancelParamAttribute:
                         HandleInjectCancelParameterAttribute(action, out instruction, afterCallInstructions,
                             nextInstruction);
                         break;
                     case InjectLocalAttribute injectLocalAttribute:
+                        var bodyVariables = action.TargetMethod.Body.Variables;
+                        var local = GetLocalForInjectLocal(injectLocalAttribute, bodyVariables);
+
+                        var description = injectLocalAttribute.Ordinal != null
+                            ? $"ordinal {injectLocalAttribute.Ordinal}"
+                            : $"name {injectLocalAttribute.Name}";
+                        
                         instruction = new[]
                         {
                             Instruction.Create(methodSigParam.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc,
-                                action.TargetMethod.Body.Variables.ElementAtOrDefault(injectLocalAttribute.Ordinal) ??
+                                local ??
                                 throw new MixinApplyException(
-                                    $"Unable to find a local in {action.TargetMethod} with ordinal {injectLocalAttribute.Ordinal}"))
+                                    $"Unable to find a local in {action.TargetMethod} with {description}."))
                         };
                         break;
                     default:
                         throw new MixinApplyException(
                             $"Unable to process {attribute} in parameter {index} on {action.MixinMethod}.");
                 }
+        }
+
+        private static Local? GetLocalForInjectLocal(InjectLocalAttribute injectLocalAttribute, LocalList bodyVariables)
+        {
+            if (injectLocalAttribute.Ordinal != null)
+                return bodyVariables.ElementAtOrDefault(injectLocalAttribute.Ordinal.Value);
+            if (injectLocalAttribute.Name != null)
+                return bodyVariables.FirstOrDefault(v => v.Name == injectLocalAttribute.Name);
+            return null;
         }
 
         private static void HandleInjectCancelParameterAttribute(MixinAction action,

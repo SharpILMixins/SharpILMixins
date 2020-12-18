@@ -1,4 +1,6 @@
-﻿namespace SharpILMixins.Annotations.Parameters
+﻿using JetBrains.Annotations;
+
+namespace SharpILMixins.Annotations.Parameters
 {
     public class InjectLocalAttribute : BaseParameterAttribute
     {
@@ -7,6 +9,13 @@
             Ordinal = ordinal;
         }
 
-        public int Ordinal { get; }
+        public InjectLocalAttribute(string name)
+        {
+            Name = name;
+        }
+
+        public int? Ordinal { get; }
+
+        [CanBeNull] public string Name { get; set; }
     }
 }
