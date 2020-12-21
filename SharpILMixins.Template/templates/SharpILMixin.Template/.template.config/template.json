@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "NickAc",
+  "classifications": [ "Mixins", "Library", "Mixin", "SharpILMixins" ],
+  "identity": "SharpILMixin",
+  "name": "Mixin with SharpILMixins",
+  "shortName": "sharpilmixin",
+  "symbols": {
+    "namespace": {
+      "type": "parameter",
+      "defaultValue": "SharpILMixins.Template",
+	  "fileRename": "sharpilmixin_project",
+      "replaces": "SharpILMixins.Template",
+      "dataType": "string"
+    },
+    "target": {
+      "type": "parameter",
+      "defaultValue": "MixinTarget.dll",
+      "replaces": "MixinTarget.dll",
+      "dataType": "string"
+    },
+    "mixin": {
+      "type": "parameter",
+      "defaultValue": "MixinTarget.dll",
+      "replaces": "MixinTarget.dll",
+      "dataType": "string"
+    }
+  }
+}

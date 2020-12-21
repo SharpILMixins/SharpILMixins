@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="mixins.json" />
+    <AdditionalFiles Include="mixins.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpILMixins.Annotations" Version="*-*" />
+    <PackageReference Include="SharpILMixins.Analyzer" Version="*-*" />
+  </ItemGroup>
+
+</Project>
