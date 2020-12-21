@@ -38,7 +38,10 @@ jobs:
       
     - name: Pack Analyzer
       run: dotnet pack Analyzer\SharpILMixins.Analyzer.Package -o .
-      
+
+    - name: Pack Project Template
+      run: dotnet pack SharpILMixins.Template -o .
+            
     - name: NuGet Push Annotations
       if: ${{ github.event_name != 'pull_request' }}
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
