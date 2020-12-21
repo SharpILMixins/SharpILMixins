@@ -5,7 +5,7 @@ SharpILMixins is a trait/mixin and IL weaving framework for C# using [dnLib](htt
 
 ## Creating a Mixin project with SharpILMixins.
 
-SharpILMixins provides a project template with the NuGet Package Id `SharpILMixin.Template`.
+SharpILMixins provides a project template with the NuGet Package Id `SharpILMixin.Template` ([NuGet Page](https://www.nuget.org/packages/SharpILMixins.Templates/)) .
 
 To install the template with `dotnet new`, run the following command on the Terminal of your choice:
 ```
