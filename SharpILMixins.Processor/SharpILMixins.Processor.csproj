@@ -7,6 +7,7 @@
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <Version>1.2.0</Version>
     <Authors>NickAcPT</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>
       The processor for Mixins made for SharpILMixins.
 

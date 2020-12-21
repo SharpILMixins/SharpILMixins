@@ -6,6 +6,7 @@
     <Authors>NickAcPT</Authors>
     <Description>The annotations used for Mixins done with SharpILMixins.</Description>
     <Version>1.2.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

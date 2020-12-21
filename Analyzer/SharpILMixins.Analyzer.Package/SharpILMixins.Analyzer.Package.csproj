@@ -12,7 +12,7 @@
     <PackageId>SharpILMixins.Analyzer</PackageId>
     <PackageVersion>1.0.2</PackageVersion>
     <Authors>NickAc</Authors>
-    <PackageLicenseUrl>https://github.com/NickAcPT/SharpILMixins/blob/main/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/NickAcPT/SharpILMixins/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/NickAcPT/SharpILMixins</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
