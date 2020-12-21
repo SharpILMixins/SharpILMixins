@@ -18,12 +18,6 @@
       "defaultValue": "MixinTarget.dll",
       "replaces": "MixinTarget.dll",
       "dataType": "string"
-    },
-    "mixin": {
-      "type": "parameter",
-      "defaultValue": "MixinTarget.dll",
-      "replaces": "MixinTarget.dll",
-      "dataType": "string"
     }
   }
 }
