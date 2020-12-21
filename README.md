@@ -29,7 +29,7 @@ Options:
   -t|--target
                    string - Optional
                    Default: MixinTarget.dll
-                   ```
+```
 
 ## Runtime detour
 
