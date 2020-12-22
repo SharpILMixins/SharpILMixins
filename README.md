@@ -29,6 +29,10 @@ To install, run the following command on the Terminal of your choice:
 dotnet tool install --global SharpILMixins.Processor
 ```
 
+To update, run the following command on the Terminal of your choice:
+```
+dotnet tool update --global SharpILMixins.Processor
+```
 
 ## Creating a Mixin project with SharpILMixins.
 
