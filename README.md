@@ -2,6 +2,33 @@
 
 SharpILMixins is a trait/mixin and IL weaving framework for C# using [dnLib](https://github.com/0xd4d/dnlib).
 
+## Usage
+
+SharpILMixins has a processor tool that can apply Mixins made with SharpILMixins.
+
+Help output:
+```
+SharpILMixins.Processor
+Copyright (C) 2020 NickAcPT
+
+  process, p     (Default Verb) Offline process Mixins
+
+  generate, g    Generate helper code to work with Mixins
+
+  help           Display more information on a specific command.
+
+  version        Display version information.
+```
+
+## Installation
+
+The processor is a DotNet Global Tool.
+
+To install, run the following command on the Terminal of your choice:
+```
+dotnet tool install --global SharpILMixins.Processor
+```
+
 
 ## Creating a Mixin project with SharpILMixins.
 
