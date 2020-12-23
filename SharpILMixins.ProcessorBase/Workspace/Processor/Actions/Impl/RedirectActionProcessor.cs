@@ -107,9 +107,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
                 {
                     Workspace.RedirectManager.RegisterScopeRedirect(action.TargetMethod, operand, action.MixinMethod);
                 }
-
-
-                Debugger.Break();
             }
         }
 

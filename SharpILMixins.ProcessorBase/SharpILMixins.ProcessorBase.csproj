@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <Version>$(MixinsVersion)</Version>
+    <Authors>NickAcPT</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>
+      The base code for the processor for Mixins made for SharpILMixins.
+    </Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RootNamespace>SharpILMixins.Processor</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="mixin.config.schema.json" />
+    <None Remove="obfuscation-map.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="mixin.config.schema.json" />
+    <EmbeddedResource Include="obfuscation-map.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0-5.final" />
+    <PackageReference Include="NickAcPT.dnlib" Version="3.3.5" />
+    <PackageReference Include="ImpromptuInterface" Version="7.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.14-beta2" />
+    <PackageReference Include="NLog" Version="4.7.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
+  </ItemGroup>
+
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties obfuscation-map_1schema_1json__JsonSchema="" />
+    </VisualStudio>
+  </ProjectExtensions>
+
+</Project>

@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpILMixins.Analyzer.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpILMixins.Analyzer.Vsix", "Analyzer\SharpILMixins.Analyzer.Vsix\SharpILMixins.Analyzer.Vsix.csproj", "{13E993F1-834B-454E-9B81-D1D391F28F13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpILMixins.ProcessorBase", "SharpILMixins.ProcessorBase\SharpILMixins.ProcessorBase.csproj", "{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{13E993F1-834B-454E-9B81-D1D391F28F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13E993F1-834B-454E-9B81-D1D391F28F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13E993F1-834B-454E-9B81-D1D391F28F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
