@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,6 +12,7 @@ using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Generator;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl;
+using SharpILMixins.Processor.Workspace.Processor.Fixes;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -86,9 +88,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
                     processor.ProcessAction(action, action.MixinAttribute);
                     if (action.TargetMethod.Body != null)
                     {
-                        action.TargetMethod.Body.UpdateInstructionOffsets();
-                        FixPdbStateIfNeeded(action.TargetMethod);
-                        RedirectManager.ProcessRedirects(action.TargetMethod, action.TargetMethod.Body);
+                        ProcessMethod(action.TargetMethod, action.TargetMethod.Body);
+
                     }
 
                     Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
@@ -98,6 +99,14 @@ namespace SharpILMixins.Processor.Workspace.Processor
             }
 
             Workspace.ObfuscationMapManager.PerformNameRemapping(deObfuscationMap);
+        }
+
+        private void ProcessMethod(MethodDef method, CilBody body)
+        {
+            body.UpdateInstructionOffsets();
+            FixPdbStateIfNeeded(method);
+            RedirectManager.ProcessRedirects(method, body);
+            body.SimplifyBranches();
         }
 
         private static void FixPdbStateIfNeeded(MethodDef method)

@@ -1,4 +1,4 @@
-﻿
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using dnlib.DotNet;
@@ -12,7 +12,7 @@ using SharpILMixins.Processor.Workspace.Processor.Actions;
 namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 {
     public record RedirectMapping(IMemberRef Member, int? Ordinal = null);
-    
+
     public class RedirectManager
     {
         public RedirectManager(CopyScaffoldingHandler copyScaffoldingHandler)
@@ -46,10 +46,12 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             GlobalMemberRedirectDictionary.Add(originalMember, new RedirectMapping(newMember));
         }
 
-        public void RegisterScopeRedirect(IMemberDef scopeMember, IMemberRef originalMember, IMemberRef newMember, int? ordinal = null)
+        public void RegisterScopeRedirect(IMemberDef scopeMember, IMemberRef originalMember, IMemberRef newMember,
+            int? ordinal = null)
         {
             var localDict =
-                LocalMemberRedirectDictionary.GetValueOrDefault(scopeMember, new Dictionary<IMemberRef, RedirectMapping>());
+                LocalMemberRedirectDictionary.GetValueOrDefault(scopeMember,
+                    new Dictionary<IMemberRef, RedirectMapping>());
 
             localDict.Remove(originalMember);
             localDict.Add(originalMember, new RedirectMapping(newMember, ordinal));
@@ -106,10 +108,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
                     instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
             }
-            
-            //Optimize branches 
-            method.Body.OptimizeBranches();
         }
+
 
         private void PerformOperandReplacement(MethodDef method, IMemberRef memberRef, Instruction instruction,
             int index)
@@ -117,7 +117,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             var operandReplacement = memberRef;
             var hasMemberRedirectDictionary =
                 LocalMemberRedirectDictionary.TryGetValue(method, out var memberRedirectDictionary);
-            
+
             if (hasMemberRedirectDictionary)
             {
                 operandReplacement = ProcessMemberRedirect(memberRef, out var modifiedScoped,
