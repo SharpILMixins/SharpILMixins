@@ -12,7 +12,6 @@ using SharpILMixins.Processor.Utils;
 using SharpILMixins.Processor.Workspace.Generator;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl;
 using SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl;
-using SharpILMixins.Processor.Workspace.Processor.Fixes;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding;
 using SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
