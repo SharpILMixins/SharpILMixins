@@ -12,6 +12,8 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace SharpILMixins.Processor.Workspace.Generator
 {
+    public record GeneratorMember(string Name, MemberDeclarationSyntax DeclarationSyntax);
+    
     public class GeneratorMixinAction
     {
         private readonly SyntaxTokenList _publicStaticModifiers =
@@ -55,9 +57,9 @@ namespace SharpILMixins.Processor.Workspace.Generator
         {
             var memberDeclarationSyntax = GetStringLiteralField(SimpleTargetMethodName,
                 TargetMethod.FullName);
-            if (memberDeclarationSyntax != null) yield return memberDeclarationSyntax;
+            if (memberDeclarationSyntax != null) yield return memberDeclarationSyntax.DeclarationSyntax;
 
-            var injectMembers = new List<MemberDeclarationSyntax>();
+            var injectMembers = new List<GeneratorMember>();
 
             AddInvokeMembers(injectMembers);
             AddFieldMembers(injectMembers);
@@ -65,11 +67,12 @@ namespace SharpILMixins.Processor.Workspace.Generator
 
             if (injectMembers.Count != 0)
                 yield return ClassDeclaration($"{SimpleTargetMethodName}Injects")
-                    .AddMembers(injectMembers.ToArray())
+                    .AddMembers(injectMembers.Where(c => c != null).DistinctBy(c => c.Name)
+                        .Select(c => c.DeclarationSyntax).ToArray())
                     .WithModifiers(_publicStaticModifiers);
         }
 
-        private void AddNewObjMembers(List<MemberDeclarationSyntax> injectMembers)
+        private void AddNewObjMembers(List<GeneratorMember> injectMembers)
         {
             injectMembers.AddRange(
                 TargetMethod.Body.Instructions
@@ -83,7 +86,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
             );
         }
 
-        private void AddFieldMembers(List<MemberDeclarationSyntax> injectMembers)
+        private void AddFieldMembers(List<GeneratorMember> injectMembers)
         {
             injectMembers.AddRange(
                 TargetMethod.Body.Instructions
@@ -97,7 +100,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
             );
         }
 
-        private void AddInvokeMembers(List<MemberDeclarationSyntax> injectMembers)
+        private void AddInvokeMembers(List<GeneratorMember> injectMembers)
         {
             injectMembers.AddRange(TargetMethod.Body.Instructions
                 .Where(i => InvokeInjectionProcessor.IsCallOpCode(i.OpCode))
@@ -112,12 +115,12 @@ namespace SharpILMixins.Processor.Workspace.Generator
 
         private readonly Regex _multipleUnderscoreMatcher = new("_{2,}", RegexOptions.Compiled);
         
-        private MemberDeclarationSyntax? GetStringLiteralField(string name, string stringLiteral)
+        private GeneratorMember? GetStringLiteralField(string name, string stringLiteral)
         {
             name = string.Join("", name.Select(c => SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_'));
             name = _multipleUnderscoreMatcher.Replace(name, "_");
             
-            return FieldDeclaration(VariableDeclaration(
+            return new GeneratorMember(name, FieldDeclaration(VariableDeclaration(
                         PredefinedType(
                             Token(SyntaxKind.StringKeyword)))
                     .WithVariables(
@@ -130,7 +133,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
                                             SyntaxKind.StringLiteralExpression,
                                             Literal(stringLiteral)))))))
                 .WithModifiers(
-                    TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.ConstKeyword)));
+                    TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.ConstKeyword))));
         }
     }
 }
