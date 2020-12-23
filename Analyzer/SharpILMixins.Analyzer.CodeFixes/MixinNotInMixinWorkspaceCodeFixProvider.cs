@@ -42,7 +42,7 @@ namespace SharpILMixins.Analyzer
 
                 bool IsVisible(MixinConfiguration c)
                 {
-                    return c.Targets.Length > 0;
+                    return c.Mixins.Length > 0;
                 }
 
                 RegisterCodeFix("(At the beginning)", IsVisible,

@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\SharpILMixins.Processor\Workspace\MixinConfiguration.cs" Link="Utils\MixinConfiguration.cs" />
+    <Compile Include="..\..\SharpILMixins.ProcessorBase\Workspace\MixinConfiguration.cs" Link="Utils\MixinConfiguration.cs" />
   </ItemGroup>
 
   <ItemGroup>
