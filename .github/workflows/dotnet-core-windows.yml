@@ -18,8 +18,14 @@ jobs:
       with:
         dotnet-version: '5.0.100-rc.2.20479.15'
 
+    - name: Build Annotations
+      run: dotnet build SharpILMixins.Annotations -c Release
+      
     - name: Pack Annotations
       run: dotnet pack SharpILMixins.Annotations -o . -c Release
+      
+    - name: Build Processor
+      run: dotnet build SharpILMixins.Processor -c Release
       
     - name: Pack Processor
       run: dotnet pack SharpILMixins.Processor -o . -c Release
@@ -33,6 +39,12 @@ jobs:
     - name: Pack Project Template
       run: dotnet pack SharpILMixins.Template -o .
             
+    - name: Build ProcessorBase
+      run: dotnet build SharpILMixins.ProcessorBase -c Release
+      
+    - name: Pack ProcessorBase
+      run: dotnet pack SharpILMixins.ProcessorBase -o . -c Release
+      
     - name: NuGet Push Packages
       if: ${{ github.event_name != 'pull_request' }}
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_APIKEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
