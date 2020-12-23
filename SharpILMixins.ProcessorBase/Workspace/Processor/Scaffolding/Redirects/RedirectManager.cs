@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
@@ -105,6 +106,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
                     instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
             }
+            
+            //Optimize branches 
+            method.Body.OptimizeBranches();
         }
 
         private void PerformOperandReplacement(MethodDef method, IMemberRef memberRef, Instruction instruction,
