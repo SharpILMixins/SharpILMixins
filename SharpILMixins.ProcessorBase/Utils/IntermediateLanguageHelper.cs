@@ -97,7 +97,6 @@ namespace SharpILMixins.Processor.Utils
             ref IEnumerable<Instruction> instruction, List<Instruction> afterCallInstructions,
             Instruction? nextInstruction)
         {
-            //action.TargetMethod.Body.KeepOldMaxStack = true;
             var methodSigParam = action.MixinMethod.MethodSig.Params[index];
             var attribute = action.MixinMethod.ParamDefs[index].GetCustomAttribute<BaseParameterAttribute>();
             if (attribute != null)

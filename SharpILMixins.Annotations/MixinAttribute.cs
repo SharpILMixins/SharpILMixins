@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace SharpILMixins.Annotations
 {
-    [MeansImplicitUse(ImplicitUseTargetFlags.WithMembers)]
+    [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature, ImplicitUseTargetFlags.WithMembers)]
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class MixinAttribute : Attribute
     {

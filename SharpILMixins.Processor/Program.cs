@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using CommandLine;
 using NLog;
 using SharpILMixins.Processor.Utils;
@@ -22,8 +24,25 @@ namespace SharpILMixins.Processor
                     TargetDir = o.TargetDir,
                     DeObfuscationMapsToApply = o.DeObfuscationMapsToApply,
                     PauseOnExit = o.PauseOnExit,
-                    IsGenerateOnly = true
-                }))
+                    GenerationType = GenerationType.HelperCode
+                })).WithParsed<GenerateMappedOptions>(o =>
+                {
+                    if (o.DeObfuscationMapsToApply?.Any() != true)
+                    {
+                        throw new MixinApplyException(
+                            "In order to generate a mapped assembly, there needs to be at least one de-obfuscation map supplied.");
+                    }
+                    
+                    Execute(new ProcessOptions
+                    {
+                        MixinsToApply = o.MixinsToApply,
+                        OutputDir = o.OutputDir,
+                        TargetDir = o.TargetDir,
+                        DeObfuscationMapsToApply = o.DeObfuscationMapsToApply,
+                        PauseOnExit = o.PauseOnExit,
+                        GenerationType = GenerationType.HelperCode
+                    });
+                })
                 .WithParsed<ProcessOptions>(Execute);
         }
 
@@ -70,11 +89,21 @@ namespace SharpILMixins.Processor
                 {
                     var workDir = new DirectoryInfo(Environment.CurrentDirectory);
 
-                    var workspace = new MixinWorkspace(mixinAssemblyFile, o.TargetDir ?? workDir,
-                        new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName, o.DumpTargets,
-                            o.MixinHandlerName, o.ExperimentalInlineMethods, o.OutputSuffix, o.IsGenerateOnly));
+                    var outputSuffix = o.OutputSuffix;
+                    if (o.GenerationType == GenerationType.Mapped && string.IsNullOrEmpty(outputSuffix))
+                        outputSuffix = "mapped";
+
+                    var workspace = new MixinWorkspace(mixinAssemblyFile,
+                        o.TargetDir ?? workDir,
+                        new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName,
+                            o.DumpTargets,
+                            o.MixinHandlerName,
+                            o.ExperimentalInlineMethods,
+                            outputSuffix,
+                            o.GenerationType));
 
 
+                    Debug.Assert(o.DeObfuscationMapsToApply != null, "o.DeObfuscationMapsToApply != null");
                     foreach (var fileInfo in o.DeObfuscationMapsToApply) workspace.AddDeObfuscationMap(fileInfo);
 
                     workspace.Apply();
@@ -101,7 +130,7 @@ namespace SharpILMixins.Processor
             public IEnumerable<FileInfo> MixinsToApply { get; set; } = null!;
 
             [Option("obf-map", HelpText = "The de-obfuscation maps to apply while applying the Mixins")]
-            public IEnumerable<FileInfo> DeObfuscationMapsToApply { get; set; } = null!;
+            public IEnumerable<FileInfo>? DeObfuscationMapsToApply { get; set; }
 
             [Option('p', "pause",
                 HelpText = "Whether or not to wait for the user's input after the processing is done")]
@@ -113,7 +142,13 @@ namespace SharpILMixins.Processor
         {
         }
 
-        [Verb("process", true, new[] {"p"}, HelpText = "Offline process Mixins")]
+        [Verb("generate-mapped", aliases: new[] {"gm"},
+            HelpText = "Generate mapped target module to make working with Mixins easier")]
+        public class GenerateMappedOptions : BaseTargetOptions
+        {
+        }
+
+        [Verb("process", true, new[] {"p"}, HelpText = "Apply Mixins made with SharpILMixins")]
         public class ProcessOptions : BaseTargetOptions
         {
             [Option('d', "dump-targets", HelpText = "Whether or not dump the targets to the console output")]
@@ -128,7 +163,7 @@ namespace SharpILMixins.Processor
             [Option("out-suffix", HelpText = "The output suffix of the input file.")]
             public string OutputSuffix { get; set; } = "";
 
-            public bool IsGenerateOnly { get; set; }
+            public GenerationType GenerationType { get; set; } = GenerationType.None;
         }
     }
 }

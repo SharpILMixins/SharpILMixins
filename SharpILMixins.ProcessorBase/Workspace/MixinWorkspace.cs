@@ -119,11 +119,12 @@ namespace SharpILMixins.Processor.Workspace
                 if (targetModule.FilePath.FullName.Equals(finalPath) || File.Exists(finalPath))
                     finalPath = ComputeFinalPath(filePathFullName, Settings.OutputSuffix + "-out");
 
-                if (!Settings.IsGenerateOnly) WriteFinalModule(targetModuleModuleDef, finalPath);
+                if (!Settings.IsGeneratingHelperCode) WriteFinalModule(targetModuleModuleDef, finalPath);
 
                 targetModuleModuleDef.Dispose();
                 var withOutput = $" with output named {Path.GetFileName(finalPath)}";
-                if (Settings.IsGenerateOnly) withOutput = "";
+
+                if (Settings.IsGeneratingHelperCode) withOutput = "";
                 Logger.Debug($"Finished to process {targetAssembly.FullName}" + withOutput);
             }
         }

@@ -66,8 +66,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
 
             if (attribute.Ordinal > -1)
             {
-                var injectionPointAtOrdinal = injectionPoints.ElementAt(attribute.Ordinal) ?? throw ordinalNotFound
-                    ;
+                var injectionPointAtOrdinal = injectionPoints.ElementAt(attribute.Ordinal) ?? throw ordinalNotFound;
                 injectionPoints = new List<InjectionPoint> {injectionPointAtOrdinal};
             }
 
@@ -82,20 +81,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
                 if (instruction.OpCode == OpCodes.Newobj)
                     instruction.OpCode = OpCodes.Call;
                 
-                if (atLocation == AtLocation.Constant || atLocation == AtLocation.Field)
-                {
-                    if (!FieldInjectionProcessor.IsSetFieldOpCode(instruction.OpCode))
-                    {
-                        bodyInstructions.Insert(injectionPoint.AfterPoint,
-                            new Instruction(OpCodes.Call, action.MixinMethod));
-
-                        if (atLocation == AtLocation.Field && instruction.Operand is FieldDef {IsStatic: false})
-                        {
-                            bodyInstructions.Insert(injectionPoint.BeforePoint,
-                                new Instruction(OpCodes.Ldarg_0)); // Add back the this instance
-                        }
-                    }
-                }
+                CreateMethodCallIfPossible(action, atLocation, instruction, bodyInstructions, injectionPoint);
 
                 // Rewrite set field into our own call
                 if (FieldInjectionProcessor.IsSetFieldOpCode(instruction.OpCode))
@@ -106,6 +92,25 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl
                 else if (instruction.Operand is IMemberRef operand && atLocation != AtLocation.Field)
                 {
                     Workspace.RedirectManager.RegisterScopeRedirect(action.TargetMethod, operand, action.MixinMethod);
+                }
+            }
+        }
+
+        private static void CreateMethodCallIfPossible(MixinAction action, AtLocation atLocation, Instruction instruction,
+            IList<Instruction> bodyInstructions, InjectionPoint injectionPoint)
+        {
+            if (atLocation == AtLocation.Constant || atLocation == AtLocation.Field)
+            {
+                if (!FieldInjectionProcessor.IsSetFieldOpCode(instruction.OpCode))
+                {
+                    bodyInstructions.Insert(injectionPoint.AfterPoint,
+                        new Instruction(OpCodes.Call, action.MixinMethod));
+
+                    if (atLocation == AtLocation.Field && instruction.Operand is FieldDef {IsStatic: false})
+                    {
+                        bodyInstructions.Insert(injectionPoint.BeforePoint,
+                            new Instruction(OpCodes.Ldarg_0)); // Add back the this instance
+                    }
                 }
             }
         }

@@ -40,7 +40,13 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
             DumpRequestedTargets(mixinRelations, Workspace.Settings.DumpTargets);
 
-            if (Workspace.Settings.IsGenerateOnly)
+            if (Workspace.Settings.IsGeneratingMapped)
+            {
+                Logger.Info($"Applying obfuscation mapping for {targetModule.ModuleDef.Name}.");
+                return;
+            }
+            
+            if (Workspace.Settings.GenerationType == GenerationType.HelperCode)
             {
                 GenerateHelperCode(mixinRelations, targetModule);
                 return;
@@ -66,38 +72,42 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
                 CopyScaffoldingHandler.ProcessType(mixinRelation.TargetType, mixinRelation.MixinType);
 
-                foreach (var action in mixinRelation.MixinActions.OrderBy(a => a.Priority))
-                {
-                    action.LocateTargetMethod();
-                    Logger.Debug($"Starting to proccess action for \"{action.MixinMethod.FullName}\"");
-
-                    try
-                    {
-                        action.CheckIsValid();
-                    }
-                    catch (Exception e)
-                    {
-                        throw new MixinApplyException(
-                            $"Method \"{action.TargetMethod}\" is not a valid target for \"{action.MixinMethod}\"",
-                            e);
-                    }
-
-                    var processor =
-                        BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
-                    processor.ProcessAction(action, action.MixinAttribute);
-                    if (action.TargetMethod.Body != null)
-                    {
-                        ProcessMethod(action.TargetMethod, action.TargetMethod.Body);
-
-                    }
-
-                    Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
-                }
+                ProcessMixinRelations(mixinRelation);
 
                 Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
             }
 
             Workspace.ObfuscationMapManager.PerformNameRemapping(deObfuscationMap);
+        }
+
+        private void ProcessMixinRelations(MixinRelation mixinRelation)
+        {
+            foreach (var action in mixinRelation.MixinActions.OrderBy(a => a.Priority))
+            {
+                action.LocateTargetMethod();
+                Logger.Debug($"Starting to proccess action for \"{action.MixinMethod.FullName}\"");
+
+                try
+                {
+                    action.CheckIsValid();
+                }
+                catch (Exception e)
+                {
+                    throw new MixinApplyException(
+                        $"Method \"{action.TargetMethod}\" is not a valid target for \"{action.MixinMethod}\"",
+                        e);
+                }
+
+                var processor =
+                    BaseMixinActionProcessorManager.GetProcessor(action.MixinAttribute.GetType(), Workspace);
+                processor.ProcessAction(action, action.MixinAttribute);
+                if (action.TargetMethod.Body != null)
+                {
+                    ProcessMethod(action.TargetMethod, action.TargetMethod.Body);
+                }
+
+                Logger.Debug($"Finished to proccess action for \"{action.MixinMethod.FullName}\"");
+            }
         }
 
         private void ProcessMethod(MethodDef method, CilBody body)
