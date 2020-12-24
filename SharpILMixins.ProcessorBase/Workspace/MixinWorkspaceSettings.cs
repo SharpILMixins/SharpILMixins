@@ -3,6 +3,7 @@
     public class MixinWorkspaceSettings
     {
         public MixinWorkspaceSettings(string outputPath, DumpTargetType dumpTargets, string mixinHandlerName = "mixin",
+            bool experimentalCopyResources = false,
             bool experimentalInlineHandlers = false,
             string outputSuffix = "",
             GenerationType isGenerateOnly = GenerationType.None)
@@ -10,6 +11,7 @@
             OutputPath = outputPath;
             MixinHandlerName = mixinHandlerName;
             DumpTargets = dumpTargets;
+            ExperimentalCopyResources = experimentalCopyResources;
             GenerationType = isGenerateOnly;
             ExperimentalInlineHandlers = experimentalInlineHandlers;
             OutputSuffix = outputSuffix;
@@ -23,15 +25,17 @@
 
         public bool ExperimentalInlineHandlers { get; }
 
+        public bool ExperimentalCopyResources { get; }
+
         public string OutputSuffix { get; }
 
         public GenerationType GenerationType { get; set; }
-        
+
         public bool IsGeneratingHelperCode => GenerationType == GenerationType.HelperCode;
-        
+
         public bool IsGeneratingMapped => GenerationType == GenerationType.Mapped;
     }
-    
+
     public enum GenerationType
     {
         None,

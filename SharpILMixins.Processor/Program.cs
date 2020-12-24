@@ -98,6 +98,7 @@ namespace SharpILMixins.Processor
                         new MixinWorkspaceSettings((o.OutputDir ?? workDir).FullName,
                             o.DumpTargets,
                             o.MixinHandlerName,
+                            o.ExperimentalCopyResources,
                             o.ExperimentalInlineMethods,
                             outputSuffix,
                             o.GenerationType));
@@ -164,6 +165,9 @@ namespace SharpILMixins.Processor
             public string OutputSuffix { get; set; } = "";
 
             public GenerationType GenerationType { get; set; } = GenerationType.None;
+            
+            [Option("experimental-copy-resources", HelpText = "Whether or not to copy Mixin resources into the target method [Experimental]")]
+            public bool ExperimentalCopyResources { get; set; }
         }
     }
 }

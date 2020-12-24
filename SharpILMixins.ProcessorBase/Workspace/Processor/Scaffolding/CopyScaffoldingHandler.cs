@@ -288,5 +288,25 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         }
 
         #endregion
+
+        public void CopyOrReplaceResources(ModuleDefMD mixinModule, ModuleDefMD targetModule)
+        {
+            foreach (var mixinModuleResource in mixinModule.Resources)
+            {
+                if (ShouldCopyResource(mixinModuleResource))
+                {
+                    var oldResource = targetModule.Resources.Find(mixinModuleResource.Name);
+                    if (oldResource != null)
+                        targetModule.Resources.Remove(oldResource);
+                    
+                    targetModule.Resources.Add(mixinModuleResource);
+                }
+            }
+        }
+
+        private bool ShouldCopyResource(Resource resource)
+        {
+            return !resource.Name.EndsWith("mixins.json");
+        }
     }
 }

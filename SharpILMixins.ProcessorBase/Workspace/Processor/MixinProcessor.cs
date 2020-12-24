@@ -54,6 +54,8 @@ namespace SharpILMixins.Processor.Workspace.Processor
 
             CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef,
                 Workspace.ObfuscationMapManager.CreateUnifiedMap());
+
+            CopyScaffoldingHandler.CopyOrReplaceResources(Workspace.MixinModule, targetModule.ModuleDef);
             foreach (var mixinRelation in mixinRelations)
             {
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
