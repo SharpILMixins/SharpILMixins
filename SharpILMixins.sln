@@ -27,7 +27,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpILMixins.Analyzer.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpILMixins.Analyzer.Vsix", "Analyzer\SharpILMixins.Analyzer.Vsix\SharpILMixins.Analyzer.Vsix.csproj", "{13E993F1-834B-454E-9B81-D1D391F28F13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpILMixins.ProcessorBase", "SharpILMixins.ProcessorBase\SharpILMixins.ProcessorBase.csproj", "{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpILMixins.ProcessorBase", "SharpILMixins.ProcessorBase\SharpILMixins.ProcessorBase.csproj", "{4ACCAE8B-B919-4D16-9C65-B21807C6DC1A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{387C41FB-0561-42AB-9328-8BF8A67F3220}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
