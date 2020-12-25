@@ -119,12 +119,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
             FixPdbStateIfNeeded(method);
             RedirectManager.ProcessRedirects(method, body);
             body.SimplifyBranches();
-
-            foreach (var instruction in body.Instructions)
-            {
-                if (instruction.Operand is IMemberRef memberRef && memberRef is not IMemberDef)
-                    Logger.Error($"{instruction}");
-            }
         }
 
         private static void FixPdbStateIfNeeded(MethodDef method)
