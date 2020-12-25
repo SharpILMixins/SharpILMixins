@@ -58,13 +58,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         private void ProcessProperties(TypeDef targetType, TypeDef mixinType)
         {
+            var superType = targetType.BaseType.ResolveTypeDef();
+            var hasSuperElements = superType != null;
+            
             var props = mixinType.Properties.Where(ShouldCopyProperty).ToList();
-            ProcessShadowElements(mixinType.Properties, targetType.Properties.Cast<IMemberRef>().ToList());
+            ProcessShadowElements(mixinType.Properties, targetType.Properties.Cast<IMemberRef>().ToList(), hasSuperElements);
             CopyProperties(targetType, props);
 
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
-            var superType = targetType.BaseType.ResolveTypeDef();
-            if (superType != null)
+            
+            if (hasSuperElements && superType != null)
             {
                 var superElements = superType.Properties;
                 ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
@@ -98,16 +101,22 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 .Where(m => m.HasBody)) RedirectManager.ProcessRedirects(methodDef, methodDef.Body);
         }
 
-        private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements)
+        private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements, bool doNotThrowIfMissing = false)
         {
             foreach (var element in mixinElements)
                 if (IsShadowElement(element, targetElements))
                 {
                     var targetMethod =
-                        targetElements.FirstOrDefault(m => RedirectManager.SigComparer.Equals(m, element)) ??
+                        targetElements.FirstOrDefault(m => RedirectManager.SigComparer.Equals(m, element));
+                    if (!doNotThrowIfMissing && targetMethod == null)
+                    {
                         throw new MixinApplyException(
                             $"Unable to find target for Shadow element \"{element.FullName}\"");
-                    RedirectManager.RegisterRedirect(element, targetMethod);
+                    }
+                    if (targetMethod != null)
+                    {
+                        RedirectManager.RegisterRedirect(element, targetMethod);
+                    }
                 }
         }
 
@@ -170,13 +179,15 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         private void ProcessFields(TypeDef targetType, TypeDef mixinType)
         {
+            var superFields = targetType.BaseType.ResolveTypeDef();
+            var hasSuperElements = superFields != null;
+            
             var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
-            ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList());
+            ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList(), hasSuperElements);
             CopyFields(targetType, fields);
 
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
-            var superFields = targetType.BaseType.ResolveTypeDef();
-            if (superFields != null)
+            if (hasSuperElements && superFields != null)
             {
                 var superElements = superFields.Fields;
                 ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());
@@ -211,12 +222,14 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
         private void ProcessMethods(TypeDef targetType, TypeDef mixinType)
         {
+            var superType = targetType.BaseType.ResolveTypeDef();
+            var hasSuperMethods = superType != null;
+            
             var mixinMethods = mixinType.Methods.Where(ShouldCopyMethod).ToList();
-            ProcessShadowElements(mixinType.Methods, targetType.Methods.Cast<IMemberRef>().ToList());
+            ProcessShadowElements(mixinType.Methods, targetType.Methods.Cast<IMemberRef>().ToList(), hasSuperMethods);
 
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
-            var superType = targetType.BaseType.ResolveTypeDef();
-            if (superType != null)
+            if (hasSuperMethods && superType != null)
             {
                 var superElements = superType.Methods.Where(m => !m.IsRuntimeSpecialName).ToList();
                 ProcessShadowElements(superElements, superElements.Cast<IMemberRef>().ToList());

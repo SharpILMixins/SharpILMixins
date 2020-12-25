@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
@@ -45,7 +46,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 Logger.Info($"Applying obfuscation mapping for {targetModule.ModuleDef.Name}.");
                 return;
             }
-            
+
             if (Workspace.Settings.GenerationType == GenerationType.HelperCode)
             {
                 GenerateHelperCode(mixinRelations, targetModule);
@@ -118,6 +119,12 @@ namespace SharpILMixins.Processor.Workspace.Processor
             FixPdbStateIfNeeded(method);
             RedirectManager.ProcessRedirects(method, body);
             body.SimplifyBranches();
+
+            foreach (var instruction in body.Instructions)
+            {
+                if (instruction.Operand is IMemberRef memberRef && memberRef is not IMemberDef)
+                    Logger.Error($"{instruction}");
+            }
         }
 
         private static void FixPdbStateIfNeeded(MethodDef method)
@@ -126,6 +133,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
             if (body == null || !body.HasPdbMethod)
                 return;
             var pdbMethod = body.PdbMethod;
+
             var pdbMethodScope = pdbMethod.Scope;
             if (pdbMethodScope == null)
                 return;
@@ -141,7 +149,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
         private void GenerateHelperCode(List<MixinRelation> mixinRelations, MixinTargetModule targetModule)
         {
             List<ClassDeclarationSyntax> declarationSyntaxes = new();
-
             foreach (var mixinRelation in mixinRelations)
             {
                 if (mixinRelation.IsAccessor) continue;
@@ -160,7 +167,6 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 .WithMembers(new SyntaxList<MemberDeclarationSyntax>(declarationSyntaxes));
 
             var code = namespaceDeclarationSyntax.NormalizeWhitespace().ToFullString();
-
             File.WriteAllText(Path.Combine(Workspace.Settings.OutputPath, "GeneratedTargets.cs"), code);
         }
 
@@ -169,15 +175,12 @@ namespace SharpILMixins.Processor.Workspace.Processor
             foreach (var relation in mixinRelations.DistinctBy(r => r.MixinType.FullName))
             {
                 if (!ShouldDump(relation, dumpTargets)) continue;
-
                 var targetType = relation.TargetType;
                 Logger.Info($"Target dump for \"{targetType.FullName}\":");
-
                 Logger.Info("Methods:");
                 foreach (var method in targetType.Methods)
                 {
                     Logger.Info($">> {method.FullName}");
-
                     if (method.Body != null)
                     {
                         DumpInvokeTargets(method, dumpTargets);

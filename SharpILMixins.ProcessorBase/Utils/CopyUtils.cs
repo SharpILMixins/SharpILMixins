@@ -14,6 +14,13 @@ namespace SharpILMixins.Processor.Utils
             {
                 Body = original.Body
             };
+            
+            foreach (var bodyVariable in original.Body.Variables)
+            {
+                bodyVariable.Type =
+                    redirectManager.ProcessTypeRedirect(bodyVariable.Type, original.DeclaringType.DefinitionAssembly);
+            }
+
             copyMethod.ReturnType =
                 redirectManager.ProcessTypeRedirect(copyMethod.ReturnType, declaringType?.DefinitionAssembly);
             foreach (var parameter in copyMethod.Parameters)

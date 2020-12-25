@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
@@ -91,7 +92,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public void ProcessRedirects(MethodDef method, CilBody body)
         {
             if (!method.HasBody) return;
-
+            if (method.ToString().Contains("RedirectStringWrapperCtor"))
+                Debugger.Break();
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
@@ -103,10 +105,22 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                 if (instruction.Operand is IMemberRef memberRef)
                 {
                     PerformOperandReplacement(method, memberRef, instruction, index);
+                    PerformOperandResolveIfNeeded(instruction);
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
                     instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
+                
+            }
+        }
+
+        private void PerformOperandResolveIfNeeded(Instruction instruction)
+        {
+            if (instruction.Operand is not MemberRef memberRef) return;
+            var resolved = memberRef.Resolve();
+            if (resolved?.DeclaringType.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) == true)
+            {
+                instruction.Operand = (object) resolved;
             }
         }
 
@@ -167,6 +181,14 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
         public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)
         {
+            //Parameter type is from target assembly. Switch definition assembly to target assembly.
+            if (Workspace.CurrentTargetModule?.Assembly != null &&
+                parameterType?.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) == true)
+            {
+                definitionAssembly = Workspace.CurrentTargetModule?.Assembly;
+            }
+
+
             switch (parameterType)
             {
                 case ClassSig classSig:
