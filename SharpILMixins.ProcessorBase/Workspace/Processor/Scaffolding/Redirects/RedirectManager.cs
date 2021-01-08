@@ -181,14 +181,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
         public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)
         {
-            //Parameter type is from target assembly. Switch definition assembly to target assembly.
-            if (Workspace.CurrentTargetModule?.Assembly != null &&
-                parameterType?.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) == true)
-            {
-                definitionAssembly = Workspace.CurrentTargetModule?.Assembly;
-            }
-
-
             switch (parameterType)
             {
                 case ClassSig classSig:
