@@ -5,7 +5,7 @@ namespace SampleProject
     public class Program
     {
         private static readonly int _coolNumber = 9;
-
+        
         private static void Main(string[] args)
         {
             Console.WriteLine($"Hello World from SampleProject {_coolNumber}!");

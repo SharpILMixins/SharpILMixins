@@ -10,6 +10,12 @@ namespace SampleProjectCore.Mixins
     [Mixin("SampleProject.Program")]
     public class MixinProgram
     {
+
+        public static void Method<T>(Predicate<T> a)
+        {
+
+        }
+        
         [Shadow] private static int _coolNumber;
 
         [Unique] private static string _ourString = "";
@@ -50,6 +56,7 @@ namespace SampleProjectCore.Mixins
             Console.WriteLine($"Truth: \"{_ourString}\"");
             Console.WriteLine("");
             Console.WriteLine($"Also, here are the args from the Main method: {args}");
+            Method<object>(a => a != null);
         }
     }
 }

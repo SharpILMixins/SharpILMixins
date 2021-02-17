@@ -92,8 +92,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public void ProcessRedirects(MethodDef method, CilBody body)
         {
             if (!method.HasBody) return;
-            if (method.ToString().Contains("RedirectStringWrapperCtor"))
-                Debugger.Break();
             Workspace.PlaceholderManager.ProcessPlaceholders(body);
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
@@ -105,6 +103,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                 if (instruction.Operand is IMemberRef memberRef)
                 {
                     PerformOperandReplacement(method, memberRef, instruction, index);
+                    PerformOperandResolveIfNeeded(instruction);
+                }
+                if (instruction.Operand is MethodSpec {Method: IMemberRef memberSpecRef})
+                {
+                    PerformOperandReplacement(method, memberSpecRef, instruction, index);
                     PerformOperandResolveIfNeeded(instruction);
                 }
 
@@ -120,10 +123,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             var resolved = memberRef.Resolve();
             if (resolved?.DeclaringType.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) == true)
             {
-                instruction.Operand = (object) resolved;
+                instruction.Operand = resolved;
             }
         }
-
 
         private void PerformOperandReplacement(MethodDef method, IMemberRef memberRef, Instruction instruction,
             int index)
@@ -216,12 +218,12 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             return parameterType;
         }
 
-        public static ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
+        public ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
 
             //This is needed because otherwise we'll be referencing the target assembly
-            if (definitionAssembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName))
+            if (definitionAssembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName) || Workspace.CurrentTargetModule?.Assembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName) == true)
                 return defOrRef.ResolveTypeDef() ?? defOrRef;
             return defOrRef;
         }

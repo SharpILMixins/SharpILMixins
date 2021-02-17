@@ -14,12 +14,19 @@ namespace SharpILMixins.Processor.Utils
             {
                 Body = original.Body
             };
-            
+
             foreach (var bodyVariable in original.Body.Variables)
             {
                 bodyVariable.Type =
                     redirectManager.ProcessTypeRedirect(bodyVariable.Type, original.DeclaringType.DefinitionAssembly);
             }
+
+            if (original.HasGenericParameters)
+            {
+                foreach (var genericParam in original.GenericParameters)
+                    copyMethod.GenericParameters.Add(new GenericParamUser(genericParam.Number, genericParam.Flags,
+                        genericParam.Name));
+            }   
 
             copyMethod.ReturnType =
                 redirectManager.ProcessTypeRedirect(copyMethod.ReturnType, declaringType?.DefinitionAssembly);
