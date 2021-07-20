@@ -238,7 +238,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                     definitionAssembly.ToAssemblyRef()));
 
             // If we are given an array, try to handle it as best as we can
-            if (defOrRef.ToTypeSig().IsSingleOrMultiDimensionalArray != defaultTypeRef.ToTypeSig().IsSingleOrMultiDimensionalArray)
+            if (defOrRef.IsTypeSpec)
             {
                 return ProcessTypeRedirect(defOrRef.ToTypeSig(), definitionAssembly).ToTypeDefOrRef();
             }

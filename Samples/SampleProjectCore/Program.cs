@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SampleProjectCore;
 
 namespace SampleProject
@@ -27,6 +28,7 @@ namespace SampleProject
             var value = COOL_NUMBER_2D_ARRAY[5, 3];
             var value2 = COOL_RANDOM_ARRAY[5, 3];
             var value3 = COOL_RANDOM2_ARRAY[5, 3];
+            var value4 = SomeGameClass.COOL_RANDOM_DICTIONARY.ContainsKey(5);
             Console.WriteLine(value);
         }
 
