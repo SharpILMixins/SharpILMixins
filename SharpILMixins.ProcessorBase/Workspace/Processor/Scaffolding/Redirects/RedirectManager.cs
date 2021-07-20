@@ -200,18 +200,25 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                         ProcessTypeRedirect(genericInstSig.GenericType, definitionAssembly).ToClassOrValueTypeSig(),
                         genericInstSig.GenericArguments.Select(t => ProcessTypeRedirect(t, definitionAssembly))
                             .ToList());
+                case ArraySig arraySig:
+                    return new ArraySig(ProcessTypeRedirect(arraySig.Next, definitionAssembly), arraySig.Rank, arraySig.Sizes, arraySig.LowerBounds);
 
                 case SZArraySig szArraySig:
                     return new SZArraySig(ProcessTypeRedirect(szArraySig.Next, definitionAssembly));
+
+                case ValueArraySig valueArraySig:
+                    return new ValueArraySig(ProcessTypeRedirect(valueArraySig.Next, definitionAssembly), valueArraySig.Size);
 
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
                         ResolveTypeDefIfNeeded(valueTypeSig.TypeDefOrRef, definitionAssembly));
 
+
                 //Pass-through the corlib type signature.
                 case CorLibTypeSig:
                     return parameterType;
+
             }
 
             if (parameterType != null)
@@ -225,7 +232,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         {
             if (definitionAssembly == null) return defOrRef;
             //Create a Type Reference if it isn't one
-            ITypeDefOrRef defaultTypeRef = defOrRef.IsTypeRef ? defOrRef : new TypeRefUser(defOrRef.Module, defOrRef.Namespace, defOrRef.Name, definitionAssembly.ToAssemblyRef());
+            ITypeDefOrRef defaultTypeRef = (defOrRef.IsTypeRef
+                ? defOrRef
+                : new TypeRefUser(defOrRef.Module, defOrRef.Namespace, defOrRef.Name,
+                    definitionAssembly.ToAssemblyRef()));
+
+            // If we are given an array, try to handle it as best as we can
+            if (defOrRef.ToTypeSig().IsSingleOrMultiDimensionalArray != defaultTypeRef.ToTypeSig().IsSingleOrMultiDimensionalArray)
+            {
+                return ProcessTypeRedirect(defOrRef.ToTypeSig(), definitionAssembly).ToTypeDefOrRef();
+            }
 
             //Only create references to other assemblies. Our Target assembly needs TypeDefs so it doesn't reference itself.
             if (Workspace.CurrentTargetModule?.Assembly.FullName.Equals(defOrRef.DefinitionAssembly?.FullName) == true)
@@ -237,7 +253,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public IMethodDefOrRef ResolveMethodDefIfNeeded(IMethodDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
-
+            
             //Only create references to methods in other assemblies. Methods in our Target assembly needs MethodDefs so we don't reference our own assembly.
             if (Workspace.CurrentTargetModule?.Assembly?.FullName.Equals(defOrRef.DeclaringType?.DefinitionAssembly?.FullName) == true)
                 return defOrRef.ResolveMethodDef() ?? defOrRef;
