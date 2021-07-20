@@ -20,6 +20,7 @@ namespace SampleProjectCore.Mixins
                 public const string Boolean_Equals_Boolean = "System.Boolean System.Boolean::Equals(System.Boolean)";
             }
 
+            public const string RandomMethod = "System.Void SampleProject.ProgramBruh::RandomMethod(System.Boolean,System.Int32,SampleProjectCore.RandomEnum,System.Single,System.Int32)";
             public const string RandomNumber = "System.Int32 SampleProject.ProgramBruh::RandomNumber()";
         }
     }
@@ -64,6 +65,7 @@ namespace SampleProjectCore.Mixins
             public static class ExampleInjects
             {
                 public const string Console_WriteLine_Object = "System.Void System.Console::WriteLine(System.Object)";
+                public const string Console_WriteLine_String = "System.Void System.Console::WriteLine(System.String)";
                 public const string Random_Next = "System.Int32 System.Random::Next()";
                 public const string Math_Abs_Double = "System.Double System.Math::Abs(System.Double)";
                 public const string _d = "System.Double SampleProjectCore.RedirectClass::_d";

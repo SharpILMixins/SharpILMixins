@@ -112,7 +112,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
-                    instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
+                    instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly)
+;
+                if (instruction.Operand is IMethodDefOrRef methodDefOrRef)
+                    instruction.Operand = ResolveMethodDefIfNeeded(methodDefOrRef, method.DeclaringType.DefinitionAssembly);
                 
             }
         }
@@ -221,11 +224,26 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
+            //Create a Type Reference if it isn't one
+            ITypeDefOrRef defaultTypeRef = defOrRef.IsTypeRef ? defOrRef : new TypeRefUser(defOrRef.Module, defOrRef.Namespace, defOrRef.Name, definitionAssembly.ToAssemblyRef());
 
-            //This is needed because otherwise we'll be referencing the target assembly
-            if (definitionAssembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName) || Workspace.CurrentTargetModule?.Assembly.FullName.Equals(defOrRef.DefinitionAssembly.FullName) == true)
-                return defOrRef.ResolveTypeDef() ?? defOrRef;
-            return defOrRef;
+            //Only create references to other assemblies. Our Target assembly needs TypeDefs so it doesn't reference itself.
+            if (Workspace.CurrentTargetModule?.Assembly.FullName.Equals(defOrRef.DefinitionAssembly?.FullName) == true)
+                return defOrRef.ResolveTypeDef() ?? defaultTypeRef;
+
+            return defaultTypeRef;
+        }
+
+        public IMethodDefOrRef ResolveMethodDefIfNeeded(IMethodDefOrRef defOrRef, IAssembly? definitionAssembly)
+        {
+            if (definitionAssembly == null) return defOrRef;
+
+            //Only create references to methods in other assemblies. Methods in our Target assembly needs MethodDefs so we don't reference our own assembly.
+            if (Workspace.CurrentTargetModule?.Assembly?.FullName.Equals(defOrRef.DeclaringType?.DefinitionAssembly?.FullName) == true)
+                return defOrRef.ResolveMethodDef() ?? defOrRef;
+
+            if (defOrRef.Module == null || defOrRef.MethodSig == null || defOrRef.DeclaringType == null || defOrRef.DeclaringType.DefinitionAssembly == null) return defOrRef;
+            return new MemberRefUser(defOrRef.Module, defOrRef.Name, defOrRef.MethodSig, ResolveTypeDefIfNeeded(defOrRef.DeclaringType, defOrRef.DeclaringType.DefinitionAssembly));
         }
     }
 }

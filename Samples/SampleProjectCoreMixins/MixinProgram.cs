@@ -28,6 +28,12 @@ namespace SampleProjectCore.Mixins
             return 42;
         }
 
+        [Inject(Method = ProgramBruhTargets.Methods.RandomMethod, At = AtLocation.Head)]
+        public void RandomMethod(bool overload, int randomInt, RandomEnum randomEnum, float floaty, int moreInts)
+        {
+            Console.WriteLine($"{overload}, {randomInt}, {randomEnum}, {floaty.ToString()}, {moreInts}, {new object().ToString()}");
+        }
+
         //[Inject(Method = "Main", At = AtLocation.Head)]
         public static void BeforeMain(string[] args, [InjectCancelParam] out bool isCancelled)
         {
@@ -57,6 +63,8 @@ namespace SampleProjectCore.Mixins
             Console.WriteLine("");
             Console.WriteLine($"Also, here are the args from the Main method: {args}");
             Method<object>(a => a != null);
+            
+            Console.WriteLine($"");
         }
     }
 }

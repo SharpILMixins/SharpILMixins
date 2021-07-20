@@ -46,9 +46,9 @@ namespace SharpILMixins.Processor.Utils
 
                         foreach (var (argument, value) in valueTypes)
                         {
-                            var member = (MemberInfo) (argument.IsProperty
+                            var member = (MemberInfo)(argument.IsProperty
                                 ? result.GetType().GetProperty(argument.Name)
-                                : result.GetType().GetField(argument.Name));
+                                : result.GetType().GetField(argument.Name))!;
 
                             switch (member)
                             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using SampleProjectCore;
 
 namespace SampleProject
 {
@@ -16,6 +17,11 @@ namespace SampleProject
         private static bool BooleanOverload(bool overload)
         {
             return true.Equals(overload);
+        }
+
+        private void RandomMethod(bool overload, int randomInt, RandomEnum randomEnum, float floaty, int moreInts)
+        {
+            
         }
 
 
