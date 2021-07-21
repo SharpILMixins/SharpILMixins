@@ -113,9 +113,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                 }
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
-                    instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly)
-                        ;
-                if (instruction.Operand is IMethodDefOrRef methodDefOrRef)
+                    instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly);
+
+                if (instruction.Operand is IMethodDefOrRef methodDefOrRef && methodDefOrRef.MethodSig != null)
                     instruction.Operand =
                         ResolveMethodDefIfNeeded(methodDefOrRef, method.DeclaringType.DefinitionAssembly);
 
@@ -289,8 +289,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             if (definitionAssembly == null) return defOrRef;
             if (defOrRef.DeclaringType.NumberOfGenericParameters > 0 && defOrRef.IsMemberRef)
             {
-                defOrRef = new MemberRefUser(defOrRef.Module, defOrRef.Name, ProcessSignature(defOrRef.MethodSig),
-                    ProcessTypeRedirect(defOrRef.DeclaringType.ToTypeSig()).ToTypeDefOrRef());
+                defOrRef = new MemberRefUser(defOrRef.Module, defOrRef.Name, ProcessSignature(defOrRef.MethodSig), ProcessTypeRedirect(defOrRef.DeclaringType.ToTypeSig()).ToTypeDefOrRef());
             }
 
             //Only create references to methods in other assemblies. Methods in our Target assembly needs MethodDefs so we don't reference our own assembly.
@@ -308,8 +307,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             field.FieldType = ProcessTypeRedirect(field.FieldType, field.FieldType.DefinitionAssembly);
         }
 
-        public MethodSig ProcessSignature(MethodSig sig)
+        public MethodSig? ProcessSignature(MethodSig? sig)
         {
+            if (sig == null)
+                return null;
             return new MethodSig(sig.CallingConvention, sig.GenParamCount, ProcessTypeRedirect(sig.RetType),
                 sig.Params?.Select(ProcessTypeRedirect)?.ToList(),
                 sig.ParamsAfterSentinel?.Select(ProcessTypeRedirect)?.ToList());
