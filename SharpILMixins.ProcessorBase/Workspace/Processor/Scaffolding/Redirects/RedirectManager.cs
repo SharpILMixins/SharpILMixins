@@ -105,7 +105,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                     PerformOperandReplacement(method, memberRef, instruction, index);
                     PerformOperandResolveIfNeeded(instruction);
                 }
-                if (instruction.Operand is MethodSpec {Method: IMemberRef memberSpecRef})
+
+                if (instruction.Operand is MethodSpec { Method: IMemberRef memberSpecRef })
                 {
                     PerformOperandReplacement(method, memberSpecRef, instruction, index);
                     PerformOperandResolveIfNeeded(instruction);
@@ -113,10 +114,19 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
                 if (instruction.Operand is ITypeDefOrRef typeDefOrRef)
                     instruction.Operand = ResolveTypeDefIfNeeded(typeDefOrRef, method.DeclaringType.DefinitionAssembly)
-;
+                        ;
                 if (instruction.Operand is IMethodDefOrRef methodDefOrRef)
-                    instruction.Operand = ResolveMethodDefIfNeeded(methodDefOrRef, method.DeclaringType.DefinitionAssembly);
-                
+                    instruction.Operand =
+                        ResolveMethodDefIfNeeded(methodDefOrRef, method.DeclaringType.DefinitionAssembly);
+
+                if (instruction.Operand is MethodSpec methodSpec)
+                {
+                    instruction.Operand = new MethodSpecUser(
+                        ResolveMethodDefIfNeeded(methodSpec.Method, methodSpec.Method.DeclaringType.DefinitionAssembly),
+                        new GenericInstMethodSig(methodSpec.GenericInstMethodSig.GenericArguments
+                            .Select(ProcessTypeRedirect).ToList())
+                        );
+                }
             }
         }
 
@@ -124,7 +134,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         {
             if (instruction.Operand is not MemberRef memberRef) return;
             var resolved = memberRef.Resolve();
-            if (resolved?.DeclaringType.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) == true)
+            if (resolved?.DeclaringType.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) ==
+                true)
             {
                 instruction.Operand = resolved;
             }
@@ -162,7 +173,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public T ProcessMemberRedirect<T>(T memberRef,
             IDictionary<IMemberRef, RedirectMapping>? memberRedirectDictionary = null) where T : IMemberRef
         {
-            return (T) ProcessMemberRedirect(memberRef, out _, null, memberRedirectDictionary);
+            return (T)ProcessMemberRedirect(memberRef, out _, null, memberRedirectDictionary);
         }
 
         public IMemberRef ProcessMemberRedirect(IMemberRef memberRef, out bool modified,
@@ -184,41 +195,44 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             return pair.IsDefault() ? type : pair.Value.FullName;
         }
 
+        public TypeSig? ProcessTypeRedirect(TypeSig? parameterType)
+        {
+            return ProcessTypeRedirect(parameterType, parameterType?.DefinitionAssembly);
+        }
+
         public TypeSig? ProcessTypeRedirect(TypeSig? parameterType, IAssembly? definitionAssembly)
         {
             switch (parameterType)
             {
                 case ClassSig classSig:
                     return new ClassSig(TypeRedirectDictionary.GetValueOrDefault(classSig.TypeDefOrRef.FullName) ??
-                                        ResolveTypeDefIfNeeded(classSig.TypeDefOrRef, definitionAssembly));
-
+                                        ResolveTypeDefIfNeeded(classSig.TypeDefOrRef,
+                                            classSig.TypeDefOrRef.DefinitionAssembly));
                 case ByRefSig byRefSig:
                     return new ByRefSig(ProcessTypeRedirect(byRefSig.Next, definitionAssembly));
-
                 case GenericInstSig genericInstSig:
                     return new GenericInstSig(
-                        ProcessTypeRedirect(genericInstSig.GenericType, definitionAssembly).ToClassOrValueTypeSig(),
-                        genericInstSig.GenericArguments.Select(t => ProcessTypeRedirect(t, definitionAssembly))
+                        ProcessTypeRedirect(genericInstSig.GenericType, genericInstSig.GenericType.DefinitionAssembly)
+                            .ToClassOrValueTypeSig(),
+                        genericInstSig.GenericArguments.Select(t => ProcessTypeRedirect(t, t.DefinitionAssembly))
                             .ToList());
                 case ArraySig arraySig:
-                    return new ArraySig(ProcessTypeRedirect(arraySig.Next, definitionAssembly), arraySig.Rank, arraySig.Sizes, arraySig.LowerBounds);
-
+                    return new ArraySig(ProcessTypeRedirect(arraySig.Next, arraySig.Next.DefinitionAssembly),
+                        arraySig.Rank,
+                        arraySig.Sizes, arraySig.LowerBounds);
                 case SZArraySig szArraySig:
-                    return new SZArraySig(ProcessTypeRedirect(szArraySig.Next, definitionAssembly));
-
+                    return new SZArraySig(ProcessTypeRedirect(szArraySig.Next, szArraySig.Next.DefinitionAssembly));
                 case ValueArraySig valueArraySig:
-                    return new ValueArraySig(ProcessTypeRedirect(valueArraySig.Next, definitionAssembly), valueArraySig.Size);
-
+                    return new ValueArraySig(
+                        ProcessTypeRedirect(valueArraySig.Next, valueArraySig.Next.DefinitionAssembly),
+                        valueArraySig.Size);
                 case ValueTypeSig valueTypeSig:
                     return new ValueTypeSig(
                         TypeRedirectDictionary.GetValueOrDefault(valueTypeSig.TypeDefOrRef.FullName) ??
-                        ResolveTypeDefIfNeeded(valueTypeSig.TypeDefOrRef, definitionAssembly));
-
-
-                //Pass-through the corlib type signature.
+                        ResolveTypeDefIfNeeded(valueTypeSig.TypeDefOrRef,
+                            valueTypeSig.TypeDefOrRef.DefinitionAssembly));
                 case CorLibTypeSig:
                     return parameterType;
-
             }
 
             if (parameterType != null)
@@ -231,35 +245,74 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
+            var isReferencingTargetAssembly = IsReferencingTargetAssembly(defOrRef);
+
             //Create a Type Reference if it isn't one
-            ITypeDefOrRef defaultTypeRef = (defOrRef.IsTypeRef
-                ? defOrRef
-                : new TypeRefUser(defOrRef.Module, defOrRef.Namespace, defOrRef.Name,
-                    definitionAssembly.ToAssemblyRef()));
+            ITypeDefOrRef defaultTypeRef = CreateTypeRef(defOrRef);
 
             // If we are given an array, try to handle it as best as we can
             if (defOrRef.IsTypeSpec)
             {
-                return ProcessTypeRedirect(defOrRef.ToTypeSig(), definitionAssembly).ToTypeDefOrRef();
+                var resultTypeRedirect = ProcessTypeRedirect(defOrRef.ToTypeSig(), defOrRef.DefinitionAssembly)
+                    .ToTypeDefOrRef();
+                return isReferencingTargetAssembly ? resultTypeRedirect.ResolveTypeDefThrow() : resultTypeRedirect;
             }
 
             //Only create references to other assemblies. Our Target assembly needs TypeDefs so it doesn't reference itself.
-            if (Workspace.CurrentTargetModule?.Assembly.FullName.Equals(defOrRef.DefinitionAssembly?.FullName) == true)
+            if (isReferencingTargetAssembly)
                 return defOrRef.ResolveTypeDef() ?? defaultTypeRef;
 
             return defaultTypeRef;
         }
 
+        private static ITypeDefOrRef CreateTypeRef(ITypeDefOrRef defOrRef)
+        {
+            return defOrRef.IsTypeRef
+                ? defOrRef
+                : new TypeRefUser(defOrRef.Module, defOrRef.Namespace, defOrRef.Name,
+                    defOrRef.DefinitionAssembly.ToAssemblyRef());
+        }
+
+        private bool IsReferencingTargetAssembly(ITypeDefOrRef defOrRef)
+        {
+            var targetAssemblyFullName = Workspace.CurrentTargetModule?.Assembly.FullName;
+            var mixinAssemblyFullName = Workspace.MixinModule?.Assembly.FullName;
+            var definitionAssemblyFullName = defOrRef.DefinitionAssembly?.FullName;
+
+            //Is referencing target assembly if the target assembly or original mixins module are referenced
+            return targetAssemblyFullName?.Equals(definitionAssemblyFullName) == true ||
+                   mixinAssemblyFullName?.Equals(definitionAssemblyFullName) == true;
+        }
+
         public IMethodDefOrRef ResolveMethodDefIfNeeded(IMethodDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
-            
+            if (defOrRef.DeclaringType.NumberOfGenericParameters > 0 && defOrRef.IsMemberRef)
+            {
+                defOrRef = new MemberRefUser(defOrRef.Module, defOrRef.Name, ProcessSignature(defOrRef.MethodSig),
+                    ProcessTypeRedirect(defOrRef.DeclaringType.ToTypeSig()).ToTypeDefOrRef());
+            }
+
             //Only create references to methods in other assemblies. Methods in our Target assembly needs MethodDefs so we don't reference our own assembly.
-            if (Workspace.CurrentTargetModule?.Assembly?.FullName.Equals(defOrRef.DeclaringType?.DefinitionAssembly?.FullName) == true)
+            if (IsReferencingTargetAssembly(defOrRef.DeclaringType))
                 return defOrRef.ResolveMethodDef() ?? defOrRef;
 
-            if (defOrRef.Module == null || defOrRef.MethodSig == null || defOrRef.DeclaringType == null || defOrRef.DeclaringType.DefinitionAssembly == null) return defOrRef;
-            return new MemberRefUser(defOrRef.Module, defOrRef.Name, defOrRef.MethodSig, ResolveTypeDefIfNeeded(defOrRef.DeclaringType, defOrRef.DeclaringType.DefinitionAssembly));
+            if (defOrRef.Module == null || defOrRef.MethodSig == null || defOrRef.DeclaringType == null ||
+                defOrRef.DeclaringType.DefinitionAssembly == null) return defOrRef;
+            return new MemberRefUser(defOrRef.Module, defOrRef.Name, defOrRef.MethodSig,
+                ResolveTypeDefIfNeeded(defOrRef.DeclaringType, defOrRef.DeclaringType.DefinitionAssembly));
+        }
+
+        public void ProcessField(FieldDef field)
+        {
+            field.FieldType = ProcessTypeRedirect(field.FieldType, field.FieldType.DefinitionAssembly);
+        }
+
+        public MethodSig ProcessSignature(MethodSig sig)
+        {
+            return new MethodSig(sig.CallingConvention, sig.GenParamCount, ProcessTypeRedirect(sig.RetType),
+                sig.Params?.Select(ProcessTypeRedirect)?.ToList(),
+                sig.ParamsAfterSentinel?.Select(ProcessTypeRedirect)?.ToList());
         }
     }
 }

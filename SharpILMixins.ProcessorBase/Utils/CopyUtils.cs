@@ -9,11 +9,15 @@ namespace SharpILMixins.Processor.Utils
             TypeDef? declaringType = null, bool copyAttributes = true)
         {
             var redirectManager = workspace.RedirectManager;
-            var copyMethod = new MethodDefUser(original.Name, original.MethodSig, original.ImplAttributes,
+            var copyMethod = new MethodDefUser(original.Name, redirectManager.ProcessSignature(original.MethodSig), original.ImplAttributes,
                 original.Attributes)
             {
-                Body = original.Body
+                Body = original.Body,
+                DeclaringType = declaringType
             };
+
+            if (copyMethod.Body != null)
+                redirectManager.ProcessRedirects(copyMethod, copyMethod.Body);
 
             foreach (var bodyVariable in original.Body.Variables)
             {
@@ -39,8 +43,7 @@ namespace SharpILMixins.Processor.Utils
                     originalParamDef.Attributes));
 
             foreach (var methodOverride in original.Overrides) copyMethod.Overrides.Add(methodOverride);
-
-            if (declaringType != null) copyMethod.DeclaringType = declaringType;
+            
             if (copyAttributes) copyMethod.Attributes = original.Attributes;
             return copyMethod;
         }

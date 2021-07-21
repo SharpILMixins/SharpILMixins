@@ -27,6 +27,10 @@
     <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NBrigadier" Version="1.0.17.4" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />

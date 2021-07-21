@@ -37,7 +37,10 @@ namespace SharpILMixins.Processor.Utils
         private static void ConfigureTarget(Target target, LoggingConfiguration config)
         {
             if (target is ColoredConsoleTarget consoleTarget)
+            {
                 AddLogLevelRule(consoleTarget, LogLevel.Warn, ConsoleOutputColor.Yellow, ConsoleOutputColor.NoChange);
+                AddLogLevelRule(consoleTarget, LogLevel.Error, ConsoleOutputColor.Red, ConsoleOutputColor.NoChange);
+            }
             config.AddTarget(target);
             config.AddRule(Utilities.DebugMode ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, target);
         }

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using NBrigadier;
+using NBrigadier.Arguments;
+using NBrigadier.Builder;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
 using SharpILMixins.Annotations.Inline;
@@ -65,6 +68,45 @@ namespace SampleProjectCore.Mixins
             Method<object>(a => a != null);
             
             Console.WriteLine($"");
+
+
+            var dispatcher = new CommandDispatcher<RandomClass>();
+
+            dispatcher.Register(
+                LiteralArgumentBuilder<RandomClass>.Literal("foo")
+                    .Then(
+                        RequiredArgumentBuilder<RandomClass, int>.Argument("bar", IntegerArgumentType.Integer())
+                            .Executes(c =>
+                            {
+                                Console.WriteLine("Bar is " + IntegerArgumentType.GetInteger(c, "bar"));
+                                return 1;
+                            })
+                    )
+                    .Executes(c =>
+                    {
+                        Console.WriteLine("Called foo with no arguments");
+                        return 1;
+                    })
+            );
+            var dispatcher2 = new CommandDispatcher<Source>();
+
+            dispatcher2.Register(
+                LiteralArgumentBuilder<Source>.Literal("foo")
+                    .Then(
+                        RequiredArgumentBuilder<Source, int>.Argument("bar", IntegerArgumentType.Integer())
+                            .Executes(c =>
+                            {
+                                Console.WriteLine("Bar is " + IntegerArgumentType.GetInteger(c, "bar"));
+                                return 1;
+                            })
+                    )
+                    .Executes(c =>
+                    {
+                        Console.WriteLine("Called foo with no arguments");
+                        return 1;
+                    })
+            );
+
         }
     }
 }

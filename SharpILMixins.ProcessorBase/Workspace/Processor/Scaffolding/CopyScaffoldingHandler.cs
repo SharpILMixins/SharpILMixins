@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using dnlib.DotNet;
@@ -60,13 +61,14 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var superType = targetType.BaseType.ResolveTypeDef();
             var hasSuperElements = superType != null;
-            
+
             var props = mixinType.Properties.Where(ShouldCopyProperty).ToList();
-            ProcessShadowElements(mixinType.Properties, targetType.Properties.Cast<IMemberRef>().ToList(), hasSuperElements);
+            ProcessShadowElements(mixinType.Properties, targetType.Properties.Cast<IMemberRef>().ToList(),
+                hasSuperElements);
             CopyProperties(targetType, props);
 
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
-            
+
             if (hasSuperElements && superType != null)
             {
                 var superElements = superType.Properties;
@@ -101,7 +103,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 .Where(m => m.HasBody)) RedirectManager.ProcessRedirects(methodDef, methodDef.Body);
         }
 
-        private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements, bool doNotThrowIfMissing = false)
+        private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements,
+            bool doNotThrowIfMissing = false)
         {
             foreach (var element in mixinElements)
                 if (IsShadowElement(element, targetElements))
@@ -113,6 +116,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                         throw new MixinApplyException(
                             $"Unable to find target for Shadow element \"{element.FullName}\"");
                     }
+
                     if (targetMethod != null)
                     {
                         RedirectManager.RegisterRedirect(element, targetMethod);
@@ -130,7 +134,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             ObfuscationMap? obfuscationMap = null)
         {
             var nonMixinTypes = mixinModule.Types
-                .SelectMany(t => t.NestedTypes.Concat(new[] {t})).Where(mixinType =>
+                .SelectMany(t => t.NestedTypes.Concat(new[] { t })).Where(mixinType =>
                     mixinType.GetCustomAttribute<MixinAttribute>() == null && mixinType.FullName != "<Module>")
                 .ToList();
 
@@ -149,7 +153,17 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 else
                     targetModule.Types.Add(typeDef);
 
-                foreach (var method in typeDef.Methods) RedirectManager.ProcessRedirects(method, method.Body);
+                ProcessRedirects(typeDef);
+            }
+        }
+
+        private void ProcessRedirects(TypeDef typeDef)
+        {
+            foreach (var field in typeDef.Fields) RedirectManager.ProcessField(field);
+            foreach (var method in typeDef.Methods)
+            {
+                RedirectManager.ProcessRedirects(method, method.Body);
+                method.Signature = RedirectManager.ProcessSignature(method.Signature as MethodSig ?? throw new InvalidOperationException("Method signature is not MethodSig"));
             }
         }
 
@@ -181,7 +195,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var superFields = targetType.BaseType.ResolveTypeDef();
             var hasSuperElements = superFields != null;
-            
+
             var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
             ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList(), hasSuperElements);
             CopyFields(targetType, fields);
@@ -224,7 +238,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         {
             var superType = targetType.BaseType.ResolveTypeDef();
             var hasSuperMethods = superType != null;
-            
+
             var mixinMethods = mixinType.Methods.Where(ShouldCopyMethod).ToList();
             ProcessShadowElements(mixinType.Methods, targetType.Methods.Cast<IMemberRef>().ToList(), hasSuperMethods);
 
@@ -311,7 +325,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     var oldResource = targetModule.Resources.Find(mixinModuleResource.Name);
                     if (oldResource != null)
                         targetModule.Resources.Remove(oldResource);
-                    
+
                     targetModule.Resources.Add(mixinModuleResource);
                 }
             }
