@@ -2,9 +2,21 @@
 
 namespace SampleProjectCore
 {
+    public struct ConcerningStruct
+    {
+        public int bruh;
+        public int bruh2;
+        public int bruh3;
+    }
+
     public class InjectClass
     {
         private double _d;
+
+        private ConcerningStruct WeirdExample(ConcerningStruct valueDeez)
+        {
+            return default;
+        }
 
         private void Example()
         {

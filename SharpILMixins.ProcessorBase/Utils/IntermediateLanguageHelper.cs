@@ -33,6 +33,7 @@ namespace SharpILMixins.Processor.Utils
             foreach (var instruction2 in passCallerArguments) yield return instruction2;
 
             yield return new Instruction(OpCodes.Call, methodToInvoke);
+
             if (discardResult && methodToInvoke.HasReturnType)
                 yield return new Instruction(OpCodes.Pop);
 
@@ -59,7 +60,9 @@ namespace SharpILMixins.Processor.Utils
                     isRef = false;
 
                 IEnumerable<Instruction> ldArgInst = new[]
-                    {new Instruction(isRef ? OpCodes.Ldarga : OpCodes.Ldarg, paramsMethodParams.ElementAtOrDefault(i))};
+                {
+                    new Instruction(isRef ? OpCodes.Ldarga : OpCodes.Ldarg, paramsMethodParams.ElementAtOrDefault(i))
+                };
 
                 modifyParameterHandler?.Invoke(i, ref ldArgInst, afterCallInstructions);
 
@@ -113,7 +116,7 @@ namespace SharpILMixins.Processor.Utils
                         var description = injectLocalAttribute.Ordinal != null
                             ? $"ordinal {injectLocalAttribute.Ordinal}"
                             : $"name {injectLocalAttribute.Name}";
-                        
+
                         instruction = new[]
                         {
                             Instruction.Create(methodSigParam.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc,
@@ -157,11 +160,23 @@ namespace SharpILMixins.Processor.Utils
             };
 
 
+            // The method to invoke requires us to pop the result if we return something because of the inject cancel parameter attribute
+            var methodToInvoke = action.MixinMethod;
+            var hasInjectCancelParameter =
+                methodToInvoke.ParamDefs.Any(p => p.GetCustomAttribute<InjectCancelParamAttribute>() != null);
+            var popInstruction = new Instruction(OpCodes.Pop);
+            var requiresPopAfterCancel = hasInjectCancelParameter && methodToInvoke.HasReturnType;
+
             afterCallInstructions.Add(new Instruction(OpCodes.Ldloc, isCancelledVariable));
             afterCallInstructions.Add(new Instruction(OpCodes.Brfalse,
-                nextInstruction ?? throw new MixinApplyException(
+                (requiresPopAfterCancel ? popInstruction : nextInstruction) ?? throw new MixinApplyException(
                     $"Unable to find next instruction to jump to after cancelling the method {targetMethod} on {mixinMethod}")));
             afterCallInstructions.Add(new Instruction(OpCodes.Ret));
+
+            if (requiresPopAfterCancel)
+            {
+                afterCallInstructions.Add(popInstruction);
+            }
         }
     }
 }

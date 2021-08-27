@@ -1,12 +1,25 @@
 ﻿using System;
 using SharpILMixins.Annotations;
 using SharpILMixins.Annotations.Inject;
+using SharpILMixins.Annotations.Parameters;
 
 namespace SampleProjectCore.Mixins
 {
     [Mixin(typeof(InjectClass))]
     public class MixinInjectClass
     {
+        [Inject(At = AtLocation.Head, Method = "WeirdExample")]
+        private ConcerningStruct InjectWeirdExampleHead(ConcerningStruct valueDeez, [InjectCancelParam] out bool cancelled)
+        {
+            cancelled = true;
+            return new ConcerningStruct
+            {
+                bruh = 69,
+                bruh2 = 420,
+                bruh3 = 69420
+            };
+        }
+
         [Inject(At = AtLocation.Head, Method = "Example")]
         private void InjectHead()
         {
