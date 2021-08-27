@@ -2,11 +2,11 @@
 {
     public class MixinWorkspaceSettings
     {
-        public MixinWorkspaceSettings(string outputPath, DumpTargetType dumpTargets, string mixinHandlerName = "mixin",
-            bool copyResources = false,
+        public MixinWorkspaceSettings(string outputPath, DumpTargetType dumpTargets, string mixinHandlerName = "mixin", bool copyResources = false,
             bool experimentalInlineHandlers = false,
             string outputSuffix = "",
-            GenerationType isGenerateOnly = GenerationType.None)
+            GenerationType isGenerateOnly = GenerationType.None,
+            bool forceKeepMaxStack = false)
         {
             OutputPath = outputPath;
             MixinHandlerName = mixinHandlerName;
@@ -15,6 +15,7 @@
             GenerationType = isGenerateOnly;
             ExperimentalInlineHandlers = experimentalInlineHandlers;
             OutputSuffix = outputSuffix;
+            ForceKeepMaxStack = forceKeepMaxStack;
         }
 
         public string OutputPath { get; }
@@ -30,6 +31,8 @@
         public string OutputSuffix { get; }
 
         public GenerationType GenerationType { get; set; }
+
+        public bool ForceKeepMaxStack { get; set; }
 
         public bool IsGeneratingHelperCode => GenerationType == GenerationType.HelperCode;
 

@@ -96,7 +96,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             foreach (var bodyVariable in body.Variables)
                 bodyVariable.Type = ProcessTypeRedirect(bodyVariable.Type, method.DeclaringType.DefinitionAssembly);
 
-            //body.KeepOldMaxStack = true;
+            if (Workspace.Settings.ForceKeepMaxStack)
+            {
+                body.KeepOldMaxStack = true;
+            }
+
             for (var index = 0; index < body.Instructions.Count; index++)
             {
                 var instruction = body.Instructions[index];
@@ -125,7 +129,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                         ResolveMethodDefIfNeeded(methodSpec.Method, methodSpec.Method.DeclaringType.DefinitionAssembly),
                         new GenericInstMethodSig(methodSpec.GenericInstMethodSig.GenericArguments
                             .Select(ProcessTypeRedirect).ToList())
-                        );
+                    );
                 }
             }
         }
@@ -289,7 +293,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             if (definitionAssembly == null) return defOrRef;
             if (defOrRef.DeclaringType.NumberOfGenericParameters > 0 && defOrRef.IsMemberRef)
             {
-                defOrRef = new MemberRefUser(defOrRef.Module, defOrRef.Name, ProcessSignature(defOrRef.MethodSig), ProcessTypeRedirect(defOrRef.DeclaringType.ToTypeSig()).ToTypeDefOrRef());
+                defOrRef = new MemberRefUser(defOrRef.Module, defOrRef.Name, ProcessSignature(defOrRef.MethodSig),
+                    ProcessTypeRedirect(defOrRef.DeclaringType.ToTypeSig()).ToTypeDefOrRef());
             }
 
             //Only create references to methods in other assemblies. Methods in our Target assembly needs MethodDefs so we don't reference our own assembly.

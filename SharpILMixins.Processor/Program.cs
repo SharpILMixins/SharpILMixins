@@ -101,7 +101,8 @@ namespace SharpILMixins.Processor
                             o.CopyResources,
                             o.ExperimentalInlineMethods,
                             outputSuffix,
-                            o.GenerationType));
+                            o.GenerationType,
+                            o.ForceKeepMaxStack));
 
 
                     Debug.Assert(o.DeObfuscationMapsToApply != null, "o.DeObfuscationMapsToApply != null");
@@ -168,6 +169,9 @@ namespace SharpILMixins.Processor
             
             [Option("copy-resources", HelpText = "Whether or not to copy Mixin resources into the target method")]
             public bool CopyResources { get; set; }
+            
+            [Option("force-keep-max-stack", HelpText = "Whether or not to force")]
+            public bool ForceKeepMaxStack { get; set; }
         }
     }
 }
