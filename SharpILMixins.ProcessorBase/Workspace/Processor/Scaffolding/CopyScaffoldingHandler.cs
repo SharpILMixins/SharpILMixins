@@ -107,8 +107,11 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             bool doNotThrowIfMissing = false)
         {
             foreach (var element in mixinElements)
+            {
+                var oldName = element.Name;
                 if (IsShadowElement(element, targetElements))
                 {
+                    element.Name = (element as IHasCustomAttribute ?? throw new InvalidOperationException()).GetCustomAttribute<ShadowAttribute>()?.Name ?? element.Name;
                     var targetMethod =
                         targetElements.FirstOrDefault(m => RedirectManager.SigComparer.Equals(m, element));
                     if (!doNotThrowIfMissing && targetMethod == null)
@@ -122,6 +125,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                         RedirectManager.RegisterRedirect(element, targetMethod);
                     }
                 }
+
+                element.Name = oldName;
+            }
         }
 
         private static bool IsShadowElement(IMemberRef element, IList<IMemberRef> targetElements)

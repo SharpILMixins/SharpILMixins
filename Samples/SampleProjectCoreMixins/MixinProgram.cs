@@ -19,7 +19,7 @@ namespace SampleProjectCore.Mixins
 
         }
         
-        [Shadow] private static int _coolNumber;
+        [Shadow("_coolNumber")] private static int _coolNumberWithADifferentName;
 
         [Unique] private static string _ourString = "";
 
@@ -45,8 +45,8 @@ namespace SampleProjectCore.Mixins
             Debugger.Break();
             isCancelled = true;
             Console.WriteLine($"Hello World from Mixins! Random number was: {RandomNumber()} {args}");
-            Console.WriteLine($"Cool number before: {_coolNumber}");
-            _coolNumber = 42;
+            Console.WriteLine($"Cool number before: {_coolNumberWithADifferentName}");
+            _coolNumberWithADifferentName = 42;
             _ourString = "Mixins on C# are cool!";
         }
 
@@ -61,7 +61,7 @@ namespace SampleProjectCore.Mixins
         public static void AfterMain(string[] args)
         {
             Console.WriteLine("Goodbye World from Mixins!");
-            Console.WriteLine($"Cool number after: {_coolNumber}");
+            Console.WriteLine($"Cool number after: {_coolNumberWithADifferentName}");
             Console.WriteLine($"Truth: \"{_ourString}\"");
             Console.WriteLine("");
             Console.WriteLine($"Also, here are the args from the Main method: {args}");
