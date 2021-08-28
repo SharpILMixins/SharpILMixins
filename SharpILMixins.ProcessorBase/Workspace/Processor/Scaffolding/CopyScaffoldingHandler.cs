@@ -163,7 +163,9 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             foreach (var method in typeDef.Methods)
             {
                 RedirectManager.ProcessRedirects(method, method.Body);
-                method.Signature = RedirectManager.ProcessSignature(method.Signature as MethodSig ?? throw new InvalidOperationException("Method signature is not MethodSig"));
+                method.Signature = RedirectManager.ProcessSignature(method.Signature as MethodSig ??
+                                                                    throw new InvalidOperationException(
+                                                                        "Method signature is not MethodSig"));
             }
         }
 

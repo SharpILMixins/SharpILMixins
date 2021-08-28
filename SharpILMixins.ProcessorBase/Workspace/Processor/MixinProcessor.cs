@@ -53,34 +53,47 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 return;
             }
 
+            var accessorMixinRelations = mixinRelations.Where(r => r.IsAccessor);
+            var nonAccessorMixinRelations = mixinRelations.Where(r => !r.IsAccessor);
+
+            foreach (var mixinRelation in accessorMixinRelations)
+            {
+                ProcessMixinRelation(mixinRelation);
+            }
+
             CopyScaffoldingHandler.CopyNonMixinClasses(Workspace.MixinModule, targetModule.ModuleDef,
                 Workspace.ObfuscationMapManager.CreateUnifiedMap());
 
             CopyScaffoldingHandler.CopyOrReplaceResources(Workspace.MixinModule, targetModule.ModuleDef);
-            foreach (var mixinRelation in mixinRelations)
+            foreach (var mixinRelation in nonAccessorMixinRelations)
             {
-                Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
-
-                if (mixinRelation.IsAccessor)
-                {
-                    Logger.Info(
-                        $"Mixin {mixinRelation.MixinType.Name} is an accessor for {mixinRelation.TargetType.Name}.");
-                    RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
-                    continue;
-                }
-
-                //Redirect Mixin type to target type since it doesn't exist on the target module.
-                RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
-                RedirectManager.RegisterRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
-
-                CopyScaffoldingHandler.ProcessType(mixinRelation.TargetType, mixinRelation.MixinType);
-
-                ProcessMixinRelations(mixinRelation);
-
-                Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
+                ProcessMixinRelation(mixinRelation);
             }
 
             Workspace.ObfuscationMapManager.PerformNameRemapping(deObfuscationMap);
+        }
+
+        private void ProcessMixinRelation(MixinRelation mixinRelation)
+        {
+            Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
+
+            if (mixinRelation.IsAccessor)
+            {
+                Logger.Info(
+                    $"Mixin {mixinRelation.MixinType.Name} is an accessor for {mixinRelation.TargetType.Name}.");
+                RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+                return;
+            }
+
+            //Redirect Mixin type to target type since it doesn't exist on the target module.
+            RedirectManager.RegisterTypeRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+            RedirectManager.RegisterRedirect(mixinRelation.MixinType, mixinRelation.TargetType);
+
+            CopyScaffoldingHandler.ProcessType(mixinRelation.TargetType, mixinRelation.MixinType);
+
+            ProcessMixinRelations(mixinRelation);
+
+            Logger.Info($"Finished to process mixin {mixinRelation.MixinType.Name}");
         }
 
         private void ProcessMixinRelations(MixinRelation mixinRelation)
