@@ -66,7 +66,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
             AddNewObjMembers(injectMembers);
 
             if (injectMembers.Count != 0)
-                yield return ClassDeclaration($"{SimpleTargetMethodName}Injects")
+                yield return ClassDeclaration($"{string.Join("", SimpleTargetMethodName.Select(c => SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_'))}Injects")
                     .AddMembers(injectMembers.Where(c => c != null).DistinctBy(c => c.Name)
                         .Select(c => c.DeclarationSyntax).ToArray())
                     .WithModifiers(_publicStaticModifiers);

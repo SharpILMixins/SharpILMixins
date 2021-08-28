@@ -42,7 +42,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
             if (methodConstants.Length == 0)
                 return null;
 
-            return ClassDeclaration($"{SimpleTargetName}Targets")
+            return ClassDeclaration($"{string.Join("", SimpleTargetName.Select(c => SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_'))}Targets")
                 .AddMembers(
                     ClassDeclaration("Methods")
                         .AddMembers(methodConstants.ToArray())
