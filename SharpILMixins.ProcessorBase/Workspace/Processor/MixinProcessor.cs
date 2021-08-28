@@ -53,10 +53,10 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 return;
             }
 
-            var accessorMixinRelations = mixinRelations.Where(r => r.IsAccessor);
-            var nonAccessorMixinRelations = mixinRelations.Where(r => !r.IsAccessor);
+            var prioritizedRelations = mixinRelations.Where(IsPriorityRelation);
+            var nonPrioritizedMixinRelations = mixinRelations.Where(r => !IsPriorityRelation(r));
 
-            foreach (var mixinRelation in accessorMixinRelations)
+            foreach (var mixinRelation in prioritizedRelations)
             {
                 ProcessMixinRelation(mixinRelation);
             }
@@ -65,12 +65,17 @@ namespace SharpILMixins.Processor.Workspace.Processor
                 Workspace.ObfuscationMapManager.CreateUnifiedMap());
 
             CopyScaffoldingHandler.CopyOrReplaceResources(Workspace.MixinModule, targetModule.ModuleDef);
-            foreach (var mixinRelation in nonAccessorMixinRelations)
+            foreach (var mixinRelation in nonPrioritizedMixinRelations)
             {
                 ProcessMixinRelation(mixinRelation);
             }
 
             Workspace.ObfuscationMapManager.PerformNameRemapping(deObfuscationMap);
+        }
+
+        private static bool IsPriorityRelation(MixinRelation r)
+        {
+            return r.IsAccessor || r.TargetType.IsEnum && r.MixinType.IsEnum;
         }
 
         private void ProcessMixinRelation(MixinRelation mixinRelation)

@@ -72,12 +72,11 @@ namespace SharpILMixins.Processor.Workspace
             var targetTypes = targetAssembly.Modules.SelectMany(c => c.Types)
                 .SelectMany(c => c.NestedTypes.Concat(new[] {c})).ToDictionary(t => t.FullName, t => t);
             var fullName = typeName;
-            if (!fullName.Contains('.') && Configuration.BaseNamespace != null)
-                fullName = $"{Configuration.BaseNamespace}.{fullName}";
+            var fullNameRelative = $"{(Configuration.BaseNamespace != null ? Configuration.BaseNamespace + "." : "")}{fullName}";
 
-            var foundType = mixinTypes.GetValueOrDefault(fullName) ??
+            var foundType = mixinTypes.GetValueOrDefault(fullNameRelative) ?? mixinTypes.GetValueOrDefault(fullName)??
                             throw new MixinApplyException(
-                                $"Unable to find Mixin type {fullName} in \"{mixinAssembly.Name}\"");
+                                $"Unable to find Mixin type {fullNameRelative}/{fullName} in \"{mixinAssembly.Name}\"");
 
             var attribute = foundType.GetCustomAttribute<MixinAttribute>() ??
                             throw new MixinApplyException(

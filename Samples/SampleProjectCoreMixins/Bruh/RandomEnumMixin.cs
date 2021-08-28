@@ -1,6 +1,6 @@
 ﻿using SharpILMixins.Annotations;
 
-namespace SampleProjectCore.Mixins
+namespace SampleProjectCore.Mixins.Bruh
 {
     [Mixin(typeof(RandomEnum))]
     public enum RandomEnumMixin

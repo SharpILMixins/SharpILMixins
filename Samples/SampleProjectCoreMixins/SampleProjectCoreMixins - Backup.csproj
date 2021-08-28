@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SampleProjectCore.Mixins</RootNamespace>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="mixins.json" />
+    <None Remove="SampleProject-out.dll" />
+    <None Remove="SampleProjectCore-out.dll" />
+    <None Remove="SampleProjectCore-out.pdb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="mixins.json" />
+  </ItemGroup>
+
+  <!--<ItemGroup>
+    <ProjectReference Include="..\..\Analyzer\SharpILMixins.Analyzer\SharpILMixins.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Analyzer\SharpILMixins.Analyzer.CodeFixes\SharpILMixins.Analyzer.CodeFixes.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>-->
+
+  <PropertyGroup>
+    <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NBrigadier" Version="1.0.17.4" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SharpILMixins.Annotations\SharpILMixins.Annotations.csproj" />
+    <ProjectReference Include="..\SampleProjectCore\SampleProjectCore.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="Bruh\" />
+  </ItemGroup>
+
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties />
+    </VisualStudio>
+  </ProjectExtensions>
+
+</Project>
