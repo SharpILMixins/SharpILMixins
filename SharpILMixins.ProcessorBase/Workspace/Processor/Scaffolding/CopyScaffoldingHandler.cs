@@ -117,7 +117,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                             $"Unable to find target for Shadow element \"{element.FullName}\"");
                     }
 
-                    if (targetMethod != null)
+                    if (targetMethod != null && element != targetMethod)
                     {
                         RedirectManager.RegisterRedirect(element, targetMethod);
                     }

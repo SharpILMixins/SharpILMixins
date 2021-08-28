@@ -87,6 +87,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             }
 
             TypeRedirectDictionary.Add(originalMember.FullName, newMember);
+            RegisterRedirect(originalMember, newMember);
         }
 
         public void ProcessRedirects(MethodDef method, CilBody body)
@@ -249,6 +250,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
+            Logger.Debug($"ResolveTypeDefIfNeeded on {defOrRef} - Is ${(defOrRef.IsTypeRef ? "not " : "")}TypeDef because is referencing Target Assembly");
             var isReferencingTargetAssembly = IsReferencingTargetAssembly(defOrRef);
 
             //Create a Type Reference if it isn't one
@@ -264,7 +266,21 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
 
             //Only create references to other assemblies. Our Target assembly needs TypeDefs so it doesn't reference itself.
             if (isReferencingTargetAssembly)
-                return defOrRef.ResolveTypeDef() ?? defaultTypeRef;
+            {
+                var resolveTypeDefIfNeeded = defOrRef.ResolveTypeDef();
+                if (resolveTypeDefIfNeeded != null)
+                {
+                    Logger.Debug(
+                        $"ResolveTypeDefIfNeeded on {defOrRef} - Resolved to TypeDef because is referencing Target Assembly");
+                }
+                else
+                {
+                    Logger.Debug(
+                        $"ResolveTypeDefIfNeeded on {defOrRef} - Unable to Resolve to TypeDef because is not referencing Target Assembly");
+                }
+
+                return resolveTypeDefIfNeeded ?? defaultTypeRef;
+            }
 
             return defaultTypeRef;
         }
