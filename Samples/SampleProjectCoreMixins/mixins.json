@@ -9,6 +9,7 @@
     "MixinSomeGameClass",
     "MixinInjectClass",
     "MixinRedirectClass",
-    "MixinSuperClass"
+    "MixinSuperClass",
+    "RandomEnumMixin"
   ]
 }

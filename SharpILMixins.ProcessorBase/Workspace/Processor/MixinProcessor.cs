@@ -158,7 +158,7 @@ namespace SharpILMixins.Processor.Workspace.Processor
             List<ClassDeclarationSyntax> declarationSyntaxes = new();
             foreach (var mixinRelation in mixinRelations)
             {
-                if (mixinRelation.IsAccessor) continue;
+                if (mixinRelation.IsAccessor || mixinRelation.TargetType.IsEnum) continue;
                 Logger.Info($"Starting to process mixin {mixinRelation.MixinType.Name}");
 
                 var classDeclarationSyntax = new GeneratorMixinRelation(mixinRelation).ToSyntax();

@@ -200,7 +200,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
             var fields = mixinType.Fields.Where(ShouldCopyField).ToList();
             ProcessShadowElements(mixinType.Fields, targetType.Fields.Cast<IMemberRef>().ToList(), hasSuperElements);
-            CopyFields(targetType, fields);
+            CopyFields(mixinType, targetType, fields);
 
             //These elements might be used if the Mixin extends the class they're targeting and accesses from super
             if (hasSuperElements && superFields != null)
@@ -211,11 +211,23 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         }
 
 
-        private void CopyFields(TypeDef targetType, List<FieldDef> fields)
+        private void CopyFields(TypeDef mixinType, TypeDef targetType, List<FieldDef> fields)
         {
+            var mixinTypeIsEnum = mixinType.IsEnum;
             foreach (var field in fields)
             {
-                var copyField = new FieldDefUser(field.Name, field.FieldSig, field.Attributes);
+                // This will skip any internal enum members
+                if (mixinTypeIsEnum && field.IsRuntimeSpecialName) continue;
+
+                var signature = field.FieldSig;
+                if (mixinTypeIsEnum && field.DeclaringType.IsEnum)
+                {
+                    signature = new FieldSig(new ValueTypeSig(targetType));
+                }
+                var copyField = new FieldDefUser(field.Name, signature, field.Attributes)
+                {
+                    Constant = field.Constant
+                };
 
                 if (field.GetCustomAttribute<UniqueAttribute>() != null)
                     copyField.Name = Utilities.GenerateRandomName(Workspace.Settings.MixinHandlerName);

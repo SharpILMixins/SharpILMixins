@@ -89,6 +89,9 @@ namespace SharpILMixins.Processor.Utils
                     case ClassSig:
                         yield return obj.ToString();
                         break;
+                    case ValueTypeSig valueTypeSig:
+                        yield return valueTypeSig.FullName;
+                        break;
                     default:
                     {
                         if (parameterType(i).IsArray)
