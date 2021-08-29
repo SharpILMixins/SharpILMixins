@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using NLog;
@@ -106,27 +107,31 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
         private void ProcessShadowElements(IEnumerable<IMemberRef> mixinElements, IList<IMemberRef> targetElements,
             bool doNotThrowIfMissing = false)
         {
-            foreach (var element in mixinElements)
+            foreach (var mixinElement in mixinElements)
             {
-                var oldName = element.Name;
-                if (IsShadowElement(element, targetElements))
+                var oldName = mixinElement.Name;
+                if (IsShadowElement(mixinElement, targetElements))
                 {
-                    element.Name = (element as IHasCustomAttribute ?? throw new InvalidOperationException()).GetCustomAttribute<ShadowAttribute>()?.Name ?? element.Name;
+                    if (mixinElement.Name.Contains("_shadowedE10"))
+                    {
+                        Debugger.Break();
+                    }
+                    mixinElement.Name = (mixinElement as IHasCustomAttribute ?? throw new InvalidOperationException()).GetCustomAttribute<ShadowAttribute>()?.Name ?? mixinElement.Name;
                     var targetMethod =
-                        targetElements.FirstOrDefault(m => RedirectManager.SigComparer.Equals(m, element));
+                        targetElements.FirstOrDefault(targetElement => targetElement.Name.Equals(mixinElement.Name));
                     if (!doNotThrowIfMissing && targetMethod == null)
                     {
                         throw new MixinApplyException(
-                            $"Unable to find target for Shadow element \"{element.FullName}\"");
+                            $"Unable to find target for Shadow element \"{mixinElement.FullName}\"");
                     }
 
-                    if (targetMethod != null && element != targetMethod)
+                    if (targetMethod != null && mixinElement != targetMethod)
                     {
-                        RedirectManager.RegisterRedirect(element, targetMethod);
+                        RedirectManager.RegisterRedirect(mixinElement, targetMethod);
                     }
                 }
 
-                element.Name = oldName;
+                mixinElement.Name = oldName;
             }
         }
 

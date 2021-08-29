@@ -9,6 +9,9 @@ namespace SampleProjectCore.Mixins
     {
         [Shadow]
         private double _d;
+     
+        [Shadow("e10")]
+        private StringWrapperAccessor _shadowedE10;
         
         [Redirect(Method = RedirectClassTargets.Methods.Example, At = AtLocation.Invoke, Target = RedirectClassTargets.Methods.ExampleInjects.Console_WriteLine_Object)]
         public static void RedirectPrintLn(object value)
@@ -32,6 +35,7 @@ namespace SampleProjectCore.Mixins
         [Redirect(Method = RedirectClassTargets.Methods.Example, At = AtLocation.Field, Target = RedirectClassTargets.Methods.ExampleInjects._d, Ordinal = 0)]
         public double RedirectFieldGet(double value)
         {
+            Console.Error.WriteLine(_shadowedE10);
             return value + 3;
         }
         

@@ -10,6 +10,7 @@
     "MixinInjectClass",
     "MixinRedirectClass",
     "MixinSuperClass",
-    "Bruh.RandomEnumMixin"
+    "Bruh.RandomEnumMixin",
+    "StringWrapperAccessor"
   ]
 }

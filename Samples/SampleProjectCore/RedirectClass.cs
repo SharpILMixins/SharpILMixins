@@ -4,6 +4,8 @@ namespace SampleProjectCore
 {
     public class RedirectClass
     {
+        private StringWrapper e10;
+
         private double _d;
 
         private void Example()
