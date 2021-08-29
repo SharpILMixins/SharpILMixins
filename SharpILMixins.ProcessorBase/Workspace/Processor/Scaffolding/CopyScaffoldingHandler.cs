@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using dnlib.DotNet;
 using NLog;
@@ -114,7 +113,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 {
                     mixinElement.Name = (mixinElement as IHasCustomAttribute ?? throw new InvalidOperationException()).GetCustomAttribute<ShadowAttribute>()?.Name ?? mixinElement.Name;
                     var targetMethod =
-                        targetElements.FirstOrDefault(targetElement => targetElement.Name.Equals(mixinElement.Name));
+                        targetElements.FirstOrDefault(m => AreMembersEqual(m, mixinElement));
                     if (!doNotThrowIfMissing && targetMethod == null)
                     {
                         throw new MixinApplyException(
@@ -129,6 +128,16 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
 
                 mixinElement.Name = oldName;
             }
+        }
+
+        private bool AreMembersEqual(IMemberRef targetElement, IMemberRef mixinElement)
+        {
+            // Fields can be compared by name
+            if (targetElement is IField)
+            {
+                return targetElement.Name.Equals(mixinElement.Name);
+            }
+            return RedirectManager.SigComparer.Equals(targetElement, mixinElement);
         }
 
         private static bool IsShadowElement(IMemberRef element, IList<IMemberRef> targetElements)
