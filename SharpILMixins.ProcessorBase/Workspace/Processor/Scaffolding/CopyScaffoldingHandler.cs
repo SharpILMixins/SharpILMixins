@@ -112,10 +112,6 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 var oldName = mixinElement.Name;
                 if (IsShadowElement(mixinElement, targetElements))
                 {
-                    if (mixinElement.Name.Contains("_shadowedE10"))
-                    {
-                        Debugger.Break();
-                    }
                     mixinElement.Name = (mixinElement as IHasCustomAttribute ?? throw new InvalidOperationException()).GetCustomAttribute<ShadowAttribute>()?.Name ?? mixinElement.Name;
                     var targetMethod =
                         targetElements.FirstOrDefault(targetElement => targetElement.Name.Equals(mixinElement.Name));
