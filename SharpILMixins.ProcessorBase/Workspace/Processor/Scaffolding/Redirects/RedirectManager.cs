@@ -241,7 +241,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             }
 
             if (parameterType != null)
-                Logger.Warn(
+                Logger.Debug(
                     $"Skipped translating type redirect for type {parameterType} ({parameterType.GetType().Name})");
 
             return parameterType;

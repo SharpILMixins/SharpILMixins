@@ -280,6 +280,10 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             }
 
             CreateMethodHandlers(targetType, mixinMethods);
+            foreach (var targetTypeMethod in targetType.Methods)
+            {
+                RedirectManager.ProcessRedirects(targetTypeMethod, targetTypeMethod.Body);
+            }
         }
 
         private static bool ShouldCopyMethod(MethodDef m)
@@ -301,12 +305,12 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                     var targetMethod =
                         MixinAction.GetTargetMethodThrow(mixinMethod, mixinAttribute, targetType, Workspace);
 
-
                     RedirectManager.RegisterRedirect(mixinMethod, targetMethod);
                     continue;
                 }
 
                 var newMethod = CreateNewMethodCopy(targetType, mixinMethod);
+                Logger.Debug($"Created new method copy of {mixinMethod} into {targetType} and registred redirect for {newMethod}");
                 RedirectManager.RegisterRedirect(mixinMethod, newMethod);
 
                 if (mixinMethod.GetCustomAttribute<OverwriteAttribute>() != null)

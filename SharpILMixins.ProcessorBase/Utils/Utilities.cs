@@ -12,7 +12,7 @@ namespace SharpILMixins.Processor.Utils
     {
         public static bool DebugMode { get; set; } =
 
-#if DEBUG
+#if !DEBUG
             true
 #else
             false
