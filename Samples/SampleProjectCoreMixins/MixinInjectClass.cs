@@ -8,8 +8,14 @@ namespace SampleProjectCore.Mixins
     [Mixin(typeof(InjectClass))]
     public class MixinInjectClass
     {
+        [Inject(AtLocation.Tail, Method = "WeirdExample")]
+        private void InjectReturnWeirdExample(object original, [InjectReturnValue] ref string finalResult)
+        {
+            
+        }
+
         [Inject(At = AtLocation.Head, Method = "WeirdExample")]
-        private ConcerningStruct InjectWeirdExampleHead(ConcerningStruct valueDeez, [InjectCancelParam] out bool cancelled)
+        private ConcerningStruct InjectWeirdExampleHead(object valueDeez, [InjectCancelParam] out bool cancelled)
         {
             cancelled = true;
             return new ConcerningStruct

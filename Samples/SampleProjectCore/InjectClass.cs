@@ -13,9 +13,9 @@ namespace SampleProjectCore
     {
         private double _d;
 
-        private ConcerningStruct WeirdExample(ConcerningStruct valueDeez)
+        private object WeirdExample(object valueDeez)
         {
-            return default;
+            return "test";
         }
 
         private void Example()
