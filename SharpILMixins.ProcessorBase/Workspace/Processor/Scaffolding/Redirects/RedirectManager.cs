@@ -138,11 +138,44 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         private void PerformOperandResolveIfNeeded(Instruction instruction)
         {
             if (instruction.Operand is not MemberRef memberRef) return;
-            var resolved = memberRef.Resolve();
+            var resolved = memberRef.Resolve() as IMemberDef;
+            var parentClass = memberRef.Class;
+            if (parentClass is TypeSpec memberRefParent)
+            {
+                parentClass = ProcessTypeRedirect(memberRefParent.TypeSig).ToTypeDefOrRef();
+            }
+
+            memberRef.Class = parentClass;
             if (resolved?.DeclaringType.DefinitionAssembly?.Name.Equals(Workspace.CurrentTargetModule?.Assembly.Name) ==
                 true)
             {
-                instruction.Operand = resolved;
+                instruction.Operand = new MemberRefUser(resolved.Module, resolved.Name)
+                {
+                    Class = parentClass,
+                    Signature = ProcessSignatureRedirect(memberRef.Signature),
+                };
+            }
+        }
+
+        private CallingConventionSig ProcessSignatureRedirect(CallingConventionSig memberRefSignature)
+        {
+            switch (memberRefSignature)
+            {
+                case FieldSig fieldSig:
+                    return new FieldSig(ProcessTypeRedirect(fieldSig.Type));
+                case GenericInstMethodSig genericInstMethodSig:
+                    return new GenericInstMethodSig(genericInstMethodSig.GenericArguments.Select(ProcessTypeRedirect)
+                        .ToList());
+                case LocalSig localSig:
+                    return new LocalSig(localSig.Locals.Select(ProcessTypeRedirect).ToList());
+                case MethodSig methodSig:
+                    return new MethodSig(methodSig.CallingConvention, methodSig.GenParamCount,
+                        ProcessTypeRedirect(methodSig.RetType), methodSig.Params.Select(ProcessTypeRedirect).ToList(), methodSig.ParamsAfterSentinel?.Select(ProcessTypeRedirect)?.ToList());
+                case PropertySig propertySig:
+                    return new PropertySig(propertySig.HasThis, ProcessTypeRedirect(propertySig.RetType),
+                        propertySig.Params.Select(ProcessTypeRedirect).ToArray());
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(memberRefSignature));
             }
         }
 
@@ -238,6 +271,8 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
                             valueTypeSig.TypeDefOrRef.DefinitionAssembly));
                 case CorLibTypeSig:
                     return parameterType;
+                case GenericVar genericVar:
+                    return new GenericVar(genericVar.Number, ResolveTypeDefIfNeeded(genericVar.OwnerType, genericVar.OwnerType.DefinitionAssembly).ResolveTypeDef());
             }
 
             if (parameterType != null)
@@ -309,8 +344,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
             if (definitionAssembly == null) return defOrRef;
             if (defOrRef.DeclaringType.NumberOfGenericParameters > 0 && defOrRef.IsMemberRef)
             {
-                defOrRef = new MemberRefUser(defOrRef.Module, defOrRef.Name, ProcessSignature(defOrRef.MethodSig),
-                    ProcessTypeRedirect(defOrRef.DeclaringType.ToTypeSig()).ToTypeDefOrRef());
+                return defOrRef;
             }
 
             //Only create references to methods in other assemblies. Methods in our Target assembly needs MethodDefs so we don't reference our own assembly.
