@@ -285,7 +285,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding.Redirects
         public ITypeDefOrRef ResolveTypeDefIfNeeded(ITypeDefOrRef defOrRef, IAssembly? definitionAssembly)
         {
             if (definitionAssembly == null) return defOrRef;
-            Logger.Debug($"ResolveTypeDefIfNeeded on {defOrRef} - Is {(defOrRef.IsTypeRef ? "not " : "")}TypeDef because is referencing Target Assembly");
+            Logger.Debug($"ResolveTypeDefIfNeeded on {defOrRef} - Is {(defOrRef.IsTypeRef ? "not " : "")}TypeDef because is {(defOrRef.IsTypeRef ? "not " : "")}referencing Target Assembly");
             var isReferencingTargetAssembly = IsReferencingTargetAssembly(defOrRef);
 
             //Create a Type Reference if it isn't one
