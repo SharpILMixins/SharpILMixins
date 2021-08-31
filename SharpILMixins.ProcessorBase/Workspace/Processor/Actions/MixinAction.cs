@@ -112,7 +112,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions
             if (!string.IsNullOrEmpty(mixinAttribute?.Method))
             {
                 var directResult = targetType.Methods.FirstOrDefault(m => m.FullName == mixinAttribute.Method) ??
-                                   targetType.Methods.Single(m => m.Name == mixinAttribute.Method);
+                                   targetType.Methods.FirstOrDefault(m => m.Name == mixinAttribute.Method);
                 return directResult ?? throw exception;
             }
 

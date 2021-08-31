@@ -64,12 +64,27 @@ namespace SharpILMixins.Processor.Workspace.Generator
             AddInvokeMembers(injectMembers);
             AddFieldMembers(injectMembers);
             AddNewObjMembers(injectMembers);
+            foreach (var declarationSyntax in AddStateMachineMember()) yield return declarationSyntax;
 
             if (injectMembers.Count != 0)
                 yield return ClassDeclaration($"{string.Join("", SimpleTargetMethodName.Select(c => SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_'))}Injects")
                     .AddMembers(injectMembers.Where(c => c != null).DistinctBy(c => c.Name)
                         .Select(c => c.DeclarationSyntax).ToArray())
                     .WithModifiers(_publicStaticModifiers);
+        }
+
+        private IEnumerable<MemberDeclarationSyntax> AddStateMachineMember()
+        {
+            var iteratorStateMachineAttribute = TargetMethod.GetCustomAttribute<IteratorStateMachineAttribute>();
+            if (iteratorStateMachineAttribute != null)
+            {
+                return new []
+                {
+                    GetStringLiteralField(SimpleTargetMethodName + "_StateMachine", iteratorStateMachineAttribute.StateMachineType)!.DeclarationSyntax,
+                    GetStringLiteralField(SimpleTargetMethodName + "_StateMachine_Method", "MoveNext")!.DeclarationSyntax
+                };
+            }
+            return Enumerable.Empty<MemberDeclarationSyntax>();
         }
 
         private void AddNewObjMembers(List<GeneratorMember> injectMembers)
@@ -81,8 +96,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
                     .OfType<IMethodDefOrRef>()
                     .DistinctBy(i => ComputeSimpleMethodName(i, TargetType, true))
                     .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, TargetType, true), i.FullName))
-                    .Where(i => i is not null)
-                    .Select(i => i!).ToList()
+                    .Select(i => i).ToList()
             );
         }
 
@@ -95,8 +109,7 @@ namespace SharpILMixins.Processor.Workspace.Generator
                     .OfType<IField>()
                     .DistinctBy(i => i.Name.ToString())
                     .Select(i => GetStringLiteralField(i.Name, i.FullName))
-                    .Where(i => i is not null)
-                    .Select(i => i!).ToList()
+                    .Select(i => i).ToList()
             );
         }
 
@@ -108,14 +121,13 @@ namespace SharpILMixins.Processor.Workspace.Generator
                 .OfType<IMethodDefOrRef>()
                 .DistinctBy(i => ComputeSimpleMethodName(i, TargetType, true))
                 .Select(i => GetStringLiteralField(ComputeSimpleMethodName(i, TargetType, true), i.FullName))
-                .Where(i => i is not null)
-                .Select(i => i!)
+                .Select(i => i)
                 .Distinct().ToList());
         }
 
         private readonly Regex _multipleUnderscoreMatcher = new("_{2,}", RegexOptions.Compiled);
         
-        private GeneratorMember? GetStringLiteralField(string name, string stringLiteral)
+        private GeneratorMember GetStringLiteralField(string name, string stringLiteral)
         {
             name = string.Join("", name.Select(c => SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_'));
             name = _multipleUnderscoreMatcher.Replace(name, "_");

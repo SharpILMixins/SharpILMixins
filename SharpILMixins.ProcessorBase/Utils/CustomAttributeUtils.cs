@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using dnlib.DotNet;
+using SharpILMixins.Processor.Workspace.Generator;
 
 namespace SharpILMixins.Processor.Utils
 {
@@ -19,14 +20,23 @@ namespace SharpILMixins.Processor.Utils
             return provider.CustomAttributes.Where(attr =>
             {
                 var definition = attr.AttributeType.ResolveTypeDef();
-                return attr.AttributeType.FullName == typeof(T).FullName || definition?.BaseType != null &&
-                    definition.BaseType.FullName == typeof(T).FullName;
+                return IsAttributeTheSame<T>(attr, definition);
             }).Select(GetCustomAttributeFromMetadata<T>).Where(c => c != null).ToArray()!;
+        }
+
+        private static bool IsAttributeTheSame<T>(CustomAttribute attr, TypeDef? definition) where T : class
+        {
+            if (typeof(T) == typeof(IteratorStateMachineAttribute) && attr.AttributeType.Name.Equals(nameof(IteratorStateMachineAttribute)))
+            {
+                return true;
+            }
+            return attr.AttributeType.FullName == typeof(T).FullName || definition?.BaseType != null &&
+                definition.BaseType.FullName == typeof(T).FullName;
         }
 
         private static T? GetCustomAttributeFromMetadata<T>(CustomAttribute attribute) where T : class
         {
-            var type = typeof(T).Assembly.GetType(attribute.AttributeType.FullName);
+            var type = typeof(T).Assembly.GetType(attribute.AttributeType.FullName) ?? typeof(T);
             var constructorInfos = type?.GetConstructors();
             if (constructorInfos == null) return null;
             foreach (var constructor in constructorInfos)
@@ -87,7 +97,7 @@ namespace SharpILMixins.Processor.Utils
                         yield return corLibType.FullName;
                         break;
                     case ClassSig:
-                        yield return obj.ToString();
+                        yield return (object?)Type.GetType(obj.ToString()!) ?? obj.ToString();
                         break;
                     case ValueTypeSig valueTypeSig:
                         yield return valueTypeSig.FullName;

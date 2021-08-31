@@ -12,7 +12,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Actions.Impl.Inject.Impl
         public override IEnumerable<InjectionPoint> FindInjectionPoints(MixinAction action, InjectAttribute attribute)
         {
             var ctorCall = action.TargetMethod.Body.Instructions.FirstOrDefault(c =>
-                c.Operand is IMethodDefOrRef methodCall && methodCall.Name == ".ctor" &&
+                action.TargetMethod.Name.Equals(".ctor") && c.Operand is IMethodDefOrRef methodCall && methodCall.Name == ".ctor" &&
                 methodCall.DeclaringType.FullName == action.TargetMethod.DeclaringType.BaseType.FullName);
 
             yield return new InjectionPoint(ctorCall != null

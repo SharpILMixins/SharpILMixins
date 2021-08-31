@@ -4,6 +4,7 @@
     "SampleProjectCore.dll"
   ],
   "mixins": [
+    "MixinYieldReturnClass",
     "MixinProgram",
     "MixinRandomClass2",
     "MixinSomeGameClass",
