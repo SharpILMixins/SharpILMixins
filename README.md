@@ -4,10 +4,8 @@ SharpILMixins is a trait/mixin and IL weaving framework for C# using [dnLib](htt
 
 ### JetBrains Open-Source License
 
-The developers of this project make use of an Open-Source License from JetBrains.
-
-<a href="https://www.jetbrains.com/?from=SharpILMixins"><img alt="Jetbrains Logo" src="https://raw.githubusercontent.com/SharpILMixins/SharpILMixins/master/jetbrains.png" height=120></img></a>
-[JetBrains](https://www.jetbrains.com/?from=SharpILMixins) is a cutting-edge software vendor specializing in the creation of intelligent development tools, including IntelliJ IDEA – the leading Java IDE, and the Kotlin programming language.
+This project is currently being reviewed for the eligibility of an Open-Source License from JetBrains.
+The Request ID is 31082021/7679469.
 
 ## Usage
 
