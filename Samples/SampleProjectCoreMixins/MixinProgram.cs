@@ -19,7 +19,7 @@ namespace SampleProjectCore.Mixins
 
         }
         
-        [Shadow("_coolNumber")] private static int _coolNumberWithADifferentName;
+        [Shadow("_coolNumber")] [Mutable] private static int _coolNumberWithADifferentName;
 
         [Unique] private static string _ourString = "";
 
@@ -36,8 +36,8 @@ namespace SampleProjectCore.Mixins
         {
             Console.WriteLine($"{overload}, {randomInt}, {randomEnum}, {floaty.ToString()}, {moreInts}, {new object().ToString()}");
         }
-
-        //[Inject(Method = "Main", At = AtLocation.Head)]
+        
+        [Inject(Method = "Main", At = AtLocation.Head)]
         public static void BeforeMain(string[] args, [InjectCancelParam] out bool isCancelled)
         {
             AppDomain.CurrentDomain.AssemblyResolve += (_, __) => null;

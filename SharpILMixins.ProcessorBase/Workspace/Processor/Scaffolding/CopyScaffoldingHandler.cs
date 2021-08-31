@@ -111,22 +111,39 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 var oldName = mixinElement.Name;
                 if (IsShadowElement(mixinElement, targetElements))
                 {
-                    mixinElement.Name = (mixinElement as IHasCustomAttribute ?? throw new InvalidOperationException()).GetCustomAttribute<ShadowAttribute>()?.Name ?? mixinElement.Name;
-                    var targetMethod =
+                    var mixinElementHasCustomAttribute = (mixinElement as IHasCustomAttribute ?? throw new InvalidOperationException());
+                    mixinElement.Name = mixinElementHasCustomAttribute.GetCustomAttribute<ShadowAttribute>()?.Name ?? mixinElement.Name;
+                    var targetElement =
                         targetElements.FirstOrDefault(m => AreMembersEqual(m, mixinElement));
-                    if (!doNotThrowIfMissing && targetMethod == null)
+                    if (!doNotThrowIfMissing && targetElement == null)
                     {
                         throw new MixinApplyException(
                             $"Unable to find target for Shadow element \"{mixinElement.FullName}\"");
                     }
 
-                    if (targetMethod != null && mixinElement != targetMethod)
+                    if (targetElement != null && mixinElement != targetElement)
                     {
-                        RedirectManager.RegisterRedirect(mixinElement, targetMethod);
+                        MakeShadowFieldMutable(targetElement, mixinElementHasCustomAttribute, mixinElement);
+                        RedirectManager.RegisterRedirect(mixinElement, targetElement);
                     }
                 }
 
                 mixinElement.Name = oldName;
+            }
+        }
+
+        private static void MakeShadowFieldMutable(IMemberRef targetElement, IHasCustomAttribute mixinElementHasCustomAttribute, IMemberRef mixinElement)
+        {
+            if (!targetElement.IsField || mixinElementHasCustomAttribute.GetCustomAttribute<MutableAttribute>() == null) return;
+            var resolvedFieldDef = (targetElement as IField).ResolveFieldDef();
+            if (resolvedFieldDef != null)
+            {
+                resolvedFieldDef.Attributes &= ~FieldAttributes.InitOnly;
+            }
+            else
+            {
+                throw new MixinApplyException(
+                    $"Unable to apply [Mutable] to field \"{mixinElement.FullName}\" because it's definition within the target assembly was not found");
             }
         }
 
@@ -137,6 +154,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
             {
                 return targetElement.Name.Equals(mixinElement.Name);
             }
+
             return RedirectManager.SigComparer.Equals(targetElement, mixinElement);
         }
 
@@ -240,6 +258,7 @@ namespace SharpILMixins.Processor.Workspace.Processor.Scaffolding
                 {
                     signature = new FieldSig(new ValueTypeSig(targetType));
                 }
+
                 var copyField = new FieldDefUser(field.Name, signature, field.Attributes)
                 {
                     Constant = field.Constant
