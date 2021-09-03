@@ -2,11 +2,6 @@
 
 SharpILMixins is a trait/mixin and IL weaving framework for C# using [dnLib](https://github.com/0xd4d/dnlib).
 
-### JetBrains Open-Source License
-
-This project is currently being reviewed for the eligibility of an Open-Source License from JetBrains.
-The Request ID is 31082021/7679469.
-
 ## Usage
 
 SharpILMixins has a processor tool that can apply Mixins made with SharpILMixins.
