@@ -170,8 +170,8 @@ namespace SharpILMixins.Processor
             [Option("copy-resources", HelpText = "Whether or not to copy Mixin resources into the target method")]
             public bool CopyResources { get; set; }
 
-            [Option("force-keep-max-stack", HelpText = "Whether or not to force")]
-            public bool ForceKeepMaxStack { get; set; } = true;
+            [Option("force-keep-max-stack", HelpText = "Whether or not to force keeping the old max stack")]
+            public bool ForceKeepMaxStack { get; set; }
         }
     }
 }
